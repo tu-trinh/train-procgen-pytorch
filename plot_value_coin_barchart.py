@@ -74,8 +74,13 @@ def plot():
         categ_high = np.percentile(bs_replicates_values,[95.])
         results_low_mean_high[full_categ] = (categ_low, categ_mean, categ_high)
 
-
-
+    # Count how many samples are actually used
+    sample_count_list = []
+    for full_categ in full_categs_strs:
+        # Draw 15000 bootstrap replicates
+        categ_values = categ_metadata[full_categ]['value']
+        sample_count_list.append(categ_values)
+    print(f"n={sum([len(y) for y in sample_count_list])}")
 
     # # And we do 'post end-wall' manually because we collected that data later
     # value_files_post = os.listdir(args.datapath + "/for_post_endwall_bars")
