@@ -1,5 +1,5 @@
-# Objective Robustness in Deep RL
-Code for the paper *Objective Robustness in Deep Reinforcement Learning*, based on the repository https://github.com/joonleesky/train-procgen-pytorch
+# Goal Misgeneralization in Deep RL
+Code for the paper *Goal Misgeneralization in Deep Reinforcement Learning*, based on the repository https://github.com/joonleesky/train-procgen-pytorch
 
 
 ## Requirements
