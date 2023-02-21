@@ -1,7 +1,8 @@
 # Training code for Objective Robustness Failures in Deep Reinforcement Learning
 
 This code is based on a fork of [this repository](https://github.com/joonleesky/train-procgen-pytorch) by Hojoon Lee.
-It includes scripts for training RL agents on [modified procgen environments](https://github.com/JacobPfau/procgenAISC/master) and producing the figures for the paper [Objective Robustness in Deep Reinforcement Learning](https://arxiv.org/abs/2105.14111).
+It includes scripts for training RL agents on [modified procgen environments](https://github.com/JacobPfau/procgenAISC) and producing the figures for the paper [Objective Robustness in Deep Reinforcement Learning](https://arxiv.org/abs/2105.14111).
+
 
 ## Requirements
 
