@@ -32,9 +32,11 @@ class PPO(BaseAgent):
                  use_gae=True,
                  **kwargs):
 
+        print("[alina] Starting to initialize PPO agent")
         super(PPO, self).__init__(env, policy, logger, storage, device,
                                   n_checkpoints, env_valid, storage_valid)
 
+        print("[alina] Done with the super init, now time for this init")
         self.n_steps = n_steps
         self.n_envs = n_envs
         self.epoch = epoch

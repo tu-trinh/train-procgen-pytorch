@@ -109,8 +109,8 @@ if __name__=='__main__':
                           )
         info_key = None if args.agent_view else "rgb"
         ob_key = "rgb" if args.agent_view else None
-        if not args.noview:
-            venv = ViewerWrapper(venv, tps=args.tps, info_key=info_key, ob_key=ob_key) # N.B. this line caused issues for me. I just commented it out, but it's uncommented in the pushed version in case it's just me (Lee).
+        # if not args.noview:
+        #     venv = ViewerWrapper(venv, tps=args.tps, info_key=info_key, ob_key=ob_key) # N.B. this line caused issues for me. I just commented it out, but it's uncommented in the pushed version in case it's just me (Lee).
         if args.vid_dir is not None:
             venv = VideoRecorderWrapper(venv, directory=args.vid_dir,
                                         info_key=info_key, ob_key=ob_key, fps=args.tps)
@@ -195,7 +195,9 @@ if __name__=='__main__':
         raise NotImplementedError
     agent = AGENT(env, policy, logger, storage, device, num_checkpoints, **hyperparameters)
 
+    print("[alina] Going to load agent state dict")
     agent.policy.load_state_dict(torch.load(args.model_file, map_location=device)["model_state_dict"])
+    print("[alina] Loaded agent state dict")
     agent.n_envs = n_envs
 
     ############
@@ -242,8 +244,11 @@ if __name__=='__main__':
     save_frequency = 1
     saliency_save_idx = 0
     epoch_idx = 0
-    while True:
+    while epoch_idx < 10:
+    # while True:
         agent.policy.eval()
+        print("[alina] Starting epoch", epoch_idx)
+        start_epoch_time = time.time()
         for _ in range(agent.n_steps):  # = 256
             if not args.value_saliency:
                 act, log_prob_act, value, next_hidden_state = agent.predict(obs, hidden_state, done)
@@ -317,3 +322,6 @@ if __name__=='__main__':
 
         agent.storage.compute_estimates(agent.gamma, agent.lmbda, agent.use_gae,
                                        agent.normalize_adv)
+        print("[alina] Done with epoch", epoch_idx if not args.save_value else epoch_idx - 1)
+        end_epoch_time = time.time()
+        print("[alina] This epoch took", (end_epoch_time - start_epoch_time) / 60, "minutes")
