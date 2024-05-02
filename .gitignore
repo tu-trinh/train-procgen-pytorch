@@ -82,6 +82,6 @@ celerybeat-schedule
 
 
 .idea/
-logs/
-experiments/results
-videos
+# logs/
+# experiments/results
+# videos
