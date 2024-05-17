@@ -24,24 +24,29 @@ class Storage():
         self.return_batch = torch.zeros(self.num_steps, self.num_envs)
         self.adv_batch = torch.zeros(self.num_steps, self.num_envs)
         self.info_batch = deque(maxlen=self.num_steps)
+        self.uncertainty_batch = torch.zeros(self.num_steps, self.num_envs)
         self.step = 0
 
-    def store(self, obs, hidden_state, act, rew, done, info, log_prob_act, value):
+    def store(self, obs, hidden_state, act, rew, done, info, log_prob_act, value, uncertainty):
+        if isinstance(done, list):
+            done = np.array(done)
         self.obs_batch[self.step] = torch.from_numpy(obs.copy())
         self.hidden_states_batch[self.step] = torch.from_numpy(hidden_state.copy())
-        self.act_batch[self.step] = torch.from_numpy(act.copy())
+        self.act_batch[self.step] = torch.from_numpy(act.copy()) if not isinstance(act, str) else -1
         self.rew_batch[self.step] = torch.from_numpy(rew.copy())
         self.done_batch[self.step] = torch.from_numpy(done.copy())
         self.log_prob_act_batch[self.step] = torch.from_numpy(log_prob_act.copy())
         self.value_batch[self.step] = torch.from_numpy(value.copy())
         self.info_batch.append(info)
+        self.uncertainty_batch[self.step] = torch.from_numpy(uncertainty.copy())
 
         self.step = (self.step + 1) % self.num_steps
 
-    def store_last(self, last_obs, last_hidden_state, last_value):
+    def store_last(self, last_obs, last_hidden_state, last_value, last_uncertainty):
         self.obs_batch[-1] = torch.from_numpy(last_obs.copy())
         self.hidden_states_batch[-1] = torch.from_numpy(last_hidden_state.copy())
         self.value_batch[-1] = torch.from_numpy(last_value.copy())
+        self.uncertainty_batch[-1] = torch.from_numpy(last_uncertainty.copy())
 
     def compute_estimates(self, gamma=0.99, lmbda=0.95, use_gae=True, normalize_adv=True):
         rew_batch = self.rew_batch

@@ -52,16 +52,32 @@ class PPO(BaseAgent):
         self.normalize_rew = normalize_rew
         self.use_gae = use_gae
 
+        self.request_limit = 3
+        self.num_requests = 0
+        self.probability_threshold = 1 / env.action_space.n  # random guessing amongst actions
+        self.entropy_threshold = -torch.log(torch.tensor(1 / env.action_space.n)).item()  # entropy of random guessing
+        print("PROBABILITY THRESHOLD", self.probability_threshold)
+        print("ENTROPY THRESHOLD", self.entropy_threshold)
+        print("[alina] Initialized agent")
+
     def predict(self, obs, hidden_state, done):
+        if isinstance(done, list):
+            done = torch.tensor(done).float()
         with torch.no_grad():
             obs = torch.FloatTensor(obs).to(device=self.device)
             hidden_state = torch.FloatTensor(hidden_state).to(device=self.device)
-            mask = torch.FloatTensor(1-done).to(device=self.device)
+            mask = torch.FloatTensor(1 - done).to(device=self.device)
             dist, value, hidden_state = self.policy(obs, hidden_state, mask)
             act = dist.sample()
             log_prob_act = dist.log_prob(act)
-
-        return act.cpu().numpy(), log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy()
+            entropy = dist.entropy()
+            if entropy > self.entropy_threshold and self.num_requests < self.request_limit:
+                ret_act = "HELP"
+                print("Had to ask for help", "entropy", entropy)
+                self.num_requests += 1
+            else:
+                ret_act = act.cpu().numpy()
+        return ret_act, log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy(), entropy.cpu().numpy()
 
     def predict_w_value_saliency(self, obs, hidden_state, done):
         obs = torch.FloatTensor(obs).to(device=self.device)
