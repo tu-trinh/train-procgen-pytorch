@@ -1,0 +1,201 @@
+Env 0, step 0: ('RIGHT', 'DOWN')
+
+Env 0, step 1: ('RIGHT', 'DOWN')
+
+Env 0, step 2: ('RIGHT', 'UP')
+
+Env 0, step 3: W
+
+Env 0, step 4: W
+
+Env 0, step 5: W
+
+Env 0, step 6: Q
+
+Env 0, step 7: ('RIGHT', 'UP')
+
+Env 0, step 8: D
+
+Env 0, step 9: W
+
+Env 0, step 10: W
+
+Env 0, step 11: DOWN
+
+Env 0, step 12: D
+
+Env 0, step 13: UP
+
+Env 0, step 14: D
+
+Env 0, step 15: ('RIGHT', 'UP')
+
+Env 0, step 16: ('RIGHT', 'DOWN')
+
+Env 0, step 17: ('RIGHT', 'DOWN')
+
+Env 0, step 18: ('RIGHT', 'UP')
+
+Env 0, step 19: ('RIGHT', 'DOWN')
+
+Env 0, step 20: UP
+
+Env 0, step 21: ('RIGHT', 'DOWN')
+
+Env 0, step 22: S
+
+Env 0, step 23: RIGHT
+
+Env 0, step 24: RIGHT
+
+Env 0, step 25: D
+
+Env 0, step 26: ('RIGHT', 'UP')
+
+Env 0, step 27: A
+
+Env 0, step 28: D
+
+Env 0, step 29: D
+
+Env 0, step 30: ()
+
+Env 0, step 31: ('RIGHT', 'DOWN')
+
+Env 0, step 32: ('RIGHT', 'DOWN')
+
+Env 0, step 33: RIGHT
+
+Env 0, step 34: D
+
+Env 0, step 35: ('RIGHT', 'DOWN')
+
+Env 0, step 36: RIGHT
+
+Env 0, step 37: RIGHT
+
+Env 0, step 38: RIGHT
+
+Env 0, step 39: RIGHT
+
+Env 0, step 40: E
+
+Env 0, step 41: ('RIGHT', 'DOWN')
+
+Env 0, step 42: A
+
+Env 0, step 43: RIGHT
+
+Env 0, step 44: D
+
+Env 0, step 45: ('RIGHT', 'DOWN')
+
+Env 0, step 46: RIGHT
+
+Env 0, step 47: ('RIGHT', 'UP')
+
+Env 0, step 48: DOWN
+
+Env 0, step 49: ('RIGHT', 'DOWN')
+
+Env 0, step 50: ('RIGHT', 'DOWN')
+
+Env 0, step 51: RIGHT
+
+Env 0, step 52: ('RIGHT', 'UP')
+
+Env 0, step 53: ('RIGHT', 'UP')
+
+Env 0, step 54: ('LEFT', 'DOWN')
+
+Env 0, step 55: RIGHT
+
+Env 0, step 56: ('RIGHT', 'DOWN')
+
+Env 0, step 57: Q
+
+Env 0, step 58: ()
+
+Env 0, step 59: E
+
+Env 0, step 60: A
+
+Env 0, step 61: ('LEFT', 'DOWN')
+
+Env 0, step 62: DOWN
+
+Env 0, step 63: A
+
+Env 0, step 64: D
+
+Env 0, step 65: E
+
+Env 0, step 66: ('RIGHT', 'DOWN')
+
+Env 0, step 67: A
+
+Env 0, step 68: A
+
+Env 0, step 69: S
+
+Env 0, step 70: S
+
+Env 0, step 71: A
+
+Env 0, step 72: A
+
+Env 0, step 73: A
+
+Env 0, step 74: ('RIGHT', 'DOWN')
+
+Env 0, step 75: UP
+
+Env 0, step 76: ('LEFT', 'DOWN')
+
+Env 0, step 77: RIGHT
+
+Env 0, step 78: ()
+
+Env 0, step 79: ('RIGHT', 'DOWN')
+
+Env 0, step 80: ('LEFT', 'UP')
+
+Env 0, step 81: A
+
+Env 0, step 82: Q
+
+Env 0, step 83: A
+
+Env 0, step 84: W
+
+Env 0, step 85: A
+
+Env 0, step 86: ('LEFT', 'UP')
+
+Env 0, step 87: DOWN
+
+Env 0, step 88: RIGHT
+
+Env 0, step 89: DOWN
+
+Env 0, step 90: ('RIGHT', 'DOWN')
+
+Env 0, step 91: D
+
+Env 0, step 92: RIGHT
+
+Env 0, step 93: ('RIGHT', 'DOWN')
+
+Env 0, step 94: E
+
+Env 0, step 95: A
+
+Env 0, step 96: E
+
+Env 0, step 97: UP
+
+Env 0, step 98: S
+
+Env 0, step 99: RIGHT
+
+

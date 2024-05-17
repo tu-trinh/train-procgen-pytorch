@@ -17,6 +17,11 @@ import torchvision as tv
 from gym3 import ViewerWrapper, VideoRecorderWrapper, ToBaselinesVecEnv
 
 
+ACTION_SPACE = [("LEFT", "DOWN"), ("LEFT"), ("LEFT", "UP"), ("DOWN"), (), ("UP"), ("RIGHT", "DOWN"), ("RIGHT"), ("RIGHT", "UP"), ("D"), ("A"), ("W"), ("S"), ("Q"), ("E")]
+ACTION_MAPPING = {i: ACTION_SPACE[i] for i in range(len(ACTION_SPACE))}
+ACTION_MAPPING.update({"HELP": "HELP"})
+
+
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--exp_name',         type=str, default = 'render', help='experiment name')
@@ -41,6 +46,7 @@ if __name__=='__main__':
     parser.add_argument('--model_file', type=str)
     parser.add_argument('--save_value', action='store_true')
     parser.add_argument('--save_value_individual', action='store_true')
+    parser.add_argument("--save_as_npy", action="store_true")
     parser.add_argument('--value_saliency', action='store_true')
 
 
@@ -91,8 +97,8 @@ if __name__=='__main__':
     #################
     ## ENVIRONMENT ##
     #################
-    print('INITIALIZAING ENVIRONMENTS...')
-    n_envs = 1
+    print('INITIALIZING ENVIRONMENTS...')
+    n_envs = hyperparameters.get("n_envs", 1)
 
     def create_venv_render(args, hyperparameters, is_valid=False):
         venv = ProcgenGym3Env(num=n_envs,
@@ -124,6 +130,7 @@ if __name__=='__main__':
         venv = ScaledFloatFrame(venv)
 
         return venv
+    
     n_steps = hyperparameters.get('n_steps', 256)
 
     #env = create_venv(args, hyperparameters)
@@ -133,7 +140,7 @@ if __name__=='__main__':
     ############
     ## LOGGER ##
     ############
-    print('INITIALIZAING LOGGER...')
+    print('INITIALIZING LOGGER...')
     if args.logdir is None:
         logdir = 'procgen/' + env_name + '/' + exp_name + '/' + 'RENDER_seed' + '_' + \
                  str(seed) + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")
@@ -148,13 +155,12 @@ if __name__=='__main__':
     logdir_saliency_value = os.path.join(logdir, 'value_saliency')
     if not (os.path.exists(logdir_saliency_value)) and args.value_saliency:
         os.makedirs(logdir_saliency_value)
-    print(f'Logging to {logdir}')
     logger = Logger(n_envs, logdir)
 
     ###########
     ## MODEL ##
     ###########
-    print('INTIALIZING MODEL...')
+    print('INITIALIZING MODEL...')
     observation_space = env.observation_space
     observation_shape = observation_space.shape
     architecture = hyperparameters.get('architecture', 'impala')
@@ -179,7 +185,7 @@ if __name__=='__main__':
     #############
     ## STORAGE ##
     #############
-    print('INITIALIZAING STORAGE...')
+    print('INITIALIZING STORAGE...')
     hidden_state_dim = model.output_dim
     storage = Storage(observation_shape, hidden_state_dim, n_steps, n_envs, device)
     #storage_valid = Storage(observation_shape, hidden_state_dim, n_steps, n_envs, device)
@@ -187,7 +193,7 @@ if __name__=='__main__':
     ###########
     ## AGENT ##
     ###########
-    print('INTIALIZING AGENT...')
+    print('INITIALIZING AGENT...')
     algo = hyperparameters.get('algo', 'ppo')
     if algo == 'ppo':
         from agents.ppo import PPO as AGENT
@@ -205,18 +211,59 @@ if __name__=='__main__':
     ############
 
     # save observations and value estimates
-    def save_value_estimates(storage, epoch_idx):
-        """write observations and value estimates to npy / csv file"""
+    def save_value_estimates(storage, epoch_idx, as_npy = True):
+        """write observations and value estimates to npy / human-readable files"""
         print(f"Saving observations and values to {logdir}")
-        np.save(logdir + f"/observations_{epoch_idx}", storage.obs_batch)
-        np.save(logdir + f"/value_{epoch_idx}", storage.value_batch)
+        if as_npy:
+            np.save(logdir + f"/observations_{epoch_idx}", storage.obs_batch)
+            np.save(logdir + f"/value_{epoch_idx}", storage.value_batch)
+        else:
+            # obs_batch shape: total_steps, num_envs, obs
+            values = ""
+            actions = ""
+            uncertainties = ""
+            for step in range(len(storage.obs_batch)):
+                for env in range(len(storage.obs_batch[step])):
+                    obs = storage.obs_batch[step][env]
+                    o = obs.clone().detach().permute(1, 2, 0)
+                    o = (o * 255).cpu().numpy().astype(np.uint8)
+                    Image.fromarray(o).save(logdir + f"/obs_env_{env}_epoch_{epoch_idx}_step_{step}.png")
+
+                    val = storage.value_batch[step][env]
+                    values += f"Env {env}, step {step}: {val}\n"
+
+                    try:
+                        act = storage.act_batch[step][env]
+                        if act < 0:
+                            action = "HELP"
+                        else:
+                            action = int(act.item())
+                        actions += f"Env {env}, step {step}: {ACTION_MAPPING[action]}\n"
+                    except IndexError:  # last observation has no action
+                        pass
+
+                    try:
+                        unc = storage.uncertainty_batch[step][env]
+                        unc = float(unc.item())
+                        uncertainties += f"Env {env}, step {step}: {unc}\n"
+                    except IndexError:  # idk
+                        pass
+                values += "\n"
+                actions += "\n"
+                uncertainties += "\n"
+            with open(logdir + f"/values_epoch_{epoch_idx}.txt", "w") as f:
+                f.write(values)
+            with open(logdir + f"/actions_epoch_{epoch_idx}.txt", "w") as f:
+                f.write(actions)
+            with open(logdir + f"/uncertainties_epoch_{epoch_idx}.txt", "w") as f:
+                f.write(uncertainties)
         return
 
     def save_value_estimates_individual(storage, epoch_idx, individual_value_idx):
         """write individual observations and value estimates to npy / csv file"""
         print(f"Saving random samples of observations and values to {logdir}")
         obs = storage.obs_batch.clone().detach().squeeze().permute(0, 2, 3, 1)
-        obs = (obs * 255 ).cpu().numpy().astype(np.uint8)
+        obs = (obs * 255).cpu().numpy().astype(np.uint8)
         vals = storage.value_batch.squeeze()
 
         random_idxs = np.random.choice(obs.shape[0], 5, replace=False)
@@ -244,14 +291,14 @@ if __name__=='__main__':
     save_frequency = 1
     saliency_save_idx = 0
     epoch_idx = 0
-    while epoch_idx < 10:
+    while epoch_idx < hyperparameters.get("epoch", 5):
     # while True:
         agent.policy.eval()
         print("[alina] Starting epoch", epoch_idx)
         start_epoch_time = time.time()
-        for _ in range(agent.n_steps):  # = 256
+        for _ in range(agent.n_steps):
             if not args.value_saliency:
-                act, log_prob_act, value, next_hidden_state = agent.predict(obs, hidden_state, done)
+                act, log_prob_act, value, next_hidden_state, uncertainty = agent.predict(obs, hidden_state, done)
             else:
                 act, log_prob_act, value, next_hidden_state, value_saliency_obs = agent.predict_w_value_saliency(obs, hidden_state, done)
                 if saliency_save_idx % save_frequency == 0:
@@ -273,7 +320,6 @@ if __name__=='__main__':
                                                torch.zeros_like(ims_grad))
                     neg_grads = ims_grad.where(ims_grad < 0.,
                                                torch.zeros_like(ims_grad)).abs()
-
 
                     # Make a couple of copies of the original im for later
                     sample_ims_faint = torch.tensor(obs_copy.mean(-1)) * 0.2
@@ -302,22 +348,24 @@ if __name__=='__main__':
 
                 saliency_save_idx += 1
 
-
-
-            next_obs, rew, done, info = agent.env.step(act)
-
-            agent.storage.store(obs, hidden_state, act, rew, done, info, log_prob_act, value)
+            if act != "HELP":
+                next_obs, rew, done, info = agent.env.step(act)
+            else:
+                done = [True for _ in range(agent.n_envs)]
+            agent.storage.store(obs, hidden_state, act, rew, done, info, log_prob_act, value, uncertainty)
+            if all(done):
+                break
             obs = next_obs
             hidden_state = next_hidden_state
 
-        _, _, last_val, hidden_state = agent.predict(obs, hidden_state, done)
-        agent.storage.store_last(obs, hidden_state, last_val)
+        _, _, last_val, hidden_state, uncertainty = agent.predict(obs, hidden_state, done)
+        agent.storage.store_last(obs, hidden_state, last_val, uncertainty)
 
         if args.save_value_individual:
             individual_value_idx = save_value_estimates_individual(agent.storage, epoch_idx, individual_value_idx)
 
         if args.save_value:
-            save_value_estimates(agent.storage, epoch_idx)
+            save_value_estimates(agent.storage, epoch_idx, args.save_as_npy)
             epoch_idx += 1
 
         agent.storage.compute_estimates(agent.gamma, agent.lmbda, agent.use_gae,
@@ -325,3 +373,4 @@ if __name__=='__main__':
         print("[alina] Done with epoch", epoch_idx if not args.save_value else epoch_idx - 1)
         end_epoch_time = time.time()
         print("[alina] This epoch took", (end_epoch_time - start_epoch_time) / 60, "minutes")
+    print(f"Logging dir:\n{logdir}")

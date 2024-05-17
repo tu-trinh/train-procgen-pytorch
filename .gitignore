@@ -85,3 +85,5 @@ celerybeat-schedule
 # logs/
 # experiments/results
 # videos
+sandbox/
+src/procgen/

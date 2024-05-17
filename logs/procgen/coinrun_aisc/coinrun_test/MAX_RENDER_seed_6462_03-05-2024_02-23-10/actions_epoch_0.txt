@@ -1,0 +1,201 @@
+Env 0, step 0: RIGHT
+
+Env 0, step 1: RIGHT
+
+Env 0, step 2: ('RIGHT', 'UP')
+
+Env 0, step 3: UP
+
+Env 0, step 4: E
+
+Env 0, step 5: W
+
+Env 0, step 6: E
+
+Env 0, step 7: ()
+
+Env 0, step 8: E
+
+Env 0, step 9: UP
+
+Env 0, step 10: ('LEFT', 'DOWN')
+
+Env 0, step 11: ('LEFT', 'DOWN')
+
+Env 0, step 12: W
+
+Env 0, step 13: D
+
+Env 0, step 14: LEFT
+
+Env 0, step 15: E
+
+Env 0, step 16: RIGHT
+
+Env 0, step 17: D
+
+Env 0, step 18: W
+
+Env 0, step 19: E
+
+Env 0, step 20: LEFT
+
+Env 0, step 21: E
+
+Env 0, step 22: RIGHT
+
+Env 0, step 23: D
+
+Env 0, step 24: DOWN
+
+Env 0, step 25: ('RIGHT', 'DOWN')
+
+Env 0, step 26: D
+
+Env 0, step 27: DOWN
+
+Env 0, step 28: S
+
+Env 0, step 29: W
+
+Env 0, step 30: ()
+
+Env 0, step 31: ()
+
+Env 0, step 32: ()
+
+Env 0, step 33: D
+
+Env 0, step 34: DOWN
+
+Env 0, step 35: ('RIGHT', 'DOWN')
+
+Env 0, step 36: Q
+
+Env 0, step 37: DOWN
+
+Env 0, step 38: E
+
+Env 0, step 39: LEFT
+
+Env 0, step 40: ()
+
+Env 0, step 41: ()
+
+Env 0, step 42: ('RIGHT', 'DOWN')
+
+Env 0, step 43: LEFT
+
+Env 0, step 44: RIGHT
+
+Env 0, step 45: D
+
+Env 0, step 46: DOWN
+
+Env 0, step 47: W
+
+Env 0, step 48: RIGHT
+
+Env 0, step 49: D
+
+Env 0, step 50: A
+
+Env 0, step 51: A
+
+Env 0, step 52: ('RIGHT', 'DOWN')
+
+Env 0, step 53: D
+
+Env 0, step 54: RIGHT
+
+Env 0, step 55: A
+
+Env 0, step 56: S
+
+Env 0, step 57: ()
+
+Env 0, step 58: LEFT
+
+Env 0, step 59: Q
+
+Env 0, step 60: S
+
+Env 0, step 61: RIGHT
+
+Env 0, step 62: ('LEFT', 'DOWN')
+
+Env 0, step 63: A
+
+Env 0, step 64: UP
+
+Env 0, step 65: D
+
+Env 0, step 66: ('LEFT', 'UP')
+
+Env 0, step 67: DOWN
+
+Env 0, step 68: UP
+
+Env 0, step 69: UP
+
+Env 0, step 70: ()
+
+Env 0, step 71: UP
+
+Env 0, step 72: DOWN
+
+Env 0, step 73: ('LEFT', 'DOWN')
+
+Env 0, step 74: S
+
+Env 0, step 75: Q
+
+Env 0, step 76: ()
+
+Env 0, step 77: W
+
+Env 0, step 78: RIGHT
+
+Env 0, step 79: RIGHT
+
+Env 0, step 80: RIGHT
+
+Env 0, step 81: S
+
+Env 0, step 82: LEFT
+
+Env 0, step 83: ('RIGHT', 'DOWN')
+
+Env 0, step 84: ()
+
+Env 0, step 85: W
+
+Env 0, step 86: Q
+
+Env 0, step 87: RIGHT
+
+Env 0, step 88: W
+
+Env 0, step 89: DOWN
+
+Env 0, step 90: D
+
+Env 0, step 91: DOWN
+
+Env 0, step 92: RIGHT
+
+Env 0, step 93: LEFT
+
+Env 0, step 94: ()
+
+Env 0, step 95: E
+
+Env 0, step 96: ()
+
+Env 0, step 97: RIGHT
+
+Env 0, step 98: RIGHT
+
+Env 0, step 99: D
+
+
