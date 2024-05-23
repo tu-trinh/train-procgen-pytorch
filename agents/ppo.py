@@ -3,6 +3,7 @@ from common.misc_util import adjust_lr, get_n_params
 import torch
 import torch.optim as optim
 import numpy as np
+import pickle
 
 
 ORIGINAL_ACTION_SPACE = [("LEFT", "DOWN"), ("LEFT"), ("LEFT", "UP"), ("DOWN"), (), ("UP"), ("RIGHT", "DOWN"), ("RIGHT"), ("RIGHT", "UP"), ("D"), ("A"), ("W"), ("S"), ("Q"), ("E")]
@@ -68,6 +69,11 @@ class PPO(BaseAgent):
         self.normalize_rew = normalize_rew
         self.use_gae = use_gae
 
+        self.all_probs = []
+        self.probs_by_action = {i: [] for i in range(len(ACTION_SPACE))}
+        self.all_logits = []
+        self.logits_by_action = {i: [] for i in range(len(ACTION_SPACE))}
+
         self.request_limit = 3
         self.num_requests = 0
         self.num_actions = env.action_space.n
@@ -112,8 +118,14 @@ class PPO(BaseAgent):
             hidden_state = torch.FloatTensor(hidden_state).to(device=self.device)
             mask = torch.FloatTensor(1 - done).to(device=self.device)
             dist, value, logits, hidden_state = self.policy(obs, hidden_state, mask)
+            dist_probs = dist.probs.cpu().numpy().tolist()
+            dist_logits = dist.logits.cpu().numpy().tolist()
+            self.all_probs.extend(dist_probs)
+            self.all_logits.extend(dist_logits)
             if select_mode == "sample":
                 act = dist.sample()
+                self.probs_by_action[act.item()].append(dist_probs[act.item()])
+                self.logits_by_action[act.item()].append(dist_logits[act.item()])
             else:
                 act = dist.probs.argmax().unsqueeze(0)
             log_prob_act = dist.log_prob(act)
@@ -265,3 +277,11 @@ class PPO(BaseAgent):
         self.env.close()
         if self.env_valid is not None:
             self.env_valid.close()
+        with open(self.logger.logdir + "/all_probs.pkl", "wb") as f:
+            pickle.dump(self.all_probs, f)
+        with open(self.logger.logdir + "/all_logits.pkl", "wb") as f:
+            pickle.dump(self.all_logits, f)
+        with open(self.logger.logdir + "/probs_by_action.pkl", "wb") as f:
+            pickle.dump(self.probs_by_action, f)
+        with open(self.logger.logdir + "/logits_by_action.pkl", "wb") as f:
+            pickle.dump(self.logits_by_action, f)
