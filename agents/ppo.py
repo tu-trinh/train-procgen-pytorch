@@ -5,6 +5,21 @@ import torch.optim as optim
 import numpy as np
 
 
+ORIGINAL_ACTION_SPACE = [("LEFT", "DOWN"), ("LEFT"), ("LEFT", "UP"), ("DOWN"), (), ("UP"), ("RIGHT", "DOWN"), ("RIGHT"), ("RIGHT", "UP"), ("D"), ("A"), ("W"), ("S"), ("Q"), ("E")]
+ACTION_SPACE = [
+    ("UP"),
+    ("DOWN"),
+    ("LEFT"),
+    ("RIGHT"),
+    ("LEFT", "DOWN"),
+    ("LEFT", "UP"),
+    ("RIGHT", "DOWN"),
+    ("RIGHT", "UP"),
+    ()
+]
+ACTION_TRANSLATION = {i: ORIGINAL_ACTION_SPACE.index(ACTION_SPACE[i]) for i in range(len(ACTION_SPACE))}
+ACTION_MAPPING = {i: ACTION_SPACE[i] for i in range(len(ACTION_SPACE))}
+
 class PPO(BaseAgent):
     def __init__(self,
                  env,
@@ -13,6 +28,7 @@ class PPO(BaseAgent):
                  storage,
                  device,
                  n_checkpoints,
+                 save_timesteps=None,
                  env_valid=None,
                  storage_valid=None,
                  n_steps=128,
@@ -33,7 +49,7 @@ class PPO(BaseAgent):
                  **kwargs):
 
         super(PPO, self).__init__(env, policy, logger, storage, device,
-                                  n_checkpoints, env_valid, storage_valid)
+                                  n_checkpoints, save_timesteps, env_valid, storage_valid)
 
         self.n_steps = n_steps
         self.n_envs = n_envs
@@ -54,30 +70,60 @@ class PPO(BaseAgent):
 
         self.request_limit = 3
         self.num_requests = 0
+        self.num_actions = env.action_space.n
+        self.logit_threshold = None
         self.probability_threshold = 1 / env.action_space.n  # random guessing amongst actions
-        self.entropy_threshold = -torch.log(torch.tensor(1 / env.action_space.n)).item()  # entropy of random guessing
+        self.log_probability_threshold = torch.log(torch.tensor(self.probability_threshold))
+        # self.entropy_threshold = -torch.log(torch.tensor(1 / env.action_space.n)).item()  # entropy of random guessing
+        self.entropy_threshold = 2.5
         print("PROBABILITY THRESHOLD", self.probability_threshold)
         print("ENTROPY THRESHOLD", self.entropy_threshold)
         print("[alina] Initialized agent")
 
-    def predict(self, obs, hidden_state, done):
+    def determine_ask_for_help(self, metric, act, dist, logits):
+        logits = logits.squeeze()
+        if metric == "msp" or metric == "sampled_p":
+            need_help = dist.log_prob(act) < torch.log(torch.tensor(2)) + self.log_probability_threshold
+        elif metric == "ml" or metric == "sampled_l":
+            need_help = logits.max() < 2 * self.logit_threshold
+        elif metric == "ent":
+            need_help = dist.entropy() > self.entropy_threshold
+        help_info = {}
+        sorted_probs, sorted_indices = torch.sort(dist.probs, descending = True)
+        sorted_probs = sorted_probs.squeeze()
+        sorted_indices = sorted_indices.squeeze()
+        sorted_logits = logits[sorted_indices]
+        action_info = [(ACTION_MAPPING[act.item()], torch.exp(dist.log_prob(act)).item(), logits[act].item())]
+        for idx in sorted_indices:
+            if idx.item() != act.item():
+                action_info.append((ACTION_MAPPING[idx.item()], sorted_probs[idx].item(), sorted_logits[idx].item()))
+        help_info["action_info"] = action_info
+        help_info["entropy"] = dist.entropy().item()
+        help_info["need_help"] = need_help.item() if isinstance(need_help, torch.Tensor) else need_help
+        return need_help, help_info
+    
+    def predict(self, obs, hidden_state, done, ood_metric, select_mode = "sample"):
+        assert ood_metric in ["msp", "ml", "sampled_p", "sampled_l", "ent"]
+        assert select_mode in ["sample", "max"]
         if isinstance(done, list):
             done = torch.tensor(done).float()
         with torch.no_grad():
             obs = torch.FloatTensor(obs).to(device=self.device)
             hidden_state = torch.FloatTensor(hidden_state).to(device=self.device)
             mask = torch.FloatTensor(1 - done).to(device=self.device)
-            dist, value, hidden_state = self.policy(obs, hidden_state, mask)
-            act = dist.sample()
+            dist, value, logits, hidden_state = self.policy(obs, hidden_state, mask)
+            if select_mode == "sample":
+                act = dist.sample()
+            else:
+                act = dist.probs.argmax().unsqueeze(0)
             log_prob_act = dist.log_prob(act)
-            entropy = dist.entropy()
-            if entropy > self.entropy_threshold and self.num_requests < self.request_limit:
-                ret_act = "HELP"
-                print("Had to ask for help", "entropy", entropy)
+            need_help, help_info = self.determine_ask_for_help(ood_metric, act, dist, logits)
+            if need_help:
+                ret_act = act.cpu().numpy()
                 self.num_requests += 1
             else:
                 ret_act = act.cpu().numpy()
-        return ret_act, log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy(), entropy.cpu().numpy()
+        return ret_act, log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy(), help_info
 
     def predict_w_value_saliency(self, obs, hidden_state, done):
         obs = torch.FloatTensor(obs).to(device=self.device)
@@ -85,7 +131,7 @@ class PPO(BaseAgent):
         obs.retain_grad()
         hidden_state = torch.FloatTensor(hidden_state).to(device=self.device)
         mask = torch.FloatTensor(1-done).to(device=self.device)
-        dist, value, hidden_state = self.policy(obs, hidden_state, mask)
+        dist, value, logits, hidden_state = self.policy(obs, hidden_state, mask)
         value.backward(retain_graph=True)
         act = dist.sample()
         log_prob_act = dist.log_prob(act)
@@ -109,7 +155,7 @@ class PPO(BaseAgent):
                 obs_batch, hidden_state_batch, act_batch, done_batch, \
                     old_log_prob_act_batch, old_value_batch, return_batch, adv_batch = sample
                 mask_batch = (1-done_batch)
-                dist_batch, value_batch, _ = self.policy(obs_batch, hidden_state_batch, mask_batch)
+                dist_batch, value_batch, logits_batch, _ = self.policy(obs_batch, hidden_state_batch, mask_batch)
 
                 # Clipped Surrogate Objective
                 log_prob_act_batch = dist_batch.log_prob(act_batch)
@@ -147,6 +193,7 @@ class PPO(BaseAgent):
     def train(self, num_timesteps):
         save_every = num_timesteps // self.num_checkpoints
         checkpoint_cnt = 0
+        save_timestep_index = 0
         obs = self.env.reset()
         hidden_state = np.zeros((self.n_envs, self.storage.hidden_state_size))
         done = np.zeros(self.n_envs)
@@ -161,7 +208,7 @@ class PPO(BaseAgent):
             self.policy.eval()
             for _ in range(self.n_steps):
                 act, log_prob_act, value, next_hidden_state = self.predict(obs, hidden_state, done)
-                next_obs, rew, done, info = self.env.step(act)
+                next_obs, rew, done, info = self.env.step(ACTION_TRANSLATION[act])
                 self.storage.store(obs, hidden_state, act, rew, done, info, log_prob_act, value)
                 obs = next_obs
                 hidden_state = next_hidden_state
@@ -198,12 +245,23 @@ class PPO(BaseAgent):
             self.logger.dump()
             self.optimizer = adjust_lr(self.optimizer, self.learning_rate, self.t, num_timesteps)
             # Save the model
-            if self.t > ((checkpoint_cnt+1) * save_every):
-                print("Saving model.")
-                torch.save({'model_state_dict': self.policy.state_dict(),
-                            'optimizer_state_dict': self.optimizer.state_dict()},
-                             self.logger.logdir + '/model_' + str(self.t) + '.pth')
-                checkpoint_cnt += 1
+            if self.use_save_intervals:
+                if self.t > ((checkpoint_cnt+1) * save_every):
+                    print("Saving model.")
+                    torch.save({'model_state_dict': self.policy.state_dict(),
+                                'optimizer_state_dict': self.optimizer.state_dict()},
+                                self.logger.logdir + '/model_' + str(self.t) + '.pth')
+                    checkpoint_cnt += 1
+            else:
+                try:
+                    if self.t + 1 == self.save_timesteps[save_timestep_index]:
+                        print("Saving model.")
+                        torch.save({'model_state_dict': self.policy.state_dict(),
+                                    'optimizer_state_dict': self.optimizer.state_dict()},
+                                    self.logger.logdir + '/model_' + str(self.t) + '.pth')
+                        save_timestep_index += 1
+                except IndexError:  # no more timesteps needed to be saved
+                    pass
         self.env.close()
         if self.env_valid is not None:
             self.env_valid.close()

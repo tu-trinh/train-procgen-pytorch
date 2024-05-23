@@ -3,6 +3,33 @@ import os
 import argparse
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import pickle
+
+
+def add_border_and_text(frame, step, help_info):
+    # help_info is dictionary containing `action_info` list of (act, prob, logit), `entropy`, and `need_help`
+    border_size = 100
+    # new_size = (frame.width + 2 * border_size, frame.height + border_size + border_size // 3)
+    new_size = (frame.width + 2 * border_size, frame.height + border_size + border_size // 3)
+    new_frame = Image.new("RGB", new_size, "white")
+    new_frame.paste(frame, (border_size, border_size // 3))
+    draw = ImageDraw.Draw(new_frame)
+    font = ImageFont.load_default()
+    draw.text((10, 10), f"Frame {step}", fill = "black", font = font)
+
+    for i, (action, prob, logit) in enumerate(help_info["action_info"][:5]):
+        fill = "blue" if i == 0 else "black"
+        draw.text((10, new_size[1] - border_size + 10 + i * 15), f"{action} | {prob:.2f} | {logit:.2f}", fill = fill, font = font)
+    # for i, (action, prob, logit) in enumerate(help_info["action_info"][5:10]):
+    #     draw.text((100, new_size[1] - border_size + 85 + i * 15), f"{action} | {prob:.2f} | {logit:.2f}", fill = "black", font = font)
+    # for i, (action, prob, logit) in enumerate(help_info["action_info"][10:15]):
+    #     draw.text((new_size[0] - border_size + 10, new_size[1] - border_size + 10 + i * 15), f"{action} | {prob:.2f} | {logit:.2f}", fill = "black", font = font)
+
+    draw.text((new_size[0] - border_size + 10, 10), f"Entropy: {help_info['entropy']:.2f}", fill = "black", font = font)
+    if help_info["need_help"]:
+        draw.text((new_size[0] - border_size + 10, 30), "Asked for help!!!", fill = "red", font = font)
+    
+    return new_frame
 
 
 if __name__ == "__main__":
@@ -15,17 +42,19 @@ if __name__ == "__main__":
     frame_duration = 0.25
     for env in range(args.env):
         for epoch in range(args.epoch):
+            with open(os.path.join(args.dir, f"storage_epoch_{epoch}.pkl"), "rb") as f:
+                all_action_info = pickle.load(f)
             step = 0
             frames = []
             while True:
                 try:
                     img_path = os.path.join(args.dir, f"obs_env_{env}_epoch_{epoch}_step_{step}.png")
                     frame = Image.open(img_path)
+                    frame = add_border_and_text(frame, step, all_action_info[step])
+                    frames.append(frame)
+                    step += 1
                 except:
                     break
-                ImageDraw.Draw(frame).text((10, 10), f"Frame {step}", font = ImageFont.load_default())
-                frames.append(frame)
-                step += 1
             num_frames = len(frames)
 
             # Save

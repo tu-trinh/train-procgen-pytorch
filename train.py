@@ -4,6 +4,7 @@ from common.storage import Storage
 from common.model import NatureModel, ImpalaModel
 from common.policy import CategoricalPolicy
 from common import set_global_seeds, set_global_log_levels
+from constants import ACTION_SPACE
 
 import os, time, yaml, argparse
 import gym
@@ -32,6 +33,7 @@ if __name__=='__main__':
     parser.add_argument('--seed',             type=int, default = random.randint(0,9999), help='Random generator seed')
     parser.add_argument('--log_level',        type=int, default = int(40), help='[10,20,30,40]')
     parser.add_argument('--num_checkpoints',  type=int, default = int(1), help='number of checkpoints to store')
+    parser.add_argument('--save_timesteps',   type=int, nargs = "+", help = "list of timesteps for which model is saved")
     parser.add_argument('--model_file', type=str)
     parser.add_argument('--use_wandb',        action="store_true")
 
@@ -61,6 +63,8 @@ if __name__=='__main__':
     seed = args.seed
     log_level = args.log_level
     num_checkpoints = args.num_checkpoints
+    save_timesteps = sorted(args.save_timesteps)
+    print("SAVING AT TIMESTEPS:", save_timesteps)
 
     set_global_seeds(seed)
     set_global_log_levels(log_level)
@@ -168,7 +172,7 @@ if __name__=='__main__':
     observation_shape = observation_space.shape
     architecture = hyperparameters.get('architecture', 'impala')
     in_channels = observation_shape[0]
-    action_space = env.action_space
+    action_space = gym.spaces.Discrete(len(ACTION_SPACE))
 
     # Model architecture
     if architecture == 'nature':
@@ -204,7 +208,8 @@ if __name__=='__main__':
         raise NotImplementedError
     agent = AGENT(env, policy, logger, storage, device,
                   num_checkpoints,
-                  env_valid=env_valid, 
+                  save_timesteps=save_timesteps,
+                  env_valid=env_valid,
                   storage_valid=storage_valid,  
                   **hyperparameters)
     if args.model_file is not None:

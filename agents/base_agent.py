@@ -13,6 +13,7 @@ class BaseAgent(object):
                  storage,
                  device,
                  num_checkpoints,
+                 save_timesteps,
                  env_valid=None,
                  storage_valid=None):
         """
@@ -24,6 +25,11 @@ class BaseAgent(object):
         self.storage = storage
         self.device = device
         self.num_checkpoints = num_checkpoints
+        self.save_timesteps = save_timesteps
+        if self.save_timesteps is None:
+            self.use_save_intervals = True
+        else:
+            self.use_save_intervals = False
         self.env_valid = env_valid
         self.storage_valid = storage_valid
         self.t = 0

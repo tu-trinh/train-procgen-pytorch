@@ -4,22 +4,19 @@ from common.storage import Storage
 from common.model import NatureModel, ImpalaModel
 from common.policy import CategoricalPolicy
 from common import set_global_seeds, set_global_log_levels
+from constants import ACTION_SPACE
 
 import os, time, yaml, argparse
 import gym
 from procgen import ProcgenGym3Env
 import random
 import torch
+import pickle
 
 from PIL import Image
 import torchvision as tv
 
 from gym3 import ViewerWrapper, VideoRecorderWrapper, ToBaselinesVecEnv
-
-
-ACTION_SPACE = [("LEFT", "DOWN"), ("LEFT"), ("LEFT", "UP"), ("DOWN"), (), ("UP"), ("RIGHT", "DOWN"), ("RIGHT"), ("RIGHT", "UP"), ("D"), ("A"), ("W"), ("S"), ("Q"), ("E")]
-ACTION_MAPPING = {i: ACTION_SPACE[i] for i in range(len(ACTION_SPACE))}
-ACTION_MAPPING.update({"HELP": "HELP"})
 
 
 if __name__=='__main__':
@@ -49,7 +46,7 @@ if __name__=='__main__':
     parser.add_argument("--save_as_npy", action="store_true")
     parser.add_argument('--value_saliency', action='store_true')
 
-
+    parser.add_argument("--ood_metric", type = str)
 
     parser.add_argument('--random_percent',   type=float, default=0., help='percent of environments in which coin is randomized (only for coinrun)')
     parser.add_argument('--corruption_type',  type=str, default = None)
@@ -212,6 +209,9 @@ if __name__=='__main__':
 
     # save observations and value estimates
     def save_value_estimates(storage, epoch_idx, as_npy = True):
+        with open(logdir + f"/storage_epoch_{epoch_idx}.pkl", "wb") as f:
+            pickle.dump(storage.storage, f)
+        
         """write observations and value estimates to npy / human-readable files"""
         print(f"Saving observations and values to {logdir}")
         if as_npy:
@@ -229,34 +229,34 @@ if __name__=='__main__':
                     o = (o * 255).cpu().numpy().astype(np.uint8)
                     Image.fromarray(o).save(logdir + f"/obs_env_{env}_epoch_{epoch_idx}_step_{step}.png")
 
-                    val = storage.value_batch[step][env]
-                    values += f"Env {env}, step {step}: {val}\n"
+            #         val = storage.value_batch[step][env]
+            #         values += f"Env {env}, step {step}: {val}\n"
 
-                    try:
-                        act = storage.act_batch[step][env]
-                        if act < 0:
-                            action = "HELP"
-                        else:
-                            action = int(act.item())
-                        actions += f"Env {env}, step {step}: {ACTION_MAPPING[action]}\n"
-                    except IndexError:  # last observation has no action
-                        pass
+            #         try:
+            #             act = storage.act_batch[step][env]
+            #             if act < 0:
+            #                 action = "HELP"
+            #             else:
+            #                 action = int(act.item())
+            #             actions += f"Env {env}, step {step}: {ACTION_MAPPING[action]}\n"
+            #         except IndexError:  # last observation has no action
+            #             pass
 
-                    try:
-                        unc = storage.uncertainty_batch[step][env]
-                        unc = float(unc.item())
-                        uncertainties += f"Env {env}, step {step}: {unc}\n"
-                    except IndexError:  # idk
-                        pass
-                values += "\n"
-                actions += "\n"
-                uncertainties += "\n"
-            with open(logdir + f"/values_epoch_{epoch_idx}.txt", "w") as f:
-                f.write(values)
-            with open(logdir + f"/actions_epoch_{epoch_idx}.txt", "w") as f:
-                f.write(actions)
-            with open(logdir + f"/uncertainties_epoch_{epoch_idx}.txt", "w") as f:
-                f.write(uncertainties)
+            #         try:
+            #             unc = storage.uncertainty_batch[step][env]
+            #             unc = float(unc.item())
+            #             uncertainties += f"Env {env}, step {step}: {unc}\n"
+            #         except IndexError:  # idk
+            #             pass
+            #     values += "\n"
+            #     actions += "\n"
+            #     uncertainties += "\n"
+            # with open(logdir + f"/values_epoch_{epoch_idx}.txt", "w") as f:
+            #     f.write(values)
+            # with open(logdir + f"/actions_epoch_{epoch_idx}.txt", "w") as f:
+            #     f.write(actions)
+            # with open(logdir + f"/uncertainties_epoch_{epoch_idx}.txt", "w") as f:
+            #     f.write(uncertainties)
         return
 
     def save_value_estimates_individual(storage, epoch_idx, individual_value_idx):
@@ -298,7 +298,7 @@ if __name__=='__main__':
         start_epoch_time = time.time()
         for _ in range(agent.n_steps):
             if not args.value_saliency:
-                act, log_prob_act, value, next_hidden_state, uncertainty = agent.predict(obs, hidden_state, done)
+                act, log_prob_act, value, next_hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, select_mode = "max")
             else:
                 act, log_prob_act, value, next_hidden_state, value_saliency_obs = agent.predict_w_value_saliency(obs, hidden_state, done)
                 if saliency_save_idx % save_frequency == 0:
@@ -350,16 +350,18 @@ if __name__=='__main__':
 
             if act != "HELP":
                 next_obs, rew, done, info = agent.env.step(act)
+                if rew > 0:  # break after successfully collecting coin
+                    done = [True for _ in range(agent.n_envs)]
             else:
                 done = [True for _ in range(agent.n_envs)]
-            agent.storage.store(obs, hidden_state, act, rew, done, info, log_prob_act, value, uncertainty)
+            agent.storage.store(obs, hidden_state, act, rew, done, info, log_prob_act, value, help_info)
             if all(done):
                 break
             obs = next_obs
             hidden_state = next_hidden_state
 
-        _, _, last_val, hidden_state, uncertainty = agent.predict(obs, hidden_state, done)
-        agent.storage.store_last(obs, hidden_state, last_val, uncertainty)
+        _, _, last_val, hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, select_mode = "max")
+        agent.storage.store_last(obs, hidden_state, last_val, help_info)
 
         if args.save_value_individual:
             individual_value_idx = save_value_estimates_individual(agent.storage, epoch_idx, individual_value_idx)
