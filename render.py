@@ -19,157 +19,106 @@ import torchvision as tv
 from gym3 import ViewerWrapper, VideoRecorderWrapper, ToBaselinesVecEnv
 
 
-if __name__=='__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--exp_name',         type=str, default = 'render', help='experiment name')
-    parser.add_argument('--env_name',         type=str, default = 'coinrun', help='environment ID')
-    parser.add_argument('--start_level',      type=int, default = int(0), help='start-level for environment')
-    parser.add_argument('--num_levels',       type=int, default = int(0), help='number of training levels for environment')
-    parser.add_argument('--distribution_mode',type=str, default = 'hard', help='distribution mode for environment')
-    parser.add_argument('--param_name',       type=str, default = 'easy-200', help='hyper-parameter ID')
-    parser.add_argument('--device',           type=str, default = 'cpu', required = False, help='whether to use gpu')
-    parser.add_argument('--gpu_device',       type=int, default = int(0), required = False, help = 'visible device in CUDA')
-    parser.add_argument('--seed',             type=int, default = random.randint(0,9999), help='Random generator seed')
-    parser.add_argument('--log_level',        type=int, default = int(40), help='[10,20,30,40]')
-    parser.add_argument('--num_checkpoints',  type=int, default = int(1), help='number of checkpoints to store')
-    parser.add_argument('--logdir',           type=str, default = None)
-
-    #multi threading
-    parser.add_argument('--num_threads', type=int, default=8)
-
-    #render parameters
-    parser.add_argument('--tps', type=int, default=15, help="env fps")
-    parser.add_argument('--vid_dir', type=str, default=None)
-    parser.add_argument('--model_file', type=str)
-    parser.add_argument('--save_value', action='store_true')
-    parser.add_argument('--save_value_individual', action='store_true')
-    parser.add_argument("--save_as_npy", action="store_true")
-    parser.add_argument('--value_saliency', action='store_true')
-
-    parser.add_argument("--ood_metric", type = str)
-
-    parser.add_argument('--random_percent',   type=float, default=0., help='percent of environments in which coin is randomized (only for coinrun)')
-    parser.add_argument('--corruption_type',  type=str, default = None)
-    parser.add_argument('--corruption_severity',  type=str, default = 1)
-    parser.add_argument('--agent_view', action="store_true", help="see what the agent sees")
-    parser.add_argument('--continue_after_coin', action="store_true", help="level doesnt end when agent gets coin")
-    parser.add_argument('--noview', action="store_true", help="just take vids")
-
-
-
-    args = parser.parse_args()
-    exp_name = args.exp_name
-    env_name = args.env_name
-    start_level = args.start_level
-    num_levels = args.num_levels
-    distribution_mode = args.distribution_mode
-    param_name = args.param_name
-    device = args.device
-    gpu_device = args.gpu_device
-    seed = args.seed
-    log_level = args.log_level
-    num_checkpoints = args.num_checkpoints
-
-    set_global_seeds(seed)
-    set_global_log_levels(log_level)
-
-    ####################
-    ## HYPERPARAMETERS #
-    ####################
+####################
+## HYPERPARAMETERS #
+####################
+def load_hyperparameters(args):
     print('[LOADING HYPERPARAMETERS...]')
     with open('hyperparams/procgen/config.yml', 'r') as f:
-        hyperparameters = yaml.safe_load(f)[param_name]
+        hyperparameters = yaml.safe_load(f)[args.param_name]
     for key, value in hyperparameters.items():
         print(key, ':', value)
+    return hyperparameters
 
-    ############
-    ## DEVICE ##
-    ############
+############
+## DEVICE ##
+############
+def set_device(args):
     if args.device == 'gpu':
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_device)
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_device)
         device = torch.device('cuda')
     else:
         device = torch.device('cpu')
+    return device
 
-    #################
-    ## ENVIRONMENT ##
-    #################
+#################
+## ENVIRONMENT ##
+#################
+def create_venv_render(args, hyperparameters, is_valid = False):
     print('INITIALIZING ENVIRONMENTS...')
-    n_envs = hyperparameters.get("n_envs", 1)
+    venv = ProcgenGym3Env(
+        num = hyperparameters.get("n_envs", 1),
+        env_name = args.env_name,
+        num_levels = 0 if is_valid else args.num_levels,
+        start_level = 0 if is_valid else args.start_level,
+        distribution_mode = args.distribution_mode,
+        num_threads = 1,
+        render_mode = "rgb_array",
+        random_percent = args.random_percent,
+        corruption_type = args.corruption_type,
+        corruption_severity = int(args.corruption_severity),
+        continue_after_coin = args.continue_after_coin,
+    )
+    info_key = None if args.agent_view else "rgb"
+    ob_key = "rgb" if args.agent_view else None
+    if args.vid_dir is not None:
+        venv = VideoRecorderWrapper(
+            venv,
+            directory = args.vid_dir,
+            info_key = info_key,
+            ob_key = ob_key,
+            fps = args.tps
+        )
+    venv = ToBaselinesVecEnv(venv)
+    venv = VecExtractDictObs(venv, "rgb")
+    normalize_rew = hyperparameters.get('normalize_rew', True)
+    if normalize_rew:
+        venv = VecNormalize(venv, ob=False) # normalizing returns, but not
+        #the img frames
+    venv = TransposeFrame(venv)
+    venv = ScaledFloatFrame(venv)
+    return venv
 
-    def create_venv_render(args, hyperparameters, is_valid=False):
-        venv = ProcgenGym3Env(num=n_envs,
-                          env_name=args.env_name,
-                          num_levels=0 if is_valid else args.num_levels,
-                          start_level=0 if is_valid else args.start_level,
-                          distribution_mode=args.distribution_mode,
-                          num_threads=1,
-                          render_mode="rgb_array",
-                          random_percent=args.random_percent,
-                          corruption_type=args.corruption_type,
-                          corruption_severity=int(args.corruption_severity),
-                          continue_after_coin=args.continue_after_coin,
-                          )
-        info_key = None if args.agent_view else "rgb"
-        ob_key = "rgb" if args.agent_view else None
-        # if not args.noview:
-        #     venv = ViewerWrapper(venv, tps=args.tps, info_key=info_key, ob_key=ob_key) # N.B. this line caused issues for me. I just commented it out, but it's uncommented in the pushed version in case it's just me (Lee).
-        if args.vid_dir is not None:
-            venv = VideoRecorderWrapper(venv, directory=args.vid_dir,
-                                        info_key=info_key, ob_key=ob_key, fps=args.tps)
-        venv = ToBaselinesVecEnv(venv)
-        venv = VecExtractDictObs(venv, "rgb")
-        normalize_rew = hyperparameters.get('normalize_rew', True)
-        if normalize_rew:
-            venv = VecNormalize(venv, ob=False) # normalizing returns, but not
-            #the img frames
-        venv = TransposeFrame(venv)
-        venv = ScaledFloatFrame(venv)
 
-        return venv
-    
-    n_steps = hyperparameters.get('n_steps', 256)
-
-    #env = create_venv(args, hyperparameters)
-    #env_valid = create_venv(args, hyperparameters, is_valid=True)
-    env = create_venv_render(args, hyperparameters, is_valid=True)
-
-    ############
-    ## LOGGER ##
-    ############
+############
+## LOGGER ##
+############
+def set_logger(args):
     print('INITIALIZING LOGGER...')
     if args.logdir is None:
-        logdir = 'procgen/' + env_name + '/' + exp_name + '/' + 'RENDER_seed' + '_' + \
-                 str(seed) + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")
+        logdir = 'procgen/' + args.env_name + '/' + args.exp_name + '/' + 'RENDER_seed' + '_' + \
+                 str(args.seed) + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")
         logdir = os.path.join('logs', logdir)
     else:
         logdir = args.logdir
     if not (os.path.exists(logdir)):
         os.makedirs(logdir)
-    logdir_indiv_value = os.path.join(logdir, 'value_individual')
-    if not (os.path.exists(logdir_indiv_value)) and args.save_value_individual:
-        os.makedirs(logdir_indiv_value)
     logdir_saliency_value = os.path.join(logdir, 'value_saliency')
     if not (os.path.exists(logdir_saliency_value)) and args.value_saliency:
         os.makedirs(logdir_saliency_value)
     logger = Logger(n_envs, logdir)
+    return logger
 
-    ###########
-    ## MODEL ##
-    ###########
+###########
+## MODEL ##
+###########
+def make_model_and_policy(args, env):
     print('INITIALIZING MODEL...')
     observation_space = env.observation_space
     observation_shape = observation_space.shape
     architecture = hyperparameters.get('architecture', 'impala')
     in_channels = observation_shape[0]
-    action_space = env.action_space
-
+    if args.reduced_action_space:
+        print("Using reduced action space")
+        action_space = gym.spaces.Discrete(len(ACTION_SPACE))
+    else:
+        print("Using normal action space")
+        action_space = env.action_space
     # Model architecture
     if architecture == 'nature':
         model = NatureModel(in_channels=in_channels)
     elif architecture == 'impala':
         model = ImpalaModel(in_channels=in_channels)
-
     # Discrete action space
     recurrent = hyperparameters.get('recurrent', False)
     if isinstance(action_space, gym.spaces.Discrete):
@@ -178,127 +127,107 @@ if __name__=='__main__':
     else:
         raise NotImplementedError
     policy.to(device)
+    return model, policy
 
-    #############
-    ## STORAGE ##
-    #############
+#############
+## STORAGE ##
+#############
+def set_storage(model, env, n_steps, n_envs, device):
     print('INITIALIZING STORAGE...')
     hidden_state_dim = model.output_dim
-    storage = Storage(observation_shape, hidden_state_dim, n_steps, n_envs, device)
-    #storage_valid = Storage(observation_shape, hidden_state_dim, n_steps, n_envs, device)
+    storage = Storage(env.observation_space.shape, hidden_state_dim, n_steps, n_envs, device)
+    return storage
 
-    ###########
-    ## AGENT ##
-    ###########
+###########
+## AGENT ##
+###########
+def make_agent(algo, env, n_envs, policy, logger, storage, device, args):
     print('INITIALIZING AGENT...')
-    algo = hyperparameters.get('algo', 'ppo')
     if algo == 'ppo':
         from agents.ppo import PPO as AGENT
     else:
         raise NotImplementedError
-    agent = AGENT(env, policy, logger, storage, device, num_checkpoints, **hyperparameters)
-
-    print("[alina] Going to load agent state dict")
-    agent.policy.load_state_dict(torch.load(args.model_file, map_location=device)["model_state_dict"])
-    print("[alina] Loaded agent state dict")
+    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, **hyperparameters)
+    agent.policy.load_state_dict(torch.load(args.model_file, map_location = device)["model_state_dict"])
     agent.n_envs = n_envs
+    return agent
 
-    ############
-    ## RENDER ##
-    ############
+##########
+## SAVE ##
+##########
+def save_run_data(storage, epoch_idx, as_npy = True):
+    with open(logdir + f"/storage_epoch_{epoch_idx}.pkl", "wb") as f:
+        pickle.dump(storage.storage, f)
+    
+    """write observations and value estimates to npy / human-readable files"""
+    print(f"Saving observations and values to {logdir}")
+    if as_npy:
+        np.save(logdir + f"/observations_{epoch_idx}", storage.obs_batch)
+        np.save(logdir + f"/value_{epoch_idx}", storage.value_batch)
+    else:
+        # obs_batch shape: total_steps, num_envs, obs
+        values = ""
+        actions = ""
+        uncertainties = ""
+        for step in range(len(storage.obs_batch)):
+            for env in range(len(storage.obs_batch[step])):
+                obs = storage.obs_batch[step][env]
+                o = obs.clone().detach().permute(1, 2, 0)
+                o = (o * 255).cpu().numpy().astype(np.uint8)
+                Image.fromarray(o).save(logdir + f"/obs_env_{env}_epoch_{epoch_idx}_step_{step}.png")
 
-    # save observations and value estimates
-    def save_value_estimates(storage, epoch_idx, as_npy = True):
-        with open(logdir + f"/storage_epoch_{epoch_idx}.pkl", "wb") as f:
-            pickle.dump(storage.storage, f)
-        
-        """write observations and value estimates to npy / human-readable files"""
-        print(f"Saving observations and values to {logdir}")
-        if as_npy:
-            np.save(logdir + f"/observations_{epoch_idx}", storage.obs_batch)
-            np.save(logdir + f"/value_{epoch_idx}", storage.value_batch)
-        else:
-            # obs_batch shape: total_steps, num_envs, obs
-            values = ""
-            actions = ""
-            uncertainties = ""
-            for step in range(len(storage.obs_batch)):
-                for env in range(len(storage.obs_batch[step])):
-                    obs = storage.obs_batch[step][env]
-                    o = obs.clone().detach().permute(1, 2, 0)
-                    o = (o * 255).cpu().numpy().astype(np.uint8)
-                    Image.fromarray(o).save(logdir + f"/obs_env_{env}_epoch_{epoch_idx}_step_{step}.png")
+        #         val = storage.value_batch[step][env]
+        #         values += f"Env {env}, step {step}: {val}\n"
 
-            #         val = storage.value_batch[step][env]
-            #         values += f"Env {env}, step {step}: {val}\n"
+        #         try:
+        #             act = storage.act_batch[step][env]
+        #             if act < 0:
+        #                 action = "HELP"
+        #             else:
+        #                 action = int(act.item())
+        #             actions += f"Env {env}, step {step}: {ACTION_MAPPING[action]}\n"
+        #         except IndexError:  # last observation has no action
+        #             pass
 
-            #         try:
-            #             act = storage.act_batch[step][env]
-            #             if act < 0:
-            #                 action = "HELP"
-            #             else:
-            #                 action = int(act.item())
-            #             actions += f"Env {env}, step {step}: {ACTION_MAPPING[action]}\n"
-            #         except IndexError:  # last observation has no action
-            #             pass
+        #         try:
+        #             unc = storage.uncertainty_batch[step][env]
+        #             unc = float(unc.item())
+        #             uncertainties += f"Env {env}, step {step}: {unc}\n"
+        #         except IndexError:  # idk
+        #             pass
+        #     values += "\n"
+        #     actions += "\n"
+        #     uncertainties += "\n"
+        # with open(logdir + f"/values_epoch_{epoch_idx}.txt", "w") as f:
+        #     f.write(values)
+        # with open(logdir + f"/actions_epoch_{epoch_idx}.txt", "w") as f:
+        #     f.write(actions)
+        # with open(logdir + f"/uncertainties_epoch_{epoch_idx}.txt", "w") as f:
+        #     f.write(uncertainties)
+    return
 
-            #         try:
-            #             unc = storage.uncertainty_batch[step][env]
-            #             unc = float(unc.item())
-            #             uncertainties += f"Env {env}, step {step}: {unc}\n"
-            #         except IndexError:  # idk
-            #             pass
-            #     values += "\n"
-            #     actions += "\n"
-            #     uncertainties += "\n"
-            # with open(logdir + f"/values_epoch_{epoch_idx}.txt", "w") as f:
-            #     f.write(values)
-            # with open(logdir + f"/actions_epoch_{epoch_idx}.txt", "w") as f:
-            #     f.write(actions)
-            # with open(logdir + f"/uncertainties_epoch_{epoch_idx}.txt", "w") as f:
-            #     f.write(uncertainties)
-        return
-
-    def save_value_estimates_individual(storage, epoch_idx, individual_value_idx):
-        """write individual observations and value estimates to npy / csv file"""
-        print(f"Saving random samples of observations and values to {logdir}")
-        obs = storage.obs_batch.clone().detach().squeeze().permute(0, 2, 3, 1)
-        obs = (obs * 255).cpu().numpy().astype(np.uint8)
-        vals = storage.value_batch.squeeze()
-
-        random_idxs = np.random.choice(obs.shape[0], 5, replace=False)
-        for rand_id in random_idxs:
-            im = obs[rand_id]
-            val = vals[rand_id]
-            im = Image.fromarray(im)
-            im.save(logdir_indiv_value + f"/obs_{individual_value_idx:05d}.png")
-            np.save(logdir_indiv_value + f"/val_{individual_value_idx:05d}.npy", val)
-            individual_value_idx += 1
-        return individual_value_idx
-
-    def write_scalar(scalar, filename):
-        """write scalar to filename"""
-        with open(logdir + "/" + filename, "w") as f:
-            f.write(str(scalar))
-
+############
+## RENDER ##
+############
+def render(agent, epochs, args, all_rewards = [], all_achievement_timesteps = [], all_times_achieved = []):
+    if args.quant_eval:
+        assert epochs == 1, "Just need one epoch for quantitative evaluation"
 
     obs = agent.env.reset()
     hidden_state = np.zeros((agent.n_envs, agent.storage.hidden_state_size))
     done = np.zeros(agent.n_envs)
 
-
     individual_value_idx = 1001
     save_frequency = 1
     saliency_save_idx = 0
     epoch_idx = 0
-    while epoch_idx < hyperparameters.get("epoch", 5):
-    # while True:
+    cum_reward = 0
+    while epoch_idx < epochs:
         agent.policy.eval()
-        print("[alina] Starting epoch", epoch_idx)
         start_epoch_time = time.time()
-        for _ in range(agent.n_steps):
+        for step in range(agent.n_steps):
             if not args.value_saliency:
-                act, log_prob_act, value, next_hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, select_mode = "max")
+                act, log_prob_act, value, next_hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, select_mode = args.select_mode)
             else:
                 act, log_prob_act, value, next_hidden_state, value_saliency_obs = agent.predict_w_value_saliency(obs, hidden_state, done)
                 if saliency_save_idx % save_frequency == 0:
@@ -317,9 +246,9 @@ if __name__=='__main__':
                     ims_grad = blurrer(ims_grad).squeeze().unsqueeze(-1)
 
                     pos_grads = ims_grad.where(ims_grad > 0.,
-                                               torch.zeros_like(ims_grad))
+                                            torch.zeros_like(ims_grad))
                     neg_grads = ims_grad.where(ims_grad < 0.,
-                                               torch.zeros_like(ims_grad)).abs()
+                                            torch.zeros_like(ims_grad)).abs()
 
                     # Make a couple of copies of the original im for later
                     sample_ims_faint = torch.tensor(obs_copy.mean(-1)) * 0.2
@@ -348,11 +277,10 @@ if __name__=='__main__':
 
                 saliency_save_idx += 1
 
-            if act != "HELP":
-                next_obs, rew, done, info = agent.env.step(act)
-                if rew > 0:  # break after successfully collecting coin
-                    done = [True for _ in range(agent.n_envs)]
-            else:
+            next_obs, rew, done, info = agent.env.step(act)
+            if args.quant_eval:
+                cum_reward += rew
+            if rew > 0:  # break after successfully collecting coin
                 done = [True for _ in range(agent.n_envs)]
             agent.storage.store(obs, hidden_state, act, rew, done, info, log_prob_act, value, help_info)
             if all(done):
@@ -360,19 +288,98 @@ if __name__=='__main__':
             obs = next_obs
             hidden_state = next_hidden_state
 
-        _, _, last_val, hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, select_mode = "max")
+        _, _, last_val, hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, select_mode = args.select_mode)
         agent.storage.store_last(obs, hidden_state, last_val, help_info)
 
-        if args.save_value_individual:
-            individual_value_idx = save_value_estimates_individual(agent.storage, epoch_idx, individual_value_idx)
-
-        if args.save_value:
-            save_value_estimates(agent.storage, epoch_idx, args.save_as_npy)
+        if args.quant_eval:
+            all_rewards.append(cum_reward)
+            if all(done):
+                all_times_achieved.append(1)
+                all_achievement_timesteps.append(step)
+            else:
+                all_times_achieved.append(0)
+                all_achievement_timesteps.append(float("inf"))
+        
+        if args.save_run:
+            save_run_data(agent.storage, epoch_idx, args.save_as_npy)
             epoch_idx += 1
 
-        agent.storage.compute_estimates(agent.gamma, agent.lmbda, agent.use_gae,
-                                       agent.normalize_adv)
-        print("[alina] Done with epoch", epoch_idx if not args.save_value else epoch_idx - 1)
+        agent.storage.compute_estimates(agent.gamma, agent.lmbda, agent.use_gae, agent.normalize_adv)
         end_epoch_time = time.time()
-        print("[alina] This epoch took", (end_epoch_time - start_epoch_time) / 60, "minutes")
+        # print("[alina] Done with epoch", epoch_idx if not args.save_run else epoch_idx - 1, "took", (end_epoch_time - start_epoch_time) / 60, "minutes")
+
     print(f"Logging dir:\n{logdir}")
+
+
+if __name__=='__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--exp_name',         type=str, default = 'render', help='experiment name')
+    parser.add_argument('--env_name',         type=str, default = 'coinrun', help='environment ID')
+    parser.add_argument('--start_level',      type=int, default = int(0), help='start-level for environment')
+    parser.add_argument('--num_levels',       type=int, default = int(0), help='number of training levels for environment')
+    parser.add_argument('--distribution_mode',type=str, default = 'hard', help='distribution mode for environment')
+    parser.add_argument('--param_name',       type=str, default = 'easy-200', help='hyper-parameter ID')
+    parser.add_argument('--device',           type=str, default = 'cpu', required = False, help='whether to use gpu')
+    parser.add_argument('--gpu_device',       type=int, default = int(0), required = False, help = 'visible device in CUDA')
+    parser.add_argument('--seed',             type=int, default = random.randint(0,9999), help='Random generator seed')
+    parser.add_argument('--log_level',        type=int, default = int(40), help='[10,20,30,40]')
+    parser.add_argument('--num_checkpoints',  type=int, default = int(1), help='number of checkpoints to store')
+    parser.add_argument('--logdir',           type=str, default = None)
+
+    #multi threading
+    parser.add_argument('--num_threads', type=int, default=8)
+
+    #render parameters
+    parser.add_argument('--tps', type=int, default=15, help="env fps")
+    parser.add_argument('--vid_dir', type=str, default=None)
+    parser.add_argument('--model_file', type=str)
+    parser.add_argument('--save_run', action='store_true')
+    parser.add_argument("--quant_eval", action = "store_true")
+    parser.add_argument("--save_as_npy", action="store_true")
+    parser.add_argument('--value_saliency', action='store_true')
+
+    parser.add_argument('--random_percent',   type=float, default=0., help='percent of environments in which coin is randomized (only for coinrun)')
+    parser.add_argument('--corruption_type',  type=str, default = None)
+    parser.add_argument('--corruption_severity',  type=str, default = 1)
+    parser.add_argument('--agent_view', action="store_true", help="see what the agent sees")
+    parser.add_argument('--continue_after_coin', action="store_true", help="level doesnt end when agent gets coin")
+    parser.add_argument('--noview', action="store_true", help="just take vids")
+
+    parser.add_argument("--reduced_action_space", action = "store_true")
+    parser.add_argument("--ood_metric", type = str, default = "msp")
+    parser.add_argument("--select_mode", type = str, default = "max")
+
+    args = parser.parse_args()
+
+    set_global_seeds(args.seed)
+    set_global_log_levels(args.log_level)
+
+    hyperparameters = load_hyperparameters(args)
+    total_envs = hyperparameters.get("total_envs", 100)
+    n_steps = hyperparameters.get('n_steps', 256)
+    n_envs = hyperparameters.get("n_envs", 1)
+    algo = hyperparameters.get('algo', 'ppo')
+    epochs = hyperparameters.get("epoch", 1)
+
+    device = set_device(args)
+    logger = set_logger(args)
+
+    if args.quant_eval:
+        all_rewards = []
+        all_achievement_timesteps = []
+        all_times_achieved = []
+        model, policy = make_model_and_policy(args, env)
+        for _ in range(total_envs):
+            start = time.time()
+            env = create_venv_render(args, hyperparameters, is_valid = True)
+            storage = set_storage(model, env, n_steps, n_envs, device)
+            agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args)
+            render(agent, epochs, args, all_rewards, all_achievement_timesteps, all_times_achieved)
+            end = time.time()
+            print("Done with one eval, took", (end - start) / 60, "minutes")
+        with open(os.path.join(logger.logdir, "quant_eval.txt"), "w") as f:
+            f.write(f"Mean reward: {round(np.mean(all_rewards), 3)}\n")
+            f.write(f"Mean timestep achieved: {round(np.mean(all_achievement_timesteps[all_achievement_timesteps != float('inf')]), 3)}\n")
+            f.write(f"Proportion of times achieved: {round(np.mean(all_times_achieved), 3)}\n")
+            f.write(f"All rewards: {all_rewards}\n\n")
+            f.write(f"All timesteps: {all_achievement_timesteps}")
