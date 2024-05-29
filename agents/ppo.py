@@ -18,7 +18,7 @@ ACTION_SPACE = [
     ("RIGHT", "UP"),
     ()
 ]
-ACTION_TRANSLATION = {i: ORIGINAL_ACTION_SPACE.index(ACTION_SPACE[i]) for i in range(len(ACTION_SPACE))}
+ACTION_TRANSLATION = np.array([ORIGINAL_ACTION_SPACE.index(ACTION_SPACE[i]) for i in range(len(ACTION_SPACE))])
 ACTION_MAPPING = {i: ACTION_SPACE[i] for i in range(len(ACTION_SPACE))}
 
 class PPO(BaseAgent):
@@ -30,6 +30,8 @@ class PPO(BaseAgent):
                  device,
                  n_checkpoints,
                  save_timesteps=None,
+                 reduced_action_space=False,
+                 store_percentiles=False,
                  env_valid=None,
                  storage_valid=None,
                  n_steps=128,
@@ -54,6 +56,8 @@ class PPO(BaseAgent):
 
         self.n_steps = n_steps
         self.n_envs = n_envs
+        self.reduced_action_space = reduced_action_space
+        self.store_percentiles = store_percentiles
         self.epoch = epoch
         self.mini_batch_per_epoch = mini_batch_per_epoch
         self.mini_batch_size = mini_batch_size
@@ -69,10 +73,11 @@ class PPO(BaseAgent):
         self.normalize_rew = normalize_rew
         self.use_gae = use_gae
 
-        self.all_probs = []
-        self.probs_by_action = {i: [] for i in range(len(ACTION_SPACE))}
-        self.all_logits = []
-        self.logits_by_action = {i: [] for i in range(len(ACTION_SPACE))}
+        if self.store_percentiles:
+            self.all_probs = []
+            self.probs_by_action = {i: [] for i in range(len(ACTION_SPACE) if self.reduced_action_space else env.action_space.n)}
+            self.all_logits = []
+            self.logits_by_action = {i: [] for i in range(len(ACTION_SPACE) if self.reduced_action_space else env.action_space.n)}
 
         self.request_limit = 3
         self.num_requests = 0
@@ -118,24 +123,31 @@ class PPO(BaseAgent):
             hidden_state = torch.FloatTensor(hidden_state).to(device=self.device)
             mask = torch.FloatTensor(1 - done).to(device=self.device)
             dist, value, logits, hidden_state = self.policy(obs, hidden_state, mask)
-            dist_probs = dist.probs.cpu().numpy().tolist()
-            dist_logits = dist.logits.cpu().numpy().tolist()
-            self.all_probs.extend(dist_probs)
-            self.all_logits.extend(dist_logits)
+            if self.store_percentiles:
+                self.all_probs.extend(dist.probs.cpu().numpy().flatten().tolist())
+                self.all_logits.extend(dist.logits.cpu().numpy().flatten().tolist())
             if select_mode == "sample":
                 act = dist.sample()
-                self.probs_by_action[act.item()].append(dist_probs[act.item()])
-                self.logits_by_action[act.item()].append(dist_logits[act.item()])
+                log_prob_act = dist.log_prob(act)
+                if self.store_percentiles:
+                    action_probs = dist.probs.gather(1, act.unsqueeze(-1)).squeeze(-1).cpu().numpy()
+                    action_logits = dist.logits.gather(1, act.unsqueeze(-1)).squeeze(-1).cpu().numpy()
+                act = act.cpu().numpy()
+                if self.store_percentiles:
+                    for i in range(act.shape[0]):
+                        self.probs_by_action[act[i]].append(action_probs[i])
+                        self.logits_by_action[act[i]].append(action_logits[i])
             else:
+                # FIXME: not sure if works for multi envs?
                 act = dist.probs.argmax().unsqueeze(0)
-            log_prob_act = dist.log_prob(act)
-            need_help, help_info = self.determine_ask_for_help(ood_metric, act, dist, logits)
-            if need_help:
-                ret_act = act.cpu().numpy()
-                self.num_requests += 1
-            else:
-                ret_act = act.cpu().numpy()
-        return ret_act, log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy(), help_info
+    #        need_help, help_info = self.determine_ask_for_help(ood_metric, act, dist, logits)
+    #        if need_help:
+    #            ret_act = act.cpu().numpy()
+    #            self.num_requests += 1
+    #        else:
+    #            ret_act = act.cpu().numpy()
+        help_info = None
+        return act, log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy(), help_info
 
     def predict_w_value_saliency(self, obs, hidden_state, done):
         obs = torch.FloatTensor(obs).to(device=self.device)
@@ -202,7 +214,7 @@ class PPO(BaseAgent):
                    'Loss/entropy': np.mean(entropy_loss_list)}
         return summary
 
-    def train(self, num_timesteps):
+    def train(self, num_timesteps, reduced_action_space):
         save_every = num_timesteps // self.num_checkpoints
         checkpoint_cnt = 0
         save_timestep_index = 0
@@ -219,29 +231,34 @@ class PPO(BaseAgent):
             # Run Policy
             self.policy.eval()
             for _ in range(self.n_steps):
-                act, log_prob_act, value, next_hidden_state = self.predict(obs, hidden_state, done)
-                next_obs, rew, done, info = self.env.step(ACTION_TRANSLATION[act])
-                self.storage.store(obs, hidden_state, act, rew, done, info, log_prob_act, value)
+                act, log_prob_act, value, next_hidden_state, help_info = self.predict(obs, hidden_state, done, ood_metric = "msp")
+                if reduced_action_space:
+                    act = ACTION_TRANSLATION[act]
+                    assert act.shape == log_prob_act.shape, "Messed up converting actions"
+                next_obs, rew, done, info = self.env.step(act)
+                self.storage.store(obs, hidden_state, act, rew, done, info, log_prob_act, value, help_info)
                 obs = next_obs
                 hidden_state = next_hidden_state
             value_batch = self.storage.value_batch[:self.n_steps]
-            _, _, last_val, hidden_state = self.predict(obs, hidden_state, done)
-            self.storage.store_last(obs, hidden_state, last_val)
-            # Compute advantage estimates
+            _, _, last_val, hidden_state, help_info = self.predict(obs, hidden_state, done, ood_metric = "msp")
+            self.storage.store_last(obs, hidden_state, last_val, help_info)
             self.storage.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
             #valid
             if self.env_valid is not None:
                 for _ in range(self.n_steps):
-                    act_v, log_prob_act_v, value_v, next_hidden_state_v = self.predict(obs_v, hidden_state_v, done_v)
-                    next_obs_v, rew_v, done_v, info_v = self.env_valid.step(act_v)
+                    act_v, log_prob_act_v, value_v, next_hidden_state_v, help_info = self.predict(obs_v, hidden_state_v, done_v, ood_metric = "msp")
+                    if reduced_action_space:
+                        act = ACTION_TRANSLATION[act]
+                        assert act.shape == log_prob_act.shape, "Messed up converting actions (val)"
+                    next_obs_v, rew_v, done_v, info_v = self.env_valid.step(act)
                     self.storage_valid.store(obs_v, hidden_state_v, act_v,
                                              rew_v, done_v, info_v,
-                                             log_prob_act_v, value_v)
+                                             log_prob_act_v, value_v, help_info)
                     obs_v = next_obs_v
                     hidden_state_v = next_hidden_state_v
-                _, _, last_val_v, hidden_state_v = self.predict(obs_v, hidden_state_v, done_v)
-                self.storage_valid.store_last(obs_v, hidden_state_v, last_val_v)
+                _, _, last_val_v, hidden_state_v, help_info = self.predict(obs_v, hidden_state_v, done_v, ood_metric = "msp")
+                self.storage_valid.store_last(obs_v, hidden_state_v, last_val_v, help_info)
                 self.storage_valid.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
             # Optimize policy & valueq
@@ -266,8 +283,8 @@ class PPO(BaseAgent):
                     checkpoint_cnt += 1
             else:
                 try:
-                    if self.t + 1 == self.save_timesteps[save_timestep_index]:
-                        print("Saving model.")
+                    if self.t + 1 >= self.save_timesteps[save_timestep_index]:
+                        print("Saving model at timestep", self.t + 1)
                         torch.save({'model_state_dict': self.policy.state_dict(),
                                     'optimizer_state_dict': self.optimizer.state_dict()},
                                     self.logger.logdir + '/model_' + str(self.t) + '.pth')
@@ -277,11 +294,13 @@ class PPO(BaseAgent):
         self.env.close()
         if self.env_valid is not None:
             self.env_valid.close()
-        with open(self.logger.logdir + "/all_probs.pkl", "wb") as f:
-            pickle.dump(self.all_probs, f)
-        with open(self.logger.logdir + "/all_logits.pkl", "wb") as f:
-            pickle.dump(self.all_logits, f)
-        with open(self.logger.logdir + "/probs_by_action.pkl", "wb") as f:
-            pickle.dump(self.probs_by_action, f)
-        with open(self.logger.logdir + "/logits_by_action.pkl", "wb") as f:
-            pickle.dump(self.logits_by_action, f)
+        if self.store_percentiles:
+            with open(self.logger.logdir + "/all_probs.pkl", "wb") as f:
+                pickle.dump(self.all_probs, f)
+            with open(self.logger.logdir + "/all_logits.pkl", "wb") as f:
+                pickle.dump(self.all_logits, f)
+            with open(self.logger.logdir + "/probs_by_action.pkl", "wb") as f:
+                pickle.dump(self.probs_by_action, f)
+            with open(self.logger.logdir + "/logits_by_action.pkl", "wb") as f:
+                pickle.dump(self.logits_by_action, f)
+

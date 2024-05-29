@@ -45,6 +45,9 @@ if __name__=='__main__':
     parser.add_argument('--step_penalty',   type=int, default=0, help='HEIST_AISC: Time penalty per step (divided by 1000)')
     parser.add_argument('--rand_region',   type=int, default=0, help='MAZE: size of region (in upper left corner) in which goal is sampled.')
 
+    parser.add_argument("--reduced_action_space", action = "store_true")
+    parser.add_argument("--store_percentiles", action = "store_true")
+
 
     #multi threading
     parser.add_argument('--num_threads', type=int, default=8)
@@ -138,7 +141,7 @@ if __name__=='__main__':
 
     print('INITIALIZING LOGGER...')
 
-    logdir = os.path.join('logs', 'train', env_name, exp_name)
+    logdir = os.path.join('/nas/ucb/tutrinh/train-procgen-pytorch/logs', 'train', env_name, exp_name)
     if args.model_file == "auto":  # try to figure out which file to load
         logdirs_with_model = [d for d in listdir(logdir) if any(['model' in filename for filename in os.listdir(d)])] 
         if len(logdirs_with_model) > 1:
@@ -161,7 +164,7 @@ if __name__=='__main__':
         cfg = vars(args)
         cfg.update(hyperparameters)
         wb_resume = "allow" if args.model_file is None else "must"
-        wandb.init(project="objective-robustness", config=cfg, tags=args.wandb_tags, resume=wb_resume)
+        wandb.init(project="chai-internship", config=cfg, tags=args.wandb_tags, resume=wb_resume)
     logger = Logger(n_envs, logdir, use_wandb=args.use_wandb)
 
     ###########
@@ -172,7 +175,12 @@ if __name__=='__main__':
     observation_shape = observation_space.shape
     architecture = hyperparameters.get('architecture', 'impala')
     in_channels = observation_shape[0]
-    action_space = gym.spaces.Discrete(len(ACTION_SPACE))
+    if args.reduced_action_space:
+        print("Using reduced action space")
+        action_space = gym.spaces.Discrete(len(ACTION_SPACE))
+    else:
+        print("Using normal action space")
+        action_space = env.action_space
 
     # Model architecture
     if architecture == 'nature':
@@ -209,6 +217,8 @@ if __name__=='__main__':
     agent = AGENT(env, policy, logger, storage, device,
                   num_checkpoints,
                   save_timesteps=save_timesteps,
+                  reduced_action_space=args.reduced_action_space,
+                  store_percentiles=args.store_percentiles,
                   env_valid=env_valid,
                   storage_valid=storage_valid,  
                   **hyperparameters)
@@ -222,4 +232,4 @@ if __name__=='__main__':
     ## TRAINING ##
     ##############
     print('START TRAINING...')
-    agent.train(num_timesteps)
+    agent.train(num_timesteps, args.reduced_action_space)

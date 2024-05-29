@@ -1,0 +1,176 @@
+wandb_version: 1
+
+exp_name:
+  desc: null
+  value: fewer_actions_store_percentiles
+env_name:
+  desc: null
+  value: coinrun
+val_env_name:
+  desc: null
+  value: null
+start_level:
+  desc: null
+  value: 0
+num_levels:
+  desc: null
+  value: 100000
+distribution_mode:
+  desc: null
+  value: hard
+param_name:
+  desc: null
+  value: hard-500
+device:
+  desc: null
+  value: gpu
+gpu_device:
+  desc: null
+  value: 0
+num_timesteps:
+  desc: null
+  value: 200000000
+seed:
+  desc: null
+  value: 6033
+log_level:
+  desc: null
+  value: 40
+num_checkpoints:
+  desc: null
+  value: 1
+save_timesteps:
+  desc: null
+  value:
+  - 390625
+  - 781250
+  - 1562500
+  - 3125000
+  - 6250000
+  - 10000000
+  - 12500000
+  - 20000000
+  - 25000000
+  - 30000000
+  - 40000000
+  - 50000000
+  - 60000000
+  - 70000000
+  - 80000000
+  - 90000000
+  - 100000000
+  - 110000000
+  - 120000000
+  - 130000000
+  - 140000000
+  - 150000000
+  - 160000000
+  - 170000000
+  - 180000000
+  - 190000000
+  - 200000000
+model_file:
+  desc: null
+  value: null
+use_wandb:
+  desc: null
+  value: true
+wandb_tags:
+  desc: null
+  value: null
+random_percent:
+  desc: null
+  value: 0
+key_penalty:
+  desc: null
+  value: 0
+step_penalty:
+  desc: null
+  value: 0
+rand_region:
+  desc: null
+  value: 0
+reduced_action_space:
+  desc: null
+  value: true
+store_percentiles:
+  desc: null
+  value: true
+num_threads:
+  desc: null
+  value: 8
+algo:
+  desc: null
+  value: ppo
+n_envs:
+  desc: null
+  value: 256
+n_steps:
+  desc: null
+  value: 256
+epoch:
+  desc: null
+  value: 3
+mini_batch_per_epoch:
+  desc: null
+  value: 8
+mini_batch_size:
+  desc: null
+  value: 8192
+gamma:
+  desc: null
+  value: 0.999
+lmbda:
+  desc: null
+  value: 0.95
+learning_rate:
+  desc: null
+  value: 0.0005
+grad_clip_norm:
+  desc: null
+  value: 0.5
+eps_clip:
+  desc: null
+  value: 0.2
+value_coef:
+  desc: null
+  value: 0.5
+entropy_coef:
+  desc: null
+  value: 0.01
+normalize_adv:
+  desc: null
+  value: true
+normalize_rew:
+  desc: null
+  value: true
+use_gae:
+  desc: null
+  value: true
+architecture:
+  desc: null
+  value: impala
+recurrent:
+  desc: null
+  value: false
+_wandb:
+  desc: null
+  value:
+    python_version: 3.7.3
+    cli_version: 0.17.0
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1716595272
+    t:
+      1:
+      - 1
+      - 55
+      3:
+      - 16
+      - 23
+      4: 3.7.3
+      5: 0.17.0
+      8:
+      - 5
+      13: linux-x86_64
