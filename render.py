@@ -302,13 +302,13 @@ def render(agent, epochs, args, all_rewards = [], all_achievement_timesteps = []
         
         if args.save_run:
             save_run_data(agent.storage, epoch_idx, args.save_as_npy)
-            epoch_idx += 1
 
         agent.storage.compute_estimates(agent.gamma, agent.lmbda, agent.use_gae, agent.normalize_adv)
+        epoch_idx += 1
         end_epoch_time = time.time()
         # print("[alina] Done with epoch", epoch_idx if not args.save_run else epoch_idx - 1, "took", (end_epoch_time - start_epoch_time) / 60, "minutes")
 
-    print(f"Logging dir:\n{logdir}")
+    print(f"Logging dir:\n{agent.logger.logdir}")
 
 
 if __name__=='__main__':
@@ -368,18 +368,19 @@ if __name__=='__main__':
         all_rewards = []
         all_achievement_timesteps = []
         all_times_achieved = []
-        model, policy = make_model_and_policy(args, env)
         for _ in range(total_envs):
             start = time.time()
             env = create_venv_render(args, hyperparameters, is_valid = True)
+            model, policy = make_model_and_policy(args, env)
             storage = set_storage(model, env, n_steps, n_envs, device)
             agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args)
             render(agent, epochs, args, all_rewards, all_achievement_timesteps, all_times_achieved)
             end = time.time()
             print("Done with one eval, took", (end - start) / 60, "minutes")
-        with open(os.path.join(logger.logdir, "quant_eval.txt"), "w") as f:
+        with open(os.path.join(logger.logdir, f"quant_eval_{args.model_file.split('/')[-1][:-4]}.txt"), "w") as f:
             f.write(f"Mean reward: {round(np.mean(all_rewards), 3)}\n")
             f.write(f"Mean timestep achieved: {round(np.mean(all_achievement_timesteps[all_achievement_timesteps != float('inf')]), 3)}\n")
             f.write(f"Proportion of times achieved: {round(np.mean(all_times_achieved), 3)}\n")
             f.write(f"All rewards: {all_rewards}\n\n")
             f.write(f"All timesteps: {all_achievement_timesteps}")
+
