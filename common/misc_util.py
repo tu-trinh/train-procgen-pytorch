@@ -10,6 +10,8 @@ def set_global_seeds(seed):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
+    random.seed(seed)
+    np.random.seed(seed)
 
 
 def set_global_log_levels(level):

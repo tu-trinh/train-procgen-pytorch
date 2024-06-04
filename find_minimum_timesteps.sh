@@ -31,7 +31,7 @@ model_paths=(
 )
 
 for model_path in "${model_paths[@]}"; do
-	command="python3 render.py --exp_name find_minimum_timesteps --env_name coinrun_aisc --distribution_mode hard --param_name hard-plus --model_file logs/train/coinrun/slurm_og_actions/2024-05-25__19-35-47__seed_8888/${model_path} --ood_metric msp --select_mode sample --quant_eval --gpu_device 3"
+	command="python3 render.py --exp_name find_minimum_timesteps --env_name coinrun --distribution_mode hard --param_name hard-plus --model_file logs/train/coinrun/og_actions/2024-05-25__19-35-47__seed_8888/${model_path} --select_mode sample --quant_eval"
 	echo "Trying model ${model_path}"
 	$command
 done

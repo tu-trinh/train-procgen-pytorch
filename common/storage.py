@@ -25,11 +25,11 @@ class Storage():
         self.adv_batch = torch.zeros(self.num_steps, self.num_envs)
         self.info_batch = deque(maxlen=self.num_steps)
         self.uncertainty_batch = torch.zeros(self.num_steps, self.num_envs)
-        self.storage = []
+        self.help_info_storage = []
         self.step = 0
 
     def store(self, obs, hidden_state, act, rew, done, info, log_prob_act, value, help_info):
-        self.storage.append(help_info)
+        self.help_info_storage.append(help_info)
         self.obs_batch[self.step] = torch.from_numpy(obs.copy())
         if isinstance(done, list):
             done = np.array(done)
@@ -46,7 +46,7 @@ class Storage():
         self.step = (self.step + 1) % self.num_steps
 
     def store_last(self, last_obs, last_hidden_state, last_value, help_info):
-        self.storage.append(help_info)
+        self.help_info_storage.append(help_info)
         self.obs_batch[-1] = torch.from_numpy(last_obs.copy())
         self.obs_batch[-1] = torch.from_numpy(last_obs.copy())
         self.hidden_states_batch[-1] = torch.from_numpy(last_hidden_state.copy())

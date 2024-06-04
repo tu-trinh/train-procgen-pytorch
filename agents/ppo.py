@@ -1,25 +1,11 @@
 from .base_agent import BaseAgent
 from common.misc_util import adjust_lr, get_n_params
+from common.constants import *
 import torch
 import torch.optim as optim
 import numpy as np
 import pickle
 
-
-ORIGINAL_ACTION_SPACE = [("LEFT", "DOWN"), ("LEFT"), ("LEFT", "UP"), ("DOWN"), (), ("UP"), ("RIGHT", "DOWN"), ("RIGHT"), ("RIGHT", "UP"), ("D"), ("A"), ("W"), ("S"), ("Q"), ("E")]
-ACTION_SPACE = [
-    ("UP"),
-    ("DOWN"),
-    ("LEFT"),
-    ("RIGHT"),
-    ("LEFT", "DOWN"),
-    ("LEFT", "UP"),
-    ("RIGHT", "DOWN"),
-    ("RIGHT", "UP"),
-    ()
-]
-ACTION_TRANSLATION = np.array([ORIGINAL_ACTION_SPACE.index(ACTION_SPACE[i]) for i in range(len(ACTION_SPACE))])
-ACTION_MAPPING = {i: ACTION_SPACE[i] for i in range(len(ACTION_SPACE))}
 
 class PPO(BaseAgent):
     def __init__(self,
@@ -32,6 +18,11 @@ class PPO(BaseAgent):
                  save_timesteps=None,
                  reduced_action_space=False,
                  store_percentiles=False,
+                 all_probs=[],
+                 all_logits=[],
+                 probs_by_action={},
+                 logits_by_action={},
+                 all_help_info=[],
                  env_valid=None,
                  storage_valid=None,
                  n_steps=128,
@@ -74,29 +65,34 @@ class PPO(BaseAgent):
         self.use_gae = use_gae
 
         if self.store_percentiles:
-            self.all_probs = []
-            self.probs_by_action = {i: [] for i in range(len(ACTION_SPACE) if self.reduced_action_space else env.action_space.n)}
-            self.all_logits = []
-            self.logits_by_action = {i: [] for i in range(len(ACTION_SPACE) if self.reduced_action_space else env.action_space.n)}
+            self.all_probs = all_probs
+            self.probs_by_action = probs_by_action
+            self.all_logits = all_logits
+            self.logits_by_action = logits_by_action
 
         self.request_limit = 3
         self.num_requests = 0
         self.num_actions = env.action_space.n
-        self.logit_threshold = None
-        self.probability_threshold = 1 / env.action_space.n  # random guessing amongst actions
+        if self.reduced_action_space:
+            self.probability_threshold = 0.010620193323120477
+            self.logit_threshold = -4.544998216629028
+            self.entropy_threshold = 2.1931112485913173
+        else:
+            self.probability_threshold = 2.7860202226293045e-05
+            self.logit_threshold = -10.488311147689819
+            self.entropy_threshold = 2.6671398007279694
         self.log_probability_threshold = torch.log(torch.tensor(self.probability_threshold))
-        # self.entropy_threshold = -torch.log(torch.tensor(1 / env.action_space.n)).item()  # entropy of random guessing
-        self.entropy_threshold = 2.5
-        print("PROBABILITY THRESHOLD", self.probability_threshold)
-        print("ENTROPY THRESHOLD", self.entropy_threshold)
-        print("[alina] Initialized agent")
+        # print("PROBABILITY THRESHOLD", self.probability_threshold)
+        # print("ENTROPY THRESHOLD", self.entropy_threshold)
+        # print("[alina] Initialized agent")
+        self.all_help_info = all_help_info
 
     def determine_ask_for_help(self, metric, act, dist, logits):
         logits = logits.squeeze()
         if metric == "msp" or metric == "sampled_p":
-            need_help = dist.log_prob(act) < torch.log(torch.tensor(2)) + self.log_probability_threshold
+            need_help = dist.log_prob(act) < self.log_probability_threshold
         elif metric == "ml" or metric == "sampled_l":
-            need_help = logits.max() < 2 * self.logit_threshold
+            need_help = logits.max() < self.logit_threshold
         elif metric == "ent":
             need_help = dist.entropy() > self.entropy_threshold
         help_info = {}
@@ -104,17 +100,23 @@ class PPO(BaseAgent):
         sorted_probs = sorted_probs.squeeze()
         sorted_indices = sorted_indices.squeeze()
         sorted_logits = logits[sorted_indices]
-        action_info = [(ACTION_MAPPING[act.item()], torch.exp(dist.log_prob(act)).item(), logits[act].item())]
+        # action_info is a list of tuples (action name, probability, logit)
+        if self.reduced_action_space:
+            mapping = ACTION_MAPPING
+        else:
+            mapping = ORIGINAL_ACTION_MAPPING
+        action_info = [(mapping[act.item()], dist.probs.squeeze()[act.item()].item(), logits[act.item()].item())]
         for idx in sorted_indices:
             if idx.item() != act.item():
-                action_info.append((ACTION_MAPPING[idx.item()], sorted_probs[idx].item(), sorted_logits[idx].item()))
+                action_info.append((mapping[idx.item()], sorted_probs[idx.item()].item(), sorted_logits[idx.item()].item()))
         help_info["action_info"] = action_info
         help_info["entropy"] = dist.entropy().item()
         help_info["need_help"] = need_help.item() if isinstance(need_help, torch.Tensor) else need_help
+        self.all_help_info.append(help_info)
         return need_help, help_info
     
-    def predict(self, obs, hidden_state, done, ood_metric, select_mode = "sample"):
-        assert ood_metric in ["msp", "ml", "sampled_p", "sampled_l", "ent"]
+    def predict(self, obs, hidden_state, done, ood_metric = None, select_mode = "sample"):
+        assert ood_metric in [None, "msp", "ml", "sampled_p", "sampled_l", "ent"]
         assert select_mode in ["sample", "max"]
         if isinstance(done, list):
             done = torch.tensor(done).float()
@@ -128,26 +130,23 @@ class PPO(BaseAgent):
                 self.all_logits.extend(dist.logits.cpu().numpy().flatten().tolist())
             if select_mode == "sample":
                 act = dist.sample()
-                log_prob_act = dist.log_prob(act)
-                if self.store_percentiles:
-                    action_probs = dist.probs.gather(1, act.unsqueeze(-1)).squeeze(-1).cpu().numpy()
-                    action_logits = dist.logits.gather(1, act.unsqueeze(-1)).squeeze(-1).cpu().numpy()
-                act = act.cpu().numpy()
-                if self.store_percentiles:
-                    for i in range(act.shape[0]):
-                        self.probs_by_action[act[i]].append(action_probs[i])
-                        self.logits_by_action[act[i]].append(action_logits[i])
             else:
-                # FIXME: not sure if works for multi envs?
-                act = dist.probs.argmax().unsqueeze(0)
-    #        need_help, help_info = self.determine_ask_for_help(ood_metric, act, dist, logits)
-    #        if need_help:
-    #            ret_act = act.cpu().numpy()
-    #            self.num_requests += 1
-    #        else:
-    #            ret_act = act.cpu().numpy()
-        help_info = None
-        return act, log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy(), help_info
+                act = torch.argmax(dist.probs).unsqueeze(0)
+            log_prob_act = dist.log_prob(act)
+            if self.store_percentiles:
+                action_probs = dist.probs.gather(1, act.unsqueeze(-1)).squeeze(-1).cpu().numpy()
+                action_logits = dist.logits.gather(1, act.unsqueeze(-1)).squeeze(-1).cpu().numpy()
+            if self.store_percentiles:
+                for i in range(act.shape[0]):
+                    self.probs_by_action[act.cpu().numpy()[i]].append(action_probs[i])
+                    self.logits_by_action[act.cpu().numpy()[i]].append(action_logits[i])
+        if ood_metric is not None:
+           need_help, help_info = self.determine_ask_for_help(ood_metric, act, dist, logits)
+           if need_help:
+               self.num_requests += 1
+        else:
+            help_info = None
+        return act.cpu().numpy(), log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy(), help_info
 
     def predict_w_value_saliency(self, obs, hidden_state, done):
         obs = torch.FloatTensor(obs).to(device=self.device)
@@ -294,13 +293,13 @@ class PPO(BaseAgent):
         self.env.close()
         if self.env_valid is not None:
             self.env_valid.close()
-        if self.store_percentiles:
-            with open(self.logger.logdir + "/all_probs.pkl", "wb") as f:
-                pickle.dump(self.all_probs, f)
-            with open(self.logger.logdir + "/all_logits.pkl", "wb") as f:
-                pickle.dump(self.all_logits, f)
-            with open(self.logger.logdir + "/probs_by_action.pkl", "wb") as f:
-                pickle.dump(self.probs_by_action, f)
-            with open(self.logger.logdir + "/logits_by_action.pkl", "wb") as f:
-                pickle.dump(self.logits_by_action, f)
+        # if self.store_percentiles:
+        #     with open(self.logger.logdir + "/all_probs.pkl", "wb") as f:
+        #         pickle.dump(self.all_probs, f)
+        #     with open(self.logger.logdir + "/all_logits.pkl", "wb") as f:
+        #         pickle.dump(self.all_logits, f)
+        #     with open(self.logger.logdir + "/probs_by_action.pkl", "wb") as f:
+        #         pickle.dump(self.probs_by_action, f)
+        #     with open(self.logger.logdir + "/logits_by_action.pkl", "wb") as f:
+        #         pickle.dump(self.logits_by_action, f)
 

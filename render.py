@@ -4,7 +4,7 @@ from common.storage import Storage
 from common.model import NatureModel, ImpalaModel
 from common.policy import CategoricalPolicy
 from common import set_global_seeds, set_global_log_levels
-from constants import ACTION_SPACE
+from common.constants import ACTION_SPACE, ORIGINAL_ACTION_SPACE
 
 import os, time, yaml, argparse
 import gym
@@ -45,7 +45,7 @@ def set_device(args):
 ## ENVIRONMENT ##
 #################
 def create_venv_render(args, hyperparameters, is_valid = False):
-    print('INITIALIZING ENVIRONMENTS...')
+    # print('INITIALIZING ENVIRONMENTS...')
     venv = ProcgenGym3Env(
         num = hyperparameters.get("n_envs", 1),
         env_name = args.env_name,
@@ -84,7 +84,7 @@ def create_venv_render(args, hyperparameters, is_valid = False):
 ## LOGGER ##
 ############
 def set_logger(args):
-    print('INITIALIZING LOGGER...')
+    # print('INITIALIZING LOGGER...')
     if args.logdir is None:
         logdir = 'procgen/' + args.env_name + '/' + args.exp_name + '/' + 'RENDER_seed' + '_' + \
                  str(args.seed) + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")
@@ -103,16 +103,16 @@ def set_logger(args):
 ## MODEL ##
 ###########
 def make_model_and_policy(args, env):
-    print('INITIALIZING MODEL...')
+    # print('INITIALIZING MODEL...')
     observation_space = env.observation_space
     observation_shape = observation_space.shape
     architecture = hyperparameters.get('architecture', 'impala')
     in_channels = observation_shape[0]
     if args.reduced_action_space:
-        print("Using reduced action space")
+        # print("Using reduced action space")
         action_space = gym.spaces.Discrete(len(ACTION_SPACE))
     else:
-        print("Using normal action space")
+        # print("Using normal action space")
         action_space = env.action_space
     # Model architecture
     if architecture == 'nature':
@@ -133,7 +133,7 @@ def make_model_and_policy(args, env):
 ## STORAGE ##
 #############
 def set_storage(model, env, n_steps, n_envs, device):
-    print('INITIALIZING STORAGE...')
+    # print('INITIALIZING STORAGE...')
     hidden_state_dim = model.output_dim
     storage = Storage(env.observation_space.shape, hidden_state_dim, n_steps, n_envs, device)
     return storage
@@ -141,13 +141,15 @@ def set_storage(model, env, n_steps, n_envs, device):
 ###########
 ## AGENT ##
 ###########
-def make_agent(algo, env, n_envs, policy, logger, storage, device, args):
-    print('INITIALIZING AGENT...')
+def make_agent(algo, env, n_envs, policy, logger, storage, device, args,
+               all_help_info = [],
+               store_percentiles = False, all_probs = [], all_logits = [], probs_by_action = {}, logits_by_action = {}):
+    # print('INITIALIZING AGENT...')
     if algo == 'ppo':
         from agents.ppo import PPO as AGENT
     else:
         raise NotImplementedError
-    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, **hyperparameters)
+    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, store_percentiles = store_percentiles, all_probs = all_probs, all_logits = all_logits, probs_by_action = probs_by_action, logits_by_action = logits_by_action, all_help_info = all_help_info, **hyperparameters)
     agent.policy.load_state_dict(torch.load(args.model_file, map_location = device)["model_state_dict"])
     agent.n_envs = n_envs
     return agent
@@ -155,15 +157,16 @@ def make_agent(algo, env, n_envs, policy, logger, storage, device, args):
 ##########
 ## SAVE ##
 ##########
-def save_run_data(storage, epoch_idx, as_npy = True):
-    with open(logdir + f"/storage_epoch_{epoch_idx}.pkl", "wb") as f:
-        pickle.dump(storage.storage, f)
+def save_run_data(logdir, storage, eval_env_idx, as_npy = True):
+    with open(logdir + f"/AAA_storage_env_{eval_env_idx}.pkl", "wb") as f:
+        pickle.dump(storage.help_info_storage, f)
     
     """write observations and value estimates to npy / human-readable files"""
     print(f"Saving observations and values to {logdir}")
     if as_npy:
-        np.save(logdir + f"/observations_{epoch_idx}", storage.obs_batch)
-        np.save(logdir + f"/value_{epoch_idx}", storage.value_batch)
+        pass  # FIXME: epoch idx to eval env idx, etc..
+        # np.save(logdir + f"/observations_{epoch_idx}", storage.obs_batch)
+        # np.save(logdir + f"/value_{epoch_idx}", storage.value_batch)
     else:
         # obs_batch shape: total_steps, num_envs, obs
         values = ""
@@ -174,7 +177,7 @@ def save_run_data(storage, epoch_idx, as_npy = True):
                 obs = storage.obs_batch[step][env]
                 o = obs.clone().detach().permute(1, 2, 0)
                 o = (o * 255).cpu().numpy().astype(np.uint8)
-                Image.fromarray(o).save(logdir + f"/obs_env_{env}_epoch_{epoch_idx}_step_{step}.png")
+                Image.fromarray(o).save(logdir + f"/obs_env_{eval_env_idx}_step_{step}.png")
 
         #         val = storage.value_batch[step][env]
         #         values += f"Env {env}, step {step}: {val}\n"
@@ -209,7 +212,7 @@ def save_run_data(storage, epoch_idx, as_npy = True):
 ############
 ## RENDER ##
 ############
-def render(agent, epochs, args, all_rewards = [], all_achievement_timesteps = [], all_times_achieved = []):
+def render(eval_env_idx, agent, epochs, args, all_rewards = [], all_achievement_timesteps = [], all_times_achieved = []):
     if args.quant_eval:
         assert epochs == 1, "Just need one epoch for quantitative evaluation"
 
@@ -278,10 +281,9 @@ def render(agent, epochs, args, all_rewards = [], all_achievement_timesteps = []
                 saliency_save_idx += 1
 
             next_obs, rew, done, info = agent.env.step(act)
+            # print(f"Action: {act}, reward: {rew}, done? {done}, info: {info}")
             if args.quant_eval:
                 cum_reward += rew
-            if rew > 0:  # break after successfully collecting coin
-                done = [True for _ in range(agent.n_envs)]
             agent.storage.store(obs, hidden_state, act, rew, done, info, log_prob_act, value, help_info)
             if all(done):
                 break
@@ -292,23 +294,21 @@ def render(agent, epochs, args, all_rewards = [], all_achievement_timesteps = []
         agent.storage.store_last(obs, hidden_state, last_val, help_info)
 
         if args.quant_eval:
-            all_rewards.append(cum_reward)
-            if all(done):
+            all_rewards.append(cum_reward[0])
+            if all(done) and cum_reward[0] > 0:
                 all_times_achieved.append(1)
                 all_achievement_timesteps.append(step)
             else:
                 all_times_achieved.append(0)
                 all_achievement_timesteps.append(float("inf"))
         
-        if args.save_run:
-            save_run_data(agent.storage, epoch_idx, args.save_as_npy)
+        if args.save_run and eval_env_idx == 0:
+            save_run_data(agent.logger.logdir, agent.storage, eval_env_idx, args.save_as_npy)
 
         agent.storage.compute_estimates(agent.gamma, agent.lmbda, agent.use_gae, agent.normalize_adv)
         epoch_idx += 1
         end_epoch_time = time.time()
         # print("[alina] Done with epoch", epoch_idx if not args.save_run else epoch_idx - 1, "took", (end_epoch_time - start_epoch_time) / 60, "minutes")
-
-    print(f"Logging dir:\n{agent.logger.logdir}")
 
 
 if __name__=='__main__':
@@ -345,8 +345,9 @@ if __name__=='__main__':
     parser.add_argument('--continue_after_coin', action="store_true", help="level doesnt end when agent gets coin")
     parser.add_argument('--noview', action="store_true", help="just take vids")
 
+    parser.add_argument("--store_percentiles", action = "store_true")
     parser.add_argument("--reduced_action_space", action = "store_true")
-    parser.add_argument("--ood_metric", type = str, default = "msp")
+    parser.add_argument("--ood_metric", type = str, default = None)
     parser.add_argument("--select_mode", type = str, default = "max")
 
     args = parser.parse_args()
@@ -368,19 +369,52 @@ if __name__=='__main__':
         all_rewards = []
         all_achievement_timesteps = []
         all_times_achieved = []
-        for _ in range(total_envs):
-            start = time.time()
+        all_help_info = []
+    if args.store_percentiles:
+        all_probs = []
+        all_logits = []
+        probs_by_action = {i: [] for i in range(len(ACTION_SPACE) if args.reduced_action_space else len(ORIGINAL_ACTION_SPACE))}
+        logits_by_action = {i: [] for i in range(len(ACTION_SPACE) if args.reduced_action_space else len(ORIGINAL_ACTION_SPACE))}
+    if args.quant_eval or args.store_percentiles:
+        start = time.time()
+        for i in range(50):
             env = create_venv_render(args, hyperparameters, is_valid = True)
             model, policy = make_model_and_policy(args, env)
             storage = set_storage(model, env, n_steps, n_envs, device)
-            agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args)
-            render(agent, epochs, args, all_rewards, all_achievement_timesteps, all_times_achieved)
-            end = time.time()
-            print("Done with one eval, took", (end - start) / 60, "minutes")
-        with open(os.path.join(logger.logdir, f"quant_eval_{args.model_file.split('/')[-1][:-4]}.txt"), "w") as f:
-            f.write(f"Mean reward: {round(np.mean(all_rewards), 3)}\n")
-            f.write(f"Mean timestep achieved: {round(np.mean(all_achievement_timesteps[all_achievement_timesteps != float('inf')]), 3)}\n")
-            f.write(f"Proportion of times achieved: {round(np.mean(all_times_achieved), 3)}\n")
-            f.write(f"All rewards: {all_rewards}\n\n")
-            f.write(f"All timesteps: {all_achievement_timesteps}")
+            if args.quant_eval:
+                help_info = []
+                agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, all_help_info = help_info)
+                render(i, agent, epochs, args, all_rewards, all_achievement_timesteps, all_times_achieved)
+                all_help_info.append(help_info)
+            elif args.store_percentiles:
+                agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, store_percentiles = True, all_probs = all_probs, all_logits = all_logits, probs_by_action = probs_by_action, logits_by_action = logits_by_action)
+                render(i, agent, epochs, args)
+            if i % 100 == 0:
+                end = time.time()
+                print("Done with eval", str(i) + ",", "took", (end - start) / 60, "minutes")
+                start = time.time()
+        if args.quant_eval:
+            with open(os.path.join(logger.logdir, f"AAA_quant_eval_{args.model_file.split('/')[-1][:-4]}.txt"), "w") as f:
+                f.write(f"Mean reward: {round(np.mean(all_rewards), 3)}\n")
+                filtered_achievement_timesteps = [elem for elem in all_achievement_timesteps if elem != float("inf")]
+                f.write(f"Mean timestep achieved: {round(np.mean(filtered_achievement_timesteps))}\n")
+                f.write(f"Proportion of times achieved: {round(np.mean(all_times_achieved), 3)}\n")  # FIXME: HUH? EITHER FIX THIS OR FIX THE REWARDS BECAUSE WHY ARE REWARDS NON-10 AND WHY PROP TIMES ACHIEVED != REWARD / 10 ???
+                f.write(f"All rewards: {all_rewards}\n\n")
+                f.write(f"All timesteps: {all_achievement_timesteps}\n\n")
+                if args.ood_metric is not None:
+                    help_reqs = []
+                    for run_help_info in all_help_info:  # for each run
+                        reqs = [int(info["need_help"]) for info in run_help_info]  # for each timestep in the run
+                        help_reqs.append(sum(reqs))  # how many help requests in the run
+                    f.write(f"Times asked for help: {round(np.mean(help_reqs))}\n")
+        if args.store_percentiles:
+            with open(os.path.join(logger.logdir, f"all_probs_{args.model_file.split('/')[-1][:-4]}.pkl"), "wb") as f:
+                pickle.dump(all_probs, f)
+            with open(os.path.join(logger.logdir, f"all_logits_{args.model_file.split('/')[-1][:-4]}.pkl"), "wb") as f:
+                pickle.dump(all_logits, f)
+            with open(os.path.join(logger.logdir, f"probs_by_action_{args.model_file.split('/')[-1][:-4]}.pkl"), "wb") as f:
+                pickle.dump(probs_by_action, f)
+            with open(os.path.join(logger.logdir, f"logits_by_action_{args.model_file.split('/')[-1][:-4]}.pkl"), "wb") as f:
+                pickle.dump(logits_by_action, f)
+        print(f"Logging dir:\n{logger.logdir}")
 

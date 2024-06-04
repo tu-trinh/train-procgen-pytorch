@@ -87,3 +87,4 @@ logs/
 # videos
 sandbox/
 src/procgen/
+*test*
