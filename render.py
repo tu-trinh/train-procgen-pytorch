@@ -12,6 +12,7 @@ from procgen import ProcgenGym3Env
 import random
 import torch
 import pickle
+import dill
 
 from PIL import Image
 import torchvision as tv
@@ -44,7 +45,7 @@ def set_device(args):
 #################
 ## ENVIRONMENT ##
 #################
-def create_venv_render(args, hyperparameters, is_valid = False):
+def create_venv_render(args, hyperparameters, env_seed, is_valid = False):
     # print('INITIALIZING ENVIRONMENTS...')
     venv = ProcgenGym3Env(
         num = hyperparameters.get("n_envs", 1),
@@ -58,6 +59,7 @@ def create_venv_render(args, hyperparameters, is_valid = False):
         corruption_type = args.corruption_type,
         corruption_severity = int(args.corruption_severity),
         continue_after_coin = args.continue_after_coin,
+        rand_seed = env_seed
     )
     info_key = None if args.agent_view else "rgb"
     ob_key = "rgb" if args.agent_view else None
@@ -87,7 +89,7 @@ def set_logger(args):
     # print('INITIALIZING LOGGER...')
     if args.logdir is None:
         logdir = 'procgen/' + args.env_name + '/' + args.exp_name + '/' + 'RENDER_seed' + '_' + \
-                 str(args.seed) + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")
+                 str(args.seed) + '_' + time.strftime("%m-%d-%Y_%H-%M-%S")
         logdir = os.path.join('logs', logdir)
     else:
         logdir = args.logdir
@@ -143,13 +145,17 @@ def set_storage(model, env, n_steps, n_envs, device):
 ###########
 def make_agent(algo, env, n_envs, policy, logger, storage, device, args,
                all_help_info = [],
-               store_percentiles = False, all_probs = [], all_logits = [], probs_by_action = {}, logits_by_action = {}):
+               store_percentiles = False,
+               all_max_probs = [], all_sampled_probs = [],
+               all_max_logits = [], all_sampled_logits = [],
+               all_entropies = [],
+               probs_by_action = {}, logits_by_action = {}, entropies_by_action = {}):
     # print('INITIALIZING AGENT...')
     if algo == 'ppo':
         from agents.ppo import PPO as AGENT
     else:
         raise NotImplementedError
-    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, store_percentiles = store_percentiles, all_probs = all_probs, all_logits = all_logits, probs_by_action = probs_by_action, logits_by_action = logits_by_action, all_help_info = all_help_info, **hyperparameters)
+    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, store_percentiles = store_percentiles, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action, all_help_info = all_help_info, **hyperparameters)
     agent.policy.load_state_dict(torch.load(args.model_file, map_location = device)["model_state_dict"])
     agent.n_envs = n_envs
     return agent
@@ -157,8 +163,8 @@ def make_agent(algo, env, n_envs, policy, logger, storage, device, args,
 ##########
 ## SAVE ##
 ##########
-def save_run_data(logdir, storage, eval_env_idx, as_npy = True):
-    with open(logdir + f"/AAA_storage_env_{eval_env_idx}.pkl", "wb") as f:
+def save_run_data(logdir, storage, eval_env_idx, eval_env_seed, as_npy = True):
+    with open(logdir + f"/AAA_storage_env_{eval_env_idx}_seed_{eval_env_seed}.pkl", "wb") as f:
         pickle.dump(storage.help_info_storage, f)
     
     """write observations and value estimates to npy / human-readable files"""
@@ -177,7 +183,7 @@ def save_run_data(logdir, storage, eval_env_idx, as_npy = True):
                 obs = storage.obs_batch[step][env]
                 o = obs.clone().detach().permute(1, 2, 0)
                 o = (o * 255).cpu().numpy().astype(np.uint8)
-                Image.fromarray(o).save(logdir + f"/obs_env_{eval_env_idx}_step_{step}.png")
+                Image.fromarray(o).save(logdir + f"/obs_env_{eval_env_idx}_seed_{eval_env_seed}_step_{step}.png")
 
         #         val = storage.value_batch[step][env]
         #         values += f"Env {env}, step {step}: {val}\n"
@@ -212,7 +218,7 @@ def save_run_data(logdir, storage, eval_env_idx, as_npy = True):
 ############
 ## RENDER ##
 ############
-def render(eval_env_idx, agent, epochs, args, all_rewards = [], all_achievement_timesteps = [], all_times_achieved = []):
+def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], all_achievement_timesteps = [], all_times_achieved = []):
     if args.quant_eval:
         assert epochs == 1, "Just need one epoch for quantitative evaluation"
 
@@ -230,7 +236,7 @@ def render(eval_env_idx, agent, epochs, args, all_rewards = [], all_achievement_
         start_epoch_time = time.time()
         for step in range(agent.n_steps):
             if not args.value_saliency:
-                act, log_prob_act, value, next_hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, select_mode = args.select_mode)
+                act, log_prob_act, value, next_hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, risk = args.risk, select_mode = args.select_mode)
             else:
                 act, log_prob_act, value, next_hidden_state, value_saliency_obs = agent.predict_w_value_saliency(obs, hidden_state, done)
                 if saliency_save_idx % save_frequency == 0:
@@ -290,7 +296,7 @@ def render(eval_env_idx, agent, epochs, args, all_rewards = [], all_achievement_
             obs = next_obs
             hidden_state = next_hidden_state
 
-        _, _, last_val, hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, select_mode = args.select_mode)
+        _, _, last_val, hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, risk = args.risk, select_mode = args.select_mode)
         agent.storage.store_last(obs, hidden_state, last_val, help_info)
 
         if args.quant_eval:
@@ -303,7 +309,7 @@ def render(eval_env_idx, agent, epochs, args, all_rewards = [], all_achievement_
                 all_achievement_timesteps.append(float("inf"))
         
         if args.save_run and eval_env_idx == 0:
-            save_run_data(agent.logger.logdir, agent.storage, eval_env_idx, args.save_as_npy)
+            save_run_data(agent.logger.logdir, agent.storage, eval_env_idx, eval_env_seed, args.save_as_npy)
 
         agent.storage.compute_estimates(agent.gamma, agent.lmbda, agent.use_gae, agent.normalize_adv)
         epoch_idx += 1
@@ -342,12 +348,13 @@ if __name__=='__main__':
     parser.add_argument('--corruption_type',  type=str, default = None)
     parser.add_argument('--corruption_severity',  type=str, default = 1)
     parser.add_argument('--agent_view', action="store_true", help="see what the agent sees")
-    parser.add_argument('--continue_after_coin', action="store_true", help="level doesnt end when agent gets coin")
+    parser.add_argument('--continue_after_coin', action="store_true", default = False, help="level doesnt end when agent gets coin")
     parser.add_argument('--noview', action="store_true", help="just take vids")
 
     parser.add_argument("--store_percentiles", action = "store_true")
     parser.add_argument("--reduced_action_space", action = "store_true")
     parser.add_argument("--ood_metric", type = str, default = None)
+    parser.add_argument("--risk", type = int, default = None)
     parser.add_argument("--select_mode", type = str, default = "max")
 
     args = parser.parse_args()
@@ -371,24 +378,29 @@ if __name__=='__main__':
         all_times_achieved = []
         all_help_info = []
     if args.store_percentiles:
-        all_probs = []
-        all_logits = []
+        all_max_probs, all_sampled_probs = [], []
+        all_max_logits, all_sampled_logits = [], []
+        all_entropies = []
         probs_by_action = {i: [] for i in range(len(ACTION_SPACE) if args.reduced_action_space else len(ORIGINAL_ACTION_SPACE))}
         logits_by_action = {i: [] for i in range(len(ACTION_SPACE) if args.reduced_action_space else len(ORIGINAL_ACTION_SPACE))}
+        entropies_by_action = {i: [] for i in range(len(ACTION_SPACE) if args.reduced_action_space else len(ORIGINAL_ACTION_SPACE))}
     if args.quant_eval or args.store_percentiles:
+        eval_envs = []
+        for i in range(total_envs):
+            env = create_venv_render(args, hyperparameters, args.seed + i, is_valid = True)
+            eval_envs.append(env)
         start = time.time()
-        for i in range(50):
-            env = create_venv_render(args, hyperparameters, is_valid = True)
+        for i, env in enumerate(eval_envs):
             model, policy = make_model_and_policy(args, env)
             storage = set_storage(model, env, n_steps, n_envs, device)
             if args.quant_eval:
                 help_info = []
                 agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, all_help_info = help_info)
-                render(i, agent, epochs, args, all_rewards, all_achievement_timesteps, all_times_achieved)
+                render(i, args.seed + i, agent, epochs, args, all_rewards, all_achievement_timesteps, all_times_achieved)
                 all_help_info.append(help_info)
             elif args.store_percentiles:
-                agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, store_percentiles = True, all_probs = all_probs, all_logits = all_logits, probs_by_action = probs_by_action, logits_by_action = logits_by_action)
-                render(i, agent, epochs, args)
+                agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, store_percentiles = True, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action)
+                render(i, args.seed + i, agent, epochs, args)
             if i % 100 == 0:
                 end = time.time()
                 print("Done with eval", str(i) + ",", "took", (end - start) / 60, "minutes")
@@ -405,16 +417,26 @@ if __name__=='__main__':
                     help_reqs = []
                     for run_help_info in all_help_info:  # for each run
                         reqs = [int(info["need_help"]) for info in run_help_info]  # for each timestep in the run
-                        help_reqs.append(sum(reqs))  # how many help requests in the run
-                    f.write(f"Times asked for help: {round(np.mean(help_reqs))}\n")
+                        help_reqs.append(reqs)  # all help requests or not in the run
+                    f.write(f"Times asked for help: {round(np.mean([sum(hr) for hr in help_reqs]))}\n\n")
+                    f.write(f"Help times:\n")
+                    f.write(str(help_reqs))
+        model_suffix = args.model_file.split('/')[-1][:-4]
         if args.store_percentiles:
-            with open(os.path.join(logger.logdir, f"all_probs_{args.model_file.split('/')[-1][:-4]}.pkl"), "wb") as f:
-                pickle.dump(all_probs, f)
-            with open(os.path.join(logger.logdir, f"all_logits_{args.model_file.split('/')[-1][:-4]}.pkl"), "wb") as f:
-                pickle.dump(all_logits, f)
-            with open(os.path.join(logger.logdir, f"probs_by_action_{args.model_file.split('/')[-1][:-4]}.pkl"), "wb") as f:
+            with open(os.path.join(logger.logdir, f"all_max_probs_{model_suffix}.pkl"), "wb") as f:
+                pickle.dump(all_max_probs, f)
+            with open(os.path.join(logger.logdir, f"all_sampled_probs_{model_suffix}.pkl"), "wb") as f:
+                pickle.dump(all_sampled_probs, f)
+            with open(os.path.join(logger.logdir, f"all_max_logits_{model_suffix}.pkl"), "wb") as f:
+                pickle.dump(all_max_logits, f)
+            with open(os.path.join(logger.logdir, f"all_sampled_logits_{model_suffix}.pkl"), "wb") as f:
+                pickle.dump(all_sampled_logits, f)
+            with open(os.path.join(logger.logdir, f"all_entropies_{model_suffix}.pkl"), "wb") as f:
+                pickle.dump(all_entropies, f)
+            with open(os.path.join(logger.logdir, f"probs_by_action_{model_suffix}.pkl"), "wb") as f:
                 pickle.dump(probs_by_action, f)
-            with open(os.path.join(logger.logdir, f"logits_by_action_{args.model_file.split('/')[-1][:-4]}.pkl"), "wb") as f:
+            with open(os.path.join(logger.logdir, f"logits_by_action_{model_suffix}.pkl"), "wb") as f:
                 pickle.dump(logits_by_action, f)
+            with open(os.path.join(logger.logdir, f"entropies_by_action_{model_suffix}.pkl"), "wb") as f:
+                pickle.dump(entropies_by_action, f)
         print(f"Logging dir:\n{logger.logdir}")
-
