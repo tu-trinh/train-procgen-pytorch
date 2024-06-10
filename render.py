@@ -287,7 +287,6 @@ def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], a
                 saliency_save_idx += 1
 
             next_obs, rew, done, info = agent.env.step(act)
-            # print(f"Action: {act}, reward: {rew}, done? {done}, info: {info}")
             if args.quant_eval:
                 cum_reward += rew
             agent.storage.store(obs, hidden_state, act, rew, done, info, log_prob_act, value, help_info)
@@ -408,9 +407,12 @@ if __name__=='__main__':
         if args.quant_eval:
             with open(os.path.join(logger.logdir, f"AAA_quant_eval_{args.model_file.split('/')[-1][:-4]}.txt"), "w") as f:
                 f.write(f"Mean reward: {round(np.mean(all_rewards), 3)}\n")
+                f.write(f"Median reward: {round(np.median(all_rewards), 3)}\n")
                 filtered_achievement_timesteps = [elem for elem in all_achievement_timesteps if elem != float("inf")]
                 f.write(f"Mean timestep achieved: {round(np.mean(filtered_achievement_timesteps))}\n")
-                f.write(f"Proportion of times achieved: {round(np.mean(all_times_achieved), 3)}\n")  # FIXME: HUH? EITHER FIX THIS OR FIX THE REWARDS BECAUSE WHY ARE REWARDS NON-10 AND WHY PROP TIMES ACHIEVED != REWARD / 10 ???
+                f.write(f"Median timestep achieved: {round(np.median(filtered_achievement_timesteps))}\n")
+                f.write(f"Mean proportion of times achieved: {round(np.mean(all_times_achieved), 3)}\n")
+                f.write(f"Median proportion of times achieved: {round(np.median(all_times_achieved), 3)}\n")
                 f.write(f"All rewards: {all_rewards}\n\n")
                 f.write(f"All timesteps: {all_achievement_timesteps}\n\n")
                 if args.ood_metric is not None:
@@ -418,7 +420,8 @@ if __name__=='__main__':
                     for run_help_info in all_help_info:  # for each run
                         reqs = [int(info["need_help"]) for info in run_help_info]  # for each timestep in the run
                         help_reqs.append(reqs)  # all help requests or not in the run
-                    f.write(f"Times asked for help: {round(np.mean([sum(hr) for hr in help_reqs]))}\n\n")
+                    f.write(f"Mean times asked for help: {round(np.mean([sum(hr) for hr in help_reqs]))}\n")
+                    f.write(f"Median times asked for help: {round(np.median([sum(hr) for hr in help_reqs]))}\n\n")
                     f.write(f"Help times:\n")
                     f.write(str(help_reqs))
         model_suffix = args.model_file.split('/')[-1][:-4]
