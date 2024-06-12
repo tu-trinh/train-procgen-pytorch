@@ -4,11 +4,11 @@ import argparse
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import pickle
-import importlib.resources
+from common.constants import ORIGINAL_ACTION_SPACE
 
 
-def add_border_and_text(frame, step, env_idx, seed, help_info):
-    # help_info is dictionary containing `action_info` list of (act, prob, logit), `entropy`, and `need_help`
+def add_border_and_text(frame, step, env_idx, seed, taken_action, help_info):
+    # help_info is dictionary containing `action_info`, list of (act, prob, logit); `entropy`; and `need_help`
     border_size = 60
     # new_size = (frame.width + 2 * border_size, frame.height + border_size + border_size // 3)
     new_size = (frame.width + 2 * border_size, frame.height + border_size + border_size // 2)
@@ -21,9 +21,23 @@ def add_border_and_text(frame, step, env_idx, seed, help_info):
     draw.text((10, 20), f"Env {env_idx}", fill = "black", font = font)
     draw.text((10, 30), f"Seed {seed}", fill = "black", font = font)
 
+    taken_action = ORIGINAL_ACTION_SPACE[int(taken_action[0])]
+    for action_info in help_info["action_info"]:
+        if action_info[0] == taken_action:
+            taken_action_prob = action_info[1]
+            taken_action_logit = action_info[2]
+            break
+    draw.text((10, new_size[1] - 60), f"{taken_action} | {taken_action_prob:.2f} | {taken_action_logit:.2f}", fill = "blue", font = font)
+    taken_action_at_top = False
     for i, (action, prob, logit) in enumerate(sorted(help_info["action_info"], key = lambda t: t[1], reverse = True)[:5]):
-        fill = "blue" if i == 0 else "black"
-        draw.text((10, new_size[1] - 70 + 10 + i * 15), f"{action} | {prob:.2f} | {logit:.2f}", fill = fill, font = font)
+        if action == taken_action:
+            taken_action_at_top = True
+        else:
+            if i == 4:
+                if taken_action_at_top:
+                    draw.text((10, new_size[1] - 60 + (i + 1) * 15), f"{action} | {prob:.2f} | {logit:.2f}", fill = "black", font = font)
+            else:
+                draw.text((10, new_size[1] - 60 + (i + 1) * 15), f"{action} | {prob:.2f} | {logit:.2f}", fill = "black", font = font)
     # for i, (action, prob, logit) in enumerate(help_info["action_info"][5:10]):
     #     draw.text((100, new_size[1] - border_size + 85 + i * 15), f"{action} | {prob:.2f} | {logit:.2f}", fill = "black", font = font)
     # for i, (action, prob, logit) in enumerate(help_info["action_info"][10:15]):
@@ -47,14 +61,16 @@ if __name__ == "__main__":
     frame_duration = 0.25
     for i, env in enumerate(args.env):
         with open(os.path.join(args.dir, f"AAA_storage_env_{env}_seed_{args.seed[i]}.pkl"), "rb") as f:
-            all_action_info = pickle.load(f)
+            run_info = pickle.load(f)
+        all_action_info = run_info["help_info_storage"]
+        taken_actions = run_info["action_storage"]
         step = 0
         frames = []
         while True:
             try:
                 img_path = os.path.join(args.dir, f"obs_env_{env}_seed_{args.seed[i]}_step_{step}.png")
                 frame = Image.open(img_path)
-                frame = add_border_and_text(frame, step, env, args.seed[i], all_action_info[step])
+                frame = add_border_and_text(frame, step, env, args.seed[i], taken_actions[step], all_action_info[step])
                 frames.append(frame)
                 step += 1
             except (IndexError, FileNotFoundError):

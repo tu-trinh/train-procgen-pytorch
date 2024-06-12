@@ -149,14 +149,19 @@ def make_agent(algo, env, n_envs, policy, logger, storage, device, args,
                all_max_probs = [], all_sampled_probs = [],
                all_max_logits = [], all_sampled_logits = [],
                all_entropies = [],
-               probs_by_action = {}, logits_by_action = {}, entropies_by_action = {}):
+               probs_by_action = {}, logits_by_action = {}, entropies_by_action = {},
+               percentile_dir = None,
+               is_expert = False):
     # print('INITIALIZING AGENT...')
     if algo == 'ppo':
         from agents.ppo import PPO as AGENT
     else:
         raise NotImplementedError
-    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, store_percentiles = store_percentiles, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action, all_help_info = all_help_info, **hyperparameters)
-    agent.policy.load_state_dict(torch.load(args.model_file, map_location = device)["model_state_dict"])
+    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, store_percentiles = store_percentiles, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action, all_help_info = all_help_info, percentile_dir = percentile_dir, by_action = args.by_action, **hyperparameters)
+    if is_expert:
+        agent.policy.load_state_dict(torch.load(args.expert_model_file, map_location = device)["model_state_dict"])
+    else:
+        agent.policy.load_state_dict(torch.load(args.model_file, map_location = device)["model_state_dict"])
     agent.n_envs = n_envs
     return agent
 
@@ -164,8 +169,9 @@ def make_agent(algo, env, n_envs, policy, logger, storage, device, args,
 ## SAVE ##
 ##########
 def save_run_data(logdir, storage, eval_env_idx, eval_env_seed, as_npy = True):
+    run_data = {"help_info_storage": storage.help_info_storage, "action_storage": storage.act_batch.cpu().numpy()}
     with open(logdir + f"/AAA_storage_env_{eval_env_idx}_seed_{eval_env_seed}.pkl", "wb") as f:
-        pickle.dump(storage.help_info_storage, f)
+        pickle.dump(run_data, f)
     
     """write observations and value estimates to npy / human-readable files"""
     print(f"Saving observations and values to {logdir}")
@@ -218,7 +224,7 @@ def save_run_data(logdir, storage, eval_env_idx, eval_env_seed, as_npy = True):
 ############
 ## RENDER ##
 ############
-def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], all_achievement_timesteps = [], all_times_achieved = []):
+def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], all_achievement_timesteps = [], all_times_achieved = [], expert = None):
     if args.quant_eval:
         assert epochs == 1, "Just need one epoch for quantitative evaluation"
 
@@ -237,6 +243,8 @@ def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], a
         for step in range(agent.n_steps):
             if not args.value_saliency:
                 act, log_prob_act, value, next_hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, risk = args.risk, select_mode = args.select_mode)
+                if expert is not None and help_info["need_help"]:
+                    act, _, _, _, _ = expert.predict(obs, hidden_state, done, select_mode = args.select_mode)
             else:
                 act, log_prob_act, value, next_hidden_state, value_saliency_obs = agent.predict_w_value_saliency(obs, hidden_state, done)
                 if saliency_save_idx % save_frequency == 0:
@@ -307,7 +315,7 @@ def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], a
                 all_times_achieved.append(0)
                 all_achievement_timesteps.append(float("inf"))
         
-        if args.save_run and eval_env_idx == 0:
+        if args.save_run and eval_env_idx % 100 == 0:
             save_run_data(agent.logger.logdir, agent.storage, eval_env_idx, eval_env_seed, args.save_as_npy)
 
         agent.storage.compute_estimates(agent.gamma, agent.lmbda, agent.use_gae, agent.normalize_adv)
@@ -354,7 +362,10 @@ if __name__=='__main__':
     parser.add_argument("--reduced_action_space", action = "store_true")
     parser.add_argument("--ood_metric", type = str, default = None)
     parser.add_argument("--risk", type = int, default = None)
-    parser.add_argument("--select_mode", type = str, default = "max")
+    parser.add_argument("--select_mode", type = str, default = "sample")
+    parser.add_argument("--percentile_dir", type = str)
+    parser.add_argument("--by_action", action = "store_true")
+    parser.add_argument("--expert_model_file", type = str, default = None)
 
     args = parser.parse_args()
 
@@ -392,10 +403,16 @@ if __name__=='__main__':
         for i, env in enumerate(eval_envs):
             model, policy = make_model_and_policy(args, env)
             storage = set_storage(model, env, n_steps, n_envs, device)
+            if args.expert_model_file is not None:
+                expert_model, expert_policy = make_model_and_policy(args, env)
+                expert_storage = set_storage(expert_model, env, n_steps, n_envs, device)
             if args.quant_eval:
-                help_info = []
-                agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, all_help_info = help_info)
-                render(i, args.seed + i, agent, epochs, args, all_rewards, all_achievement_timesteps, all_times_achieved)
+                agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, all_help_info = help_info, percentile_dir = args.percentile_dir)
+                if args.expert_model_file is not None:
+                    expert_agent = make_agent(algo, env, n_envs, expert_policy, logger, expert_storage, device, args)
+                else:
+                    expert_agent = None
+                render(i, args.seed + i, agent, epochs, args, all_rewards, all_achievement_timesteps, all_times_achieved, expert = expert_agent)
                 all_help_info.append(help_info)
             elif args.store_percentiles:
                 agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, store_percentiles = True, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action)
@@ -409,10 +426,16 @@ if __name__=='__main__':
                 f.write(f"Mean reward: {round(np.mean(all_rewards), 3)}\n")
                 f.write(f"Median reward: {round(np.median(all_rewards), 3)}\n")
                 filtered_achievement_timesteps = [elem for elem in all_achievement_timesteps if elem != float("inf")]
-                f.write(f"Mean timestep achieved: {round(np.mean(filtered_achievement_timesteps))}\n")
-                f.write(f"Median timestep achieved: {round(np.median(filtered_achievement_timesteps))}\n")
-                f.write(f"Mean proportion of times achieved: {round(np.mean(all_times_achieved), 3)}\n")
-                f.write(f"Median proportion of times achieved: {round(np.median(all_times_achieved), 3)}\n")
+                try:
+                    f.write(f"Mean timestep achieved: {round(np.mean(filtered_achievement_timesteps))}\n")
+                    f.write(f"Median timestep achieved: {round(np.median(filtered_achievement_timesteps))}\n")
+                    f.write(f"Mean proportion of times achieved: {round(np.mean(all_times_achieved), 3)}\n")
+                    f.write(f"Median proportion of times achieved: {round(np.median(all_times_achieved), 3)}\n")
+                except ValueError:
+                    f.write(f"Mean timestep achieved: NONE\n")
+                    f.write(f"Median timestep achieved: NONE\n")
+                    f.write(f"Mean proportion of times achieved: 0\n")
+                    f.write(f"Median proportion of times achieved: 0\n")
                 f.write(f"All rewards: {all_rewards}\n\n")
                 f.write(f"All timesteps: {all_achievement_timesteps}\n\n")
                 if args.ood_metric is not None:
