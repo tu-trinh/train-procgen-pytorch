@@ -3,10 +3,10 @@
 #SBATCH --mem=40gb
 #SBATCH --gres=gpu:1
 #SBATCH --wait-all-nodes=1
-#SBATCH --job-name=OA
+#SBATCH --job-name=expert
 #SBATCH --output=experiments/slurm/%x_%j.out
-#SBATCH --time=72:00:00
-#SBATCH --qos scavenger
+#SBATCH --time=120:00:00
+#SBATCH --qos default
 
 eval "$(/nas/ucb/tutrinh/anaconda3/bin/conda shell.bash hook)"
 conda activate ood
@@ -18,8 +18,8 @@ cd /nas/ucb/tutrinh/train-procgen-pytorch
 export PYTHONPATH="$PYTHONPATH:$PWD"
 
 python3 train.py \
-	--env_name coinrun \
-	--exp_name slurm_og_actions \
+	--env_name coinrun_aisc \
+	--exp_name expert \
 	--num_levels 100000 \
 	--distribution_mode hard \
 	--param_name hard-500 \

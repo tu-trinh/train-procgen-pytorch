@@ -251,7 +251,7 @@ class PPO(BaseAgent):
             # Run Policy
             self.policy.eval()
             for _ in range(self.n_steps):
-                act, log_prob_act, value, next_hidden_state, help_info = self.predict(obs, hidden_state, done, ood_metric = "msp")
+                act, log_prob_act, value, next_hidden_state, help_info = self.predict(obs, hidden_state, done, ood_metric = None)
                 if reduced_action_space:
                     act = ACTION_TRANSLATION[act]
                     assert act.shape == log_prob_act.shape, "Messed up converting actions"
@@ -260,14 +260,14 @@ class PPO(BaseAgent):
                 obs = next_obs
                 hidden_state = next_hidden_state
             value_batch = self.storage.value_batch[:self.n_steps]
-            _, _, last_val, hidden_state, help_info = self.predict(obs, hidden_state, done, ood_metric = "msp")
+            _, _, last_val, hidden_state, help_info = self.predict(obs, hidden_state, done, ood_metric = None)
             self.storage.store_last(obs, hidden_state, last_val, help_info)
             self.storage.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
             #valid
             if self.env_valid is not None:
                 for _ in range(self.n_steps):
-                    act_v, log_prob_act_v, value_v, next_hidden_state_v, help_info = self.predict(obs_v, hidden_state_v, done_v, ood_metric = "msp")
+                    act_v, log_prob_act_v, value_v, next_hidden_state_v, help_info = self.predict(obs_v, hidden_state_v, done_v, ood_metric = None)
                     if reduced_action_space:
                         act = ACTION_TRANSLATION[act]
                         assert act.shape == log_prob_act.shape, "Messed up converting actions (val)"
@@ -277,7 +277,7 @@ class PPO(BaseAgent):
                                              log_prob_act_v, value_v, help_info)
                     obs_v = next_obs_v
                     hidden_state_v = next_hidden_state_v
-                _, _, last_val_v, hidden_state_v, help_info = self.predict(obs_v, hidden_state_v, done_v, ood_metric = "msp")
+                _, _, last_val_v, hidden_state_v, help_info = self.predict(obs_v, hidden_state_v, done_v, ood_metric = None)
                 self.storage_valid.store_last(obs_v, hidden_state_v, last_val_v, help_info)
                 self.storage_valid.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
