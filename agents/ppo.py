@@ -29,6 +29,7 @@ class PPO(BaseAgent):
                  entropies_by_action={},
                  all_help_info=[],
                  percentile_dir=None,
+                 is_expert=False,
                  by_action=False,
                  env_valid=None,
                  storage_valid=None,
@@ -100,6 +101,7 @@ class PPO(BaseAgent):
                 self.logit_thresholds_by_action = percentiles["logits_by_action"]
                 self.entropy_thresholds_by_action = percentiles["probs_by_action"]
         self.all_help_info = all_help_info
+        self.is_expert = is_expert
 
     def determine_ask_for_help(self, metric, risk, act, dist, logits):
         if metric == "msp":
@@ -171,10 +173,10 @@ class PPO(BaseAgent):
                     self.probs_by_action[act.cpu().numpy()[i]].append(action_probs[i])
                     self.logits_by_action[act.cpu().numpy()[i]].append(action_logits[i])
                     self.entropies_by_action[act.cpu().numpy()[i]].append(entropies[i])
-        if ood_metric is not None:
-           need_help, help_info = self.determine_ask_for_help(ood_metric, risk, act, dist, logits)
-           if need_help:
-               self.num_requests += 1
+        if not self.is_expert and ood_metric is not None:
+            need_help, help_info = self.determine_ask_for_help(ood_metric, risk, act, dist, logits)
+            if need_help:
+                self.num_requests += 1
         else:
             help_info = None
         return act.cpu().numpy(), log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy(), help_info

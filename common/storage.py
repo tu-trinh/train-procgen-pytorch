@@ -18,6 +18,7 @@ class Storage():
         self.hidden_states_batch = torch.zeros(self.num_steps+1, self.num_envs, self.hidden_state_size)
         self.act_batch = torch.zeros(self.num_steps, self.num_envs)
         self.rew_batch = torch.zeros(self.num_steps, self.num_envs)
+        self.adjusted_rew_batch = torch.zeros(self.num_steps, self.num_envs)
         self.done_batch = torch.zeros(self.num_steps, self.num_envs)
         self.log_prob_act_batch = torch.zeros(self.num_steps, self.num_envs)
         self.value_batch = torch.zeros(self.num_steps+1, self.num_envs)
@@ -28,7 +29,7 @@ class Storage():
         self.help_info_storage = []
         self.step = 0
 
-    def store(self, obs, hidden_state, act, rew, done, info, log_prob_act, value, help_info):
+    def store(self, obs, hidden_state, act, rew, adjusted_rew, done, info, log_prob_act, value, help_info):
         self.help_info_storage.append(help_info)
         self.obs_batch[self.step] = torch.from_numpy(obs.copy())
         if isinstance(done, list):
@@ -37,6 +38,7 @@ class Storage():
         self.hidden_states_batch[self.step] = torch.from_numpy(hidden_state.copy())
         self.act_batch[self.step] = torch.from_numpy(act.copy()) if not isinstance(act, str) else -1
         self.rew_batch[self.step] = torch.from_numpy(rew.copy())
+        self.adjusted_rew_batch[self.step] = torch.from_numpy(adjusted_rew.copy())
         self.done_batch[self.step] = torch.from_numpy(done.copy())
         self.log_prob_act_batch[self.step] = torch.from_numpy(log_prob_act.copy())
         self.value_batch[self.step] = torch.from_numpy(value.copy())
@@ -45,8 +47,8 @@ class Storage():
 
         self.step = (self.step + 1) % self.num_steps
 
-    def store_last(self, last_obs, last_hidden_state, last_value, help_info):
-        self.help_info_storage.append(help_info)
+    def store_last(self, last_obs, last_hidden_state, last_value, last_help_info):
+        self.help_info_storage.append(last_help_info)
         self.obs_batch[-1] = torch.from_numpy(last_obs.copy())
         self.obs_batch[-1] = torch.from_numpy(last_obs.copy())
         self.hidden_states_batch[-1] = torch.from_numpy(last_hidden_state.copy())

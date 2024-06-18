@@ -6,6 +6,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--percentile_dir", "-d", type = str, required = True)
+parser.add_argument("--display", "-p", action = "store_true")
 args = parser.parse_args()
 percentile_dir = args.percentile_dir
 metrics = {
@@ -29,6 +30,12 @@ for file in os.listdir(percentile_dir):
             if "all" in prefix:
                 for p in [1] + list(range(5, 96, 5)) + [99]:
                     percs[p] = np.percentile(data, p)
+                if args.display:
+                    print("METRIC:", metrics[prefix].upper())
+                    print("Mean:", np.mean(data))
+                    print("Median:", np.median(data))
+                    print(percs)
+                    print("\n\n")
             else:
                 for action in data:
                     action_percs = {}
