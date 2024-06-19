@@ -77,6 +77,7 @@ for risk in "${risk_values[@]}"; do
         --switching_cost 2 \
         --quant_eval \
         --seed ${seed} \
+	--device gpu \
         --gpu_device ${gpu_device} \
         --save_run
 done

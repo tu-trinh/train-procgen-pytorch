@@ -40,6 +40,9 @@ def set_device(args):
         device = torch.device('cuda')
     else:
         device = torch.device('cpu')
+    print("Using", device)
+    if args.device == 'gpu':
+        print("GPU set to", os.environ["CUDA_VISIBLE_DEVICES"])
     return device
 
 #################
