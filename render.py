@@ -486,6 +486,8 @@ if __name__=='__main__':
                     f.write(f"Mean proportion of times achieved: 0\n")
                     f.write(f"Median proportion of times achieved: 0\n")
                 f.write(f"All rewards: {all_rewards}\n\n")
+                if args.expert_model_file is not None:
+                    f.write(f"All adjusted rewards: {all_adjusted_rewards}\n\n")
                 f.write(f"All timesteps: {all_achievement_timesteps}\n\n")
                 if args.ood_metric is not None:
                     help_reqs = []
