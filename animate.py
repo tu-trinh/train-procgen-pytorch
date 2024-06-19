@@ -27,7 +27,10 @@ def add_border_and_text(frame, step, env_idx, seed, taken_action, help_info):
             taken_action_prob = action_info[1]
             taken_action_logit = action_info[2]
             break
-    draw.text((10, new_size[1] - 60), f"{taken_action} | {taken_action_prob:.2f} | {taken_action_logit:.2f}", fill = "blue", font = font)
+    if help_info["need_help"]:
+        draw.text((10, new_size[1] - 60), f"{taken_action}", fill = "red", font = font)
+    else:
+        draw.text((10, new_size[1] - 60), f"{taken_action} | {taken_action_prob:.2f} | {taken_action_logit:.2f}", fill = "blue", font = font)
     taken_action_at_top = False
     for i, (action, prob, logit) in enumerate(sorted(help_info["action_info"], key = lambda t: t[1], reverse = True)[:5]):
         if action == taken_action:
