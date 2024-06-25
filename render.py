@@ -160,7 +160,7 @@ def make_agent(algo, env, n_envs, policy, logger, storage, device, args,
         from agents.ppo import PPO as AGENT
     else:
         raise NotImplementedError
-    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, store_percentiles = store_percentiles, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action, all_help_info = all_help_info, percentile_dir = percentile_dir, by_action = args.by_action, is_expert = is_expert, **hyperparameters)
+    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, store_percentiles = store_percentiles, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action, all_help_info = all_help_info, percentile_dir = percentile_dir, by_action = args.by_action, is_expert = is_expert, unique_actions = args.unique_actions, **hyperparameters)
     if is_expert:
         agent.policy.load_state_dict(torch.load(args.expert_model_file, map_location = device)["model_state_dict"])
     else:
@@ -172,7 +172,11 @@ def make_agent(algo, env, n_envs, policy, logger, storage, device, args,
 ## SAVE ##
 ##########
 def save_run_data(logdir, storage, eval_env_idx, eval_env_seed, as_npy = True):
-    run_data = {"help_info_storage": storage.help_info_storage, "action_storage": storage.act_batch.cpu().numpy()}
+    run_data = {
+        "help_info_storage": storage.help_info_storage,
+        "action_storage": storage.act_batch.cpu().numpy(),
+        "repeated_state_storage": storage.repeated_state_storage    
+    }
     with open(logdir + f"/AAA_storage_env_{eval_env_idx}_seed_{eval_env_seed}.pkl", "wb") as f:
         pickle.dump(run_data, f)
     
@@ -250,7 +254,7 @@ def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], a
         curr_agent = 0
         for step in range(agent.n_steps):
             if not args.value_saliency:
-                act, log_prob_act, value, next_hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, risk = args.risk, select_mode = args.select_mode)
+                act, log_prob_act, value, next_hidden_state, help_info, repeated_state = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, risk = args.risk, select_mode = args.select_mode)
                 if expert is not None and help_info["need_help"]:
                     act, _, _, _, _ = expert.predict(obs, hidden_state, done, select_mode = args.select_mode)
                     curr_agent = 1
@@ -318,14 +322,14 @@ def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], a
             if args.quant_eval:
                 cum_reward += rew
                 cum_adjusted_reward += adjusted_rew
-            agent.storage.store(obs, hidden_state, act, rew, adjusted_rew, done, info, log_prob_act, value, help_info)
+            agent.storage.store(obs, hidden_state, act, rew, adjusted_rew, done, info, log_prob_act, value, help_info, repeated_state)
             if all(done):
                 break
             obs = next_obs
             hidden_state = next_hidden_state
 
-        _, _, last_val, hidden_state, help_info = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, risk = args.risk, select_mode = args.select_mode)
-        agent.storage.store_last(obs, hidden_state, last_val, help_info)
+        _, _, last_val, hidden_state, help_info, repeated_state = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, risk = args.risk, select_mode = args.select_mode)
+        agent.storage.store_last(obs, hidden_state, last_val, help_info, repeated_state)
 
         if args.quant_eval:
             all_rewards.append(cum_reward[0])
@@ -393,6 +397,7 @@ if __name__=='__main__':
     parser.add_argument("--expert_model_file", type = str, default = None)
     parser.add_argument("--expert_cost", type = float, default = None)
     parser.add_argument("--switching_cost", type = float, default = None)
+    parser.add_argument("--unique_actions", action = "store_true", default = False)
 
     args = parser.parse_args()
 

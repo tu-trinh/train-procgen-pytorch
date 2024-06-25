@@ -7,7 +7,7 @@ import pickle
 from common.constants import ORIGINAL_ACTION_SPACE
 
 
-def add_border_and_text(frame, step, env_idx, seed, taken_action, help_info):
+def add_border_and_text(frame, step, env_idx, seed, taken_action, help_info, repeated_state):
     # help_info is dictionary containing `action_info`, list of (act, prob, logit); `entropy`; and `need_help`
     border_size = 60
     # new_size = (frame.width + 2 * border_size, frame.height + border_size + border_size // 3)
@@ -49,6 +49,8 @@ def add_border_and_text(frame, step, env_idx, seed, taken_action, help_info):
     draw.text((new_size[0] - border_size + 10, 10), f"Entropy: {help_info['entropy']:.2f}", fill = "black", font = font)
     if help_info["need_help"]:
         draw.text((new_size[0] - border_size + 10, 30), "Asked for help!!!", fill = "red", font = font)
+    if repeated_state:
+        draw.text((new_size[0] - border_size + 10, 50), "Repeated state!", fill = "green", font = font)
     
     return new_frame
 
@@ -67,13 +69,14 @@ if __name__ == "__main__":
             run_info = pickle.load(f)
         all_action_info = run_info["help_info_storage"]
         taken_actions = run_info["action_storage"]
+        repeated_states_log = run_info["repeated_state_storage"]
         step = 0
         frames = []
         while True:
             try:
                 img_path = os.path.join(args.dir, f"obs_env_{env}_seed_{args.seed[i]}_step_{step}.png")
                 frame = Image.open(img_path)
-                frame = add_border_and_text(frame, step, env, args.seed[i], taken_actions[step], all_action_info[step])
+                frame = add_border_and_text(frame, step, env, args.seed[i], taken_actions[step], all_action_info[step], repeated_states_log[step])
                 frames.append(frame)
                 step += 1
             except (IndexError, FileNotFoundError):
