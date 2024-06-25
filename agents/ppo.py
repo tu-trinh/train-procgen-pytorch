@@ -1,6 +1,7 @@
 from .base_agent import BaseAgent
-from common.misc_util import adjust_lr, get_n_params
+from common.misc_util import adjust_lr
 from common.constants import *
+from common.hasher import HashSet
 import torch
 import torch.optim as optim
 import numpy as np
@@ -31,6 +32,7 @@ class PPO(BaseAgent):
                  percentile_dir=None,
                  is_expert=False,
                  by_action=False,
+                 unique_actions=False,
                  env_valid=None,
                  storage_valid=None,
                  n_steps=128,
@@ -103,6 +105,10 @@ class PPO(BaseAgent):
         self.all_help_info = all_help_info
         self.is_expert = is_expert
 
+        self.unique_actions = unique_actions
+        if self.unique_actions:
+            self.state_action_tracker = HashSet()
+
     def determine_ask_for_help(self, metric, risk, act, dist, logits):
         if metric == "msp":
             need_help = torch.log(dist.probs.max()) < np.log(self.max_probability_thresholds[risk])
@@ -155,10 +161,42 @@ class PPO(BaseAgent):
             hidden_state = torch.FloatTensor(hidden_state).to(device=self.device)
             mask = torch.FloatTensor(1 - done).to(device=self.device)
             dist, logits, value, hidden_state = self.policy(obs, hidden_state, mask)
-            if select_mode == "sample":
-                act = dist.sample()
-            else:
-                act = torch.argmax(dist.probs).unsqueeze(0)
+            if ood_metric is None or not self.unique_actions:  # likely training phase, or we don't care about repeated actions in repeat states
+                if select_mode == "sample":
+                    act = dist.sample()
+                else:
+                    act = torch.argmax(dist.probs).unsqueeze(0)
+                repeated_state = False
+            else:  # likely evaluation phase
+                if self.state_action_tracker.has_seen_key(obs):
+                    repeated_state = True
+                    seen_actions = self.state_action_tracker.get_vals(obs)
+                    unseen_mask = torch.ones_like(dist.probs).bool()
+                    unseen_mask[:, list(seen_actions)] = False
+                    unseen_probs = dist.probs.clone()
+                    if select_mode == "sample":
+                        if all(~unseen_mask[0]):
+                            self.state_action_tracker.reset(obs)
+                            act = dist.sample()
+                        else:
+                            unseen_probs[~unseen_mask] = 0
+                            unseen_probs /= unseen_probs.sum()
+                            unseen_dist = torch.distributions.Categorical(probs = unseen_probs)
+                            act = unseen_dist.sample()
+                    else:
+                        if all(~unseen_mask[0]):
+                            self.state_action_tracker.reset(obs)
+                            act = torch.argmax(dist.probs).unsqueeze(0)
+                        else:
+                            unseen_probs[~unseen_mask] = float("-inf")
+                            act = torch.argmax(unseen_probs).unsqueeze(0)
+                else:
+                    repeated_state = False
+                    if select_mode == "sample":
+                        act = dist.sample()
+                    else:
+                        act = torch.argmax(dist.probs).unsqueeze(0)
+                self.state_action_tracker.add_val(obs, act)
             log_prob_act = dist.log_prob(act)
             if self.store_percentiles:
                 action_probs = dist.probs.gather(1, act.unsqueeze(-1)).squeeze(-1).cpu().numpy()
@@ -179,7 +217,7 @@ class PPO(BaseAgent):
                 self.num_requests += 1
         else:
             help_info = None
-        return act.cpu().numpy(), log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy(), help_info
+        return act.cpu().numpy(), log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy(), help_info, repeated_state
 
     def predict_w_value_saliency(self, obs, hidden_state, done):
         obs = torch.FloatTensor(obs).to(device=self.device)
@@ -263,7 +301,7 @@ class PPO(BaseAgent):
             # Run Policy
             self.policy.eval()
             for _ in range(self.n_steps):
-                act, log_prob_act, value, next_hidden_state, help_info = self.predict(obs, hidden_state, done, ood_metric = None)
+                act, log_prob_act, value, next_hidden_state, help_info, _ = self.predict(obs, hidden_state, done, ood_metric = None)
                 if reduced_action_space:
                     act = ACTION_TRANSLATION[act]
                     assert act.shape == log_prob_act.shape, "Messed up converting actions"
@@ -272,14 +310,14 @@ class PPO(BaseAgent):
                 obs = next_obs
                 hidden_state = next_hidden_state
             value_batch = self.storage.value_batch[:self.n_steps]
-            _, _, last_val, hidden_state, help_info = self.predict(obs, hidden_state, done, ood_metric = None)
+            _, _, last_val, hidden_state, help_info, _ = self.predict(obs, hidden_state, done, ood_metric = None)
             self.storage.store_last(obs, hidden_state, last_val, help_info)
             self.storage.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
             #valid
             if self.env_valid is not None:
                 for _ in range(self.n_steps):
-                    act_v, log_prob_act_v, value_v, next_hidden_state_v, help_info = self.predict(obs_v, hidden_state_v, done_v, ood_metric = None)
+                    act_v, log_prob_act_v, value_v, next_hidden_state_v, help_info, _ = self.predict(obs_v, hidden_state_v, done_v, ood_metric = None)
                     if reduced_action_space:
                         act = ACTION_TRANSLATION[act]
                         assert act.shape == log_prob_act.shape, "Messed up converting actions (val)"
@@ -289,7 +327,7 @@ class PPO(BaseAgent):
                                              log_prob_act_v, value_v, help_info)
                     obs_v = next_obs_v
                     hidden_state_v = next_hidden_state_v
-                _, _, last_val_v, hidden_state_v, help_info = self.predict(obs_v, hidden_state_v, done_v, ood_metric = None)
+                _, _, last_val_v, hidden_state_v, help_info, _ = self.predict(obs_v, hidden_state_v, done_v, ood_metric = None)
                 self.storage_valid.store_last(obs_v, hidden_state_v, last_val_v, help_info)
                 self.storage_valid.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 

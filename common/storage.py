@@ -27,9 +27,10 @@ class Storage():
         self.info_batch = deque(maxlen=self.num_steps)
         self.uncertainty_batch = torch.zeros(self.num_steps, self.num_envs)
         self.help_info_storage = []
+        self.repeated_state_storage = []
         self.step = 0
 
-    def store(self, obs, hidden_state, act, rew, adjusted_rew, done, info, log_prob_act, value, help_info):
+    def store(self, obs, hidden_state, act, rew, adjusted_rew, done, info, log_prob_act, value, help_info, repeated_state):
         self.help_info_storage.append(help_info)
         self.obs_batch[self.step] = torch.from_numpy(obs.copy())
         if isinstance(done, list):
@@ -43,12 +44,14 @@ class Storage():
         self.log_prob_act_batch[self.step] = torch.from_numpy(log_prob_act.copy())
         self.value_batch[self.step] = torch.from_numpy(value.copy())
         self.info_batch.append(info)
+        self.repeated_state_storage.append(repeated_state)
         # self.uncertainty_batch[self.step] = torch.from_numpy(uncertainty.copy())
 
         self.step = (self.step + 1) % self.num_steps
 
-    def store_last(self, last_obs, last_hidden_state, last_value, last_help_info):
+    def store_last(self, last_obs, last_hidden_state, last_value, last_help_info, last_repeated_state):
         self.help_info_storage.append(last_help_info)
+        self.repeated_state_storage.append(last_repeated_state)
         self.obs_batch[-1] = torch.from_numpy(last_obs.copy())
         self.obs_batch[-1] = torch.from_numpy(last_obs.copy())
         self.hidden_states_batch[-1] = torch.from_numpy(last_hidden_state.copy())
