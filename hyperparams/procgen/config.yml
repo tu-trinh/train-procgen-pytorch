@@ -53,7 +53,7 @@ easy-200:
     value_coef: 0.5
     entropy_coef: 0.01
     normalize_adv: True
-    normalize_rew: True
+    normalize_rew: False
     use_gae: True
     architecture: impala
     recurrent: False
@@ -93,7 +93,7 @@ hard-500:
     value_coef: 0.5
     entropy_coef: 0.01
     normalize_adv: True
-    normalize_rew: True
+    normalize_rew: False
     use_gae: True
     architecture: impala
     recurrent: False

@@ -83,8 +83,10 @@ celerybeat-schedule
 
 .idea/
 logs/
-# experiments/results
-# videos
+# experiments/results/
+# videos/
 sandbox/
 src/procgen/
 *test*
+wandb/
+experiments/slurm/
