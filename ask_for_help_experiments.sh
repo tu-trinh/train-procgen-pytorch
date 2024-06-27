@@ -47,20 +47,22 @@ gpu_device=$2
 # done
 
 # PROBABILIY-BASED METRICS, TEST ENVIRONMENT
-names=(
-    "help_test_max_probs_og"
-    "help_test_sample_probs_og"
-    "help_test_max_logit_og"
-    "help_test_sample_logit_og"
-    "help_test_ent_og"
-)
-metrics=(
-    "msp"
-    "sampled_p"
-    "ml"
-    "sampled_l"
-    "ent"
-)
+# names=(
+#     "help_test_max_probs_og"
+#     "help_test_sample_probs_og"
+#     "help_test_max_logit_og"
+#     "help_test_sample_logit_og"
+#     "help_test_ent_og"
+# )
+# metrics=(
+#     "msp"
+#     "sampled_p"
+#     "ml"
+#     "sampled_l"
+#     "ent"
+# )
+names=("help_test_random_og")
+metrics=("random")
 for risk in "${risk_values[@]}"; do
     python3 render.py \
         --exp_name "${names[index]}_risk_${risk}" \
@@ -74,7 +76,7 @@ for risk in "${risk_values[@]}"; do
         --risk ${risk} \
         --quant_eval \
         --seed ${seed} \
-	--device gpu \
+	    --device gpu \
         --gpu_device ${gpu_device} \
         --save_run
 done

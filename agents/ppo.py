@@ -129,6 +129,8 @@ class PPO(BaseAgent):
                 need_help = dist.entropy() > self.entropy_thresholds_by_action[act.item()][100 - risk]
             else:
                 need_help = dist.entropy() > self.entropy_thresholds[100 - risk]
+        elif metric == "random":
+            need_help = np.random.random() < risk / 100
         help_info = {}
         sorted_probs, sorted_indices = torch.sort(dist.probs, descending = True)
         sorted_probs = sorted_probs.squeeze()
@@ -150,7 +152,7 @@ class PPO(BaseAgent):
         return need_help, help_info
     
     def predict(self, obs, hidden_state, done, ood_metric = None, risk = None, select_mode = "sample"):
-        assert ood_metric in [None, "msp", "ml", "sampled_p", "sampled_l", "ent"], "Check ood metric"
+        assert ood_metric in [None, "msp", "ml", "sampled_p", "sampled_l", "ent", "random"], "Check ood metric"
         assert select_mode in ["sample", "max"], "Check select mode"
         if ood_metric is not None:
             assert risk is not None, "Must provide risk for ood metric"
