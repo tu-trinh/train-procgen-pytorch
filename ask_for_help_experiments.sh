@@ -48,11 +48,11 @@ gpu_device=$2
 
 # PROBABILIY-BASED METRICS, TEST ENVIRONMENT
 names=(
-    "receive_help_test_max_probs_og"
-    "receive_help_test_sample_probs_og"
-    "receive_help_test_max_logit_og"
-    "receive_help_test_sample_logit_og"
-    "receive_help_test_ent_og"
+    "help_test_max_probs_og"
+    "help_test_sample_probs_og"
+    "help_test_max_logit_og"
+    "help_test_sample_logit_og"
+    "help_test_ent_og"
 )
 metrics=(
     "msp"
@@ -72,9 +72,6 @@ for risk in "${risk_values[@]}"; do
         --select_mode sample \
         --ood_metric ${metrics[index]} \
         --risk ${risk} \
-        --expert_model_file /nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun_aisc/model_200015872.pth \
-        --expert_cost 2 \
-        --switching_cost 2 \
         --quant_eval \
         --seed ${seed} \
 	--device gpu \
