@@ -6,15 +6,19 @@ import argparse
 import re
 
 
-PLOT_PERF_VS_PERC = 1
-PLOT_PROP_VS_PERC = 2
-PLOT_PERF_VS_PROP = 3
-PLOT_COST_BREAKEVEN = 4
+PLOT_PERF_VS_PERC = 1  # performance vs percentile
+PLOT_PROP_VS_PERC = 2  # proportion of asking for help vs percentile
+PLOT_PERF_VS_PROP = 3  # performance vs proportion of asking for help
+PLOT_COST_BREAKEVEN = 4  # how many times ask for help to break even penalties
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--plots", "-p", type = int, nargs = "+", default = [1, 2, 3, 4])
+parser.add_argument("--prefix", type = str, default = "receive_help")
+parser.add_argument("--suffix", type = str, default = "")
 args = parser.parse_args()
+if args.suffix != "" and args.suffix[-1] != "_":
+    args.suffix = "_" + args.suffix
 
 
 def get_mean_and_std(arr):
@@ -42,8 +46,8 @@ colors = {"max prob": "blue", "sampled prob": "green", "max logit": "red", "samp
 helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}}
 log_dir = "logs/procgen/coinrun_aisc"
 for exp_dir in os.listdir(log_dir):
-    if exp_dir.startswith("receive"):
-        perc = int(exp_dir.split("_")[-1])
+    if exp_dir.startswith("receive") and exp_dir.endswith("unique_actions"):
+        perc = int(re.search(r"(\d+)", exp_dir).group(1))
         if "ent" in exp_dir:
             log_key = "entropy"
         elif "max" in exp_dir:
@@ -139,7 +143,7 @@ for metric in helped_logs:
         fig1.suptitle("Performance by Percentile")
         fig1.tight_layout()
         fig1.subplots_adjust(hspace = 0.3, wspace = 0.2)
-        fig1.savefig("receive_help_performance_by_percentile.png")
+        fig1.savefig(f"{args.prefix}_performance_by_percentile{args.suffix}.png")
         print("Done one plot of", PLOT_PERF_VS_PERC)
 
     # 2: Plotting ask-for-help percentage vs percentile
@@ -148,6 +152,8 @@ for metric in helped_logs:
         help_prop_means, help_prop_stds = get_mean_and_std_nested(help_props_by_perc)
         ax.plot(percentiles, help_prop_means, color = colors[metric])
         ax.fill_between(percentiles, help_prop_means - help_prop_stds, help_prop_means + help_prop_stds, color = colors[metric], alpha = 0.3)
+        # for x, y in zip(percentiles, help_prop_means):
+            # ax.hlines(y, 0, x, colors = "gray", linestyles = "dashed", linewidth = 0.5)
         ax.set_title(metric.capitalize())
         ax.set_xlabel("Percentile")
         ax.set_ylabel("Ask-For-Help Percentage")
@@ -156,7 +162,7 @@ for metric in helped_logs:
         fig2.suptitle("Ask-For-Help Percentage vs. Percentile")
         fig2.tight_layout()
         fig2.subplots_adjust(hspace = 0.3, wspace = 0.2)
-        fig2.savefig("receive_help_help_percentage_by_percentile.png")
+        fig2.savefig(f"{args.prefix}_help_percentage_by_percentile{args.suffix}.png")
         print("Done one plot of", PLOT_PROP_VS_PERC)
 
     # 3: Plotting performance vs ask-for-help percentage
@@ -181,7 +187,7 @@ for metric in helped_logs:
         fig3.suptitle("Performance vs. Ask-For-Help Percentage")
         fig3.tight_layout()
         fig3.subplots_adjust(hspace = 0.3, wspace = 0.2)
-        fig3.savefig("receive_help_performance_by_help_percentage.png")
+        fig3.savefig(f"{args.prefix}_performance_by_help_percentage{args.suffix}.png")
         print("Done one plot of", PLOT_PERF_VS_PROP)
 
     i += 1

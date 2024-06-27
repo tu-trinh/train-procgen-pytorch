@@ -87,4 +87,5 @@ logs/
 # videos
 sandbox/
 src/procgen/
-*test*
+test.txt
+nohup.out
