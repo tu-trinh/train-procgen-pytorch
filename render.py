@@ -256,7 +256,7 @@ def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], a
             if not args.value_saliency:
                 act, log_prob_act, value, next_hidden_state, help_info, repeated_state = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, risk = args.risk, select_mode = args.select_mode)
                 if expert is not None and help_info["need_help"]:
-                    act, _, _, _, _ = expert.predict(obs, hidden_state, done, select_mode = args.select_mode)
+                    act, _, _, _, _, _ = expert.predict(obs, hidden_state, done, select_mode = args.select_mode)
                     curr_agent = 1
                 else:
                     curr_agent = 0

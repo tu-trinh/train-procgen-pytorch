@@ -161,7 +161,7 @@ class PPO(BaseAgent):
             hidden_state = torch.FloatTensor(hidden_state).to(device=self.device)
             mask = torch.FloatTensor(1 - done).to(device=self.device)
             dist, logits, value, hidden_state = self.policy(obs, hidden_state, mask)
-            if ood_metric is None or not self.unique_actions:  # likely training phase, or we don't care about repeated actions in repeat states
+            if ood_metric is None or self.is_expert or not self.unique_actions:  # likely training phase, or this is the expert, or we don't care about repeated actions in repeat states
                 if select_mode == "sample":
                     act = dist.sample()
                 else:
