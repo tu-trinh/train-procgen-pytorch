@@ -61,7 +61,7 @@ gpu_device=$2
 #     "sampled_l"
 #     "ent"
 # )
-names=("help_test_random_og")
+names=("receive_help_test_random_og")
 metrics=("random")
 for risk in "${risk_values[@]}"; do
     python3 render.py \
@@ -74,6 +74,9 @@ for risk in "${risk_values[@]}"; do
         --select_mode sample \
         --ood_metric ${metrics[index]} \
         --risk ${risk} \
+        --expert_model_file /nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun_aisc/model_200015872.pth \
+        --expert_cost 2 \
+        --switching_cost 2 \
         --quant_eval \
         --seed ${seed} \
 	    --device gpu \
