@@ -1,7 +1,7 @@
 #!/bin/bash
 
 directories=()
-for f in ./logs/procgen/coinrun_aisc/*_unique_actions; do
+for f in ./logs/procgen/coinrun_aisc/*_random_*; do
     if [ -d "$f" ]; then
         for subdir in "$f"/*; do
             if [ -d "$subdir" ]; then

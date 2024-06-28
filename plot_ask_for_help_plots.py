@@ -46,6 +46,7 @@ colors = {"max prob": "blue", "sampled prob": "green", "max logit": "red", "samp
 helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}}
 log_dir = "logs/procgen/coinrun_aisc"
 for exp_dir in os.listdir(log_dir):
+    # CHANGE HERE #
     if exp_dir.startswith("receive") and exp_dir.endswith("unique_actions"):
         perc = int(re.search(r"(\d+)", exp_dir).group(1))
         if "ent" in exp_dir:
@@ -97,6 +98,7 @@ if PLOT_PERF_VS_PROP in args.plots:
 i = 0
 mega_mean_timestep_achieved = []
 for metric in helped_logs:
+    print("Doing metric", metric)
     rew_by_perc = []
     adj_rew_by_perc = []
     help_props_by_perc = []
@@ -171,13 +173,30 @@ for metric in helped_logs:
         flattened_help_props = np.array([help_prop for help_props in help_props_by_perc for help_prop in help_props])
         flattened_rews = np.array([rew for rews in rew_by_perc for rew in rews])
         flattened_adj_rews = np.array([adj_rew for adj_rews in adj_rew_by_perc for adj_rew in adj_rews])
-        sorted_idx = np.argsort(flattened_help_props)
-        flattened_help_props = flattened_help_props[sorted_idx]
-        flattened_rews = flattened_rews[sorted_idx]
-        flattened_adj_rews = flattened_adj_rews[sorted_idx]
+        # sorted_idx = np.argsort(flattened_help_props)
+        # flattened_help_props = flattened_help_props[sorted_idx]
+        # flattened_rews = flattened_rews[sorted_idx]
+        # flattened_adj_rews = flattened_adj_rews[sorted_idx]
         # ax.scatter(flattened_help_props, flattened_rews, color = colors[metric], label = f"Reward")
-        every = 5
-        ax.scatter(flattened_help_props[::every], flattened_adj_rews[::every], color = colors[metric], marker = "+", label = f"Adj. Reward")
+
+        # every = 5
+        # ax.scatter(flattened_help_props[::every], flattened_adj_rews[::every], color = colors[metric], marker = "+", label = f"Adj. Reward")
+
+        bucket_edges = np.linspace(0, 1, 21)
+        bucket_indices = np.digitize(flattened_help_props, bucket_edges)
+        bucket_rew_means = []
+        bucket_adj_rew_means = []
+        for k in range(1, len(bucket_edges)):
+            bucket_mask = bucket_indices == k
+            if np.any(bucket_mask):
+                bucket_rew_means.append(np.mean(flattened_rews[bucket_mask]))
+                bucket_adj_rew_means.append(np.mean(flattened_adj_rews[bucket_mask]))
+            else:
+                bucket_rew_means.append(np.nan)
+                bucket_adj_rew_means.append(np.nan)
+        bucket_centers = (bucket_edges[:-1] + bucket_edges[1:]) / 2
+        ax.plot(bucket_centers, bucket_rew_means, color = colors[metric], linestyle = "solid", label = f"Reward")
+        ax.plot(bucket_centers, bucket_adj_rew_means, color = colors[metric], linestyle = "dashed", label = f"Adj. Reward")
         ax.set_title(metric.capitalize())
         ax.set_xlabel("Ask-For-Help Percentage")
         ax.set_ylabel("Performance")
