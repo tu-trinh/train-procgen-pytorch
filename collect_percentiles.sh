@@ -3,6 +3,7 @@
 exp_name=$1
 env_name=$2
 model_file=$3
+gpu_device=$4
 
 python3 render.py \
     --exp_name ${exp_name} \
@@ -11,6 +12,8 @@ python3 render.py \
     --param_name hard-plus \
     --model_file ${model_file} \
     --select_mode sample \
-    --quant_eval \
     --seed 8888 \
-    --store_percentiles
+    --store_percentiles \
+    --device gpu \
+    --gpu_device ${gpu_device}
+
