@@ -6,18 +6,6 @@ risk_values=(10 20 30 40 50 60 70 80 90)
 index=$1
 gpu_device=$2
 
-# SIMPLE TRAIN ENVIRONMENT
-# python3 render.py \
-#     --exp_name eval_train_og \
-#     --env_name coinrun \
-#     --distribution_mode hard \
-#     --param_name hard-plus \
-#     --model_file logs/train/coinrun/og_actions/2024-05-25__19-35-47__seed_8888/model_200015872.pth \
-#     --select_mode sample \
-#     --quant_eval \
-#     --seed 8888 \
-#     --save_run
-
 # PROBABILIY-BASED METRICS, TRAIN ENVIRONMENT
 # names=("receive_help_train_max_probs_og" "receive_help_train_sample_probs_og" "receive_help_train_max_logit_og" "receive_help_train_sample_logit_og" "receive_help_train_ent_og")
 # metrics=("msp" "sampled_p" "ml" "sampled_l" "ent")
