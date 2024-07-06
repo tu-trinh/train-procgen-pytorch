@@ -308,12 +308,12 @@ class PPO(BaseAgent):
                     act = ACTION_TRANSLATION[act]
                     assert act.shape == log_prob_act.shape, "Messed up converting actions"
                 next_obs, rew, done, info = self.env.step(act)
-                self.storage.store(obs, hidden_state, act, rew, rew.copy(), done, info, log_prob_act, value, help_info)
+                self.storage.store(obs, hidden_state, act, rew, rew.copy(), done, info, log_prob_act, value, help_info, 0)
                 obs = next_obs
                 hidden_state = next_hidden_state
             value_batch = self.storage.value_batch[:self.n_steps]
             _, _, last_val, hidden_state, help_info, _ = self.predict(obs, hidden_state, done, ood_metric = None)
-            self.storage.store_last(obs, hidden_state, last_val, help_info)
+            self.storage.store_last(obs, hidden_state, last_val, help_info, 0)
             self.storage.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
             #valid
@@ -326,11 +326,11 @@ class PPO(BaseAgent):
                     next_obs_v, rew_v, done_v, info_v = self.env_valid.step(act)
                     self.storage_valid.store(obs_v, hidden_state_v, act_v,
                                              rew_v, rew_v.copy(), done_v, info_v,
-                                             log_prob_act_v, value_v, help_info)
+                                             log_prob_act_v, value_v, help_info, 0)
                     obs_v = next_obs_v
                     hidden_state_v = next_hidden_state_v
                 _, _, last_val_v, hidden_state_v, help_info, _ = self.predict(obs_v, hidden_state_v, done_v, ood_metric = None)
-                self.storage_valid.store_last(obs_v, hidden_state_v, last_val_v, help_info)
+                self.storage_valid.store_last(obs_v, hidden_state_v, last_val_v, help_info, 0)
                 self.storage_valid.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
             # Optimize policy & valueq
