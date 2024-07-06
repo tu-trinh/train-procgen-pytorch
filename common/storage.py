@@ -27,10 +27,12 @@ class Storage():
         self.info_batch = deque(maxlen=self.num_steps)
         self.uncertainty_batch = torch.zeros(self.num_steps, self.num_envs)
         self.help_info_storage = []
+        self.received_help_storage = []
+        self.switched_storage = []
         self.repeated_state_storage = []
         self.step = 0
 
-    def store(self, obs, hidden_state, act, rew, adjusted_rew, done, info, log_prob_act, value, help_info, repeated_state):
+    def store(self, obs, hidden_state, act, rew, adjusted_rew, received_help, switched, done, info, log_prob_act, value, help_info, repeated_state):
         self.help_info_storage.append(help_info)
         self.obs_batch[self.step] = torch.from_numpy(obs.copy())
         if isinstance(done, list):
@@ -45,7 +47,8 @@ class Storage():
         self.value_batch[self.step] = torch.from_numpy(value.copy())
         self.info_batch.append(info)
         self.repeated_state_storage.append(repeated_state)
-        # self.uncertainty_batch[self.step] = torch.from_numpy(uncertainty.copy())
+        self.received_help_storage.append(int(received_help))
+        self.switched_storage.append(int(switched))
 
         self.step = (self.step + 1) % self.num_steps
 

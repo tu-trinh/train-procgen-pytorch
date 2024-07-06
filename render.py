@@ -231,7 +231,7 @@ def save_run_data(logdir, storage, eval_env_idx, eval_env_seed, as_npy = True):
 ############
 ## RENDER ##
 ############
-def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], all_adjusted_rewards = [], all_achievement_timesteps = [], all_times_achieved = [], expert = None):
+def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], all_adjusted_rewards = [], all_queries = [], all_switches = [], all_achievement_timesteps = [], all_times_achieved = [], expert = None):
     if args.quant_eval:
         assert epochs == 1, "Just need one epoch for quantitative evaluation"
     if expert is not None:
@@ -311,10 +311,14 @@ def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], a
 
             next_obs, rew, done, info = agent.env.step(act)
             adjusted_rew = rew.copy()
+            received_help = False
+            switched = False
             if expert is not None and help_info["need_help"]:
                 adjusted_rew -= (10 / agent.n_steps) * args.expert_cost  # TODO: reward max will be different once not coinrun
+                received_help = True
             if curr_agent != prev_agent:
                 adjusted_rew -= (10 / agent.n_steps) * args.switching_cost
+                switched = True
                 # print(f"Step: {step}, needed help? {help_info['need_help']}. Rew = {rew}, adjusted = {adjusted_rew}. Incurred switching cost")
             # else:
                 # print(f"Step: {step}, needed help? {help_info['need_help']}. Rew = {rew}, adjusted = {adjusted_rew}. NO switching cost")
@@ -322,7 +326,9 @@ def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], a
             if args.quant_eval:
                 cum_reward += rew
                 cum_adjusted_reward += adjusted_rew
-            agent.storage.store(obs, hidden_state, act, rew, adjusted_rew, done, info, log_prob_act, value, help_info, repeated_state)
+                all_queries.append(int(received_help))
+                all_switches.append(int(switched))
+            agent.storage.store(obs, hidden_state, act, rew, adjusted_rew, received_help, switched, done, info, log_prob_act, value, help_info, repeated_state)
             if all(done):
                 break
             obs = next_obs
@@ -417,6 +423,8 @@ if __name__=='__main__':
     if args.quant_eval:
         all_rewards = []
         all_adjusted_rewards = []
+        all_queries = []
+        all_switches = []
         all_achievement_timesteps = []
         all_times_achieved = []
         all_help_info = []
@@ -449,7 +457,7 @@ if __name__=='__main__':
                     expert_agent = make_agent(algo, env, n_envs, expert_policy, logger, expert_storage, device, args, is_expert = True)
                 else:
                     expert_agent = None
-                render(i, args.seed + i, agent, epochs, args, all_rewards, all_adjusted_rewards, all_achievement_timesteps, all_times_achieved, expert = expert_agent)
+                render(i, args.seed + i, agent, epochs, args, all_rewards, all_adjusted_rewards, all_queries, all_switches, all_achievement_timesteps, all_times_achieved, expert = expert_agent)
                 all_help_info.append(help_info)
             elif args.store_percentiles:
                 agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, store_percentiles = True, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action)
@@ -465,6 +473,8 @@ if __name__=='__main__':
                 if args.expert_model_file is not None:
                     f.write(f"Mean adjusted reward: {round(np.mean(all_adjusted_rewards), 3)}\n")
                     f.write(f"Median adjusted reward: {round(np.median(all_adjusted_rewards), 3)}\n")
+                    f.write(f"All queries: {all_queries}\n\n")
+                    f.write(f"All switches: {all_switches}\n\n")
                 try:
                     filtered_achievement_timesteps = [elem for elem in all_achievement_timesteps if elem != float("inf")]
                     f.write(f"Mean timestep achieved: {round(np.mean(filtered_achievement_timesteps))}\n")

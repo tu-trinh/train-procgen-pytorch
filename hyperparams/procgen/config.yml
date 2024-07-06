@@ -102,7 +102,7 @@ hard-plus:
     algo: ppo
     n_envs: 1
     n_steps: 256
-    total_envs: 1000
+    total_envs: 1
     epoch: 1
     mini_batch_per_epoch: 8
     mini_batch_size: 8192
