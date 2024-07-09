@@ -350,7 +350,7 @@ def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], a
                 else:  # encountered an enemy
                     all_achievement_timesteps.append(-step)
         
-        if args.save_run and eval_env_idx % 100 == 0:
+        if args.save_run and (eval_env_idx % 100 == 0 or random.random() < 0.015):
             save_run_data(agent.logger.logdir, agent.storage, eval_env_idx, eval_env_seed, args.save_as_npy)
 
         agent.storage.compute_estimates(agent.gamma, agent.lmbda, agent.use_gae, agent.normalize_adv)
@@ -492,9 +492,10 @@ if __name__=='__main__':
                             replaced_achievement_timesteps.append(elem)
                     f.write(f"Mean run length: {round(np.mean(replaced_achievement_timesteps))}\n")
                     f.write(f"Median run length: {round(np.median(replaced_achievement_timesteps))}\n")
-                    f.write(f"Proportion of times achieved: {round(np.mean(all_times_achieved), 3)}\n")
-                    f.write(f"Proportion of fails due to being stuck: {round(1 - sum(fail_reasons) / len(fail_reasons), 3)}\n")
-                    f.write(f"Proportion of fails due to dying: {round(np.mean(fail_reasons), 3)}\n")
+                    if "coinrun" in args.env_name:
+                        f.write(f"Proportion of times achieved: {round(np.mean(all_times_achieved), 3)}\n")
+                        f.write(f"Proportion of fails due to being stuck: {round(1 - sum(fail_reasons) / len(fail_reasons), 3)}\n")
+                        f.write(f"Proportion of fails due to dying: {round(np.mean(fail_reasons), 3)}\n")
                 except ValueError:
                     f.write(f"Mean timestep achieved: NONE\n")
                     f.write(f"Median timestep achieved: NONE\n")

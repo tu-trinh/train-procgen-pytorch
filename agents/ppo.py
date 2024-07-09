@@ -99,9 +99,9 @@ class PPO(BaseAgent):
                 self.max_logit_thresholds = percentiles["max_logits"]
                 self.sampled_logit_thresholds = percentiles["sampled_logits"]
                 self.entropy_thresholds = percentiles["entropies"]
-                self.probability_thresholds_by_action = percentiles["entropies_by_action"]
-                self.logit_thresholds_by_action = percentiles["logits_by_action"]
-                self.entropy_thresholds_by_action = percentiles["probs_by_action"]
+                # self.probability_thresholds_by_action = percentiles["entropies_by_action"]
+                # self.logit_thresholds_by_action = percentiles["logits_by_action"]
+                # self.entropy_thresholds_by_action = percentiles["probs_by_action"]
         self.all_help_info = all_help_info
         self.is_expert = is_expert
 
@@ -308,7 +308,7 @@ class PPO(BaseAgent):
                     act = ACTION_TRANSLATION[act]
                     assert act.shape == log_prob_act.shape, "Messed up converting actions"
                 next_obs, rew, done, info = self.env.step(act)
-                self.storage.store(obs, hidden_state, act, rew, rew.copy(), done, info, log_prob_act, value, help_info, 0)
+                self.storage.store(obs, hidden_state, act, rew, rew.copy(), False, False, done, info, log_prob_act, value, help_info, 0)
                 obs = next_obs
                 hidden_state = next_hidden_state
             value_batch = self.storage.value_batch[:self.n_steps]
@@ -325,7 +325,7 @@ class PPO(BaseAgent):
                         assert act.shape == log_prob_act.shape, "Messed up converting actions (val)"
                     next_obs_v, rew_v, done_v, info_v = self.env_valid.step(act)
                     self.storage_valid.store(obs_v, hidden_state_v, act_v,
-                                             rew_v, rew_v.copy(), done_v, info_v,
+                                             rew_v, rew_v.copy(), False, False, done_v, info_v,
                                              log_prob_act_v, value_v, help_info, 0)
                     obs_v = next_obs_v
                     hidden_state_v = next_hidden_state_v

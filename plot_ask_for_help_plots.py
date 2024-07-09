@@ -16,6 +16,8 @@ PLOT_COST_BREAKEVEN = 5  # how many times ask for help to break even penalties
 parser = argparse.ArgumentParser()
 parser.add_argument("--plots", "-p", type = int, nargs = "+", default = [1, 2, 3, 4, 5])
 parser.add_argument("--bucketed", "-b", action = "store_true")  # only applies to plot 3!
+parser.add_argument("--train", type = str, required = True)
+parser.add_argument("--test", type = str, required = True)
 parser.add_argument("--prefix", type = str, default = "receive_help")
 parser.add_argument("--suffix", type = str, default = "")
 args = parser.parse_args()
@@ -46,7 +48,7 @@ def inf_list_eval(list_str):
 quant_eval_file_name = "AAA_quant_eval_model_200015872.txt"
 colors = {"max prob": "blue", "sampled prob": "green", "max logit": "red", "sampled logit": "purple", "entropy": "orange", "random": "gold"}
 helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}, "random": {}}
-log_dir = "logs/procgen/coinrun_aisc"
+log_dir = f"logs/procgen/{args.test}"
 for exp_dir in os.listdir(log_dir):
     # CHANGE HERE #
     if exp_dir.startswith("receive") and "unique_actions" not in exp_dir:

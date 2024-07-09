@@ -10,11 +10,7 @@ parser.add_argument("--train_env_log_dir", type = str, help = "for example: 'log
 parser.add_argument("--test_env_log_dir", type = str, help = "for example: 'logs/procgen/coinrun_aisc'")
 parser.add_argument("--query_cost", type = int, default = 1)
 parser.add_argument("--switching_cost", type = int, default = 0)
-parser.add_argument("--prefix", type = str, default = "receive_help")
-parser.add_argument("--suffix", type = str, default = "")
 args = parser.parse_args()
-if args.suffix != "" and args.suffix[-1] != "_":
-    args.suffix = "_" + args.suffix
 
 
 def get_mean_and_std(arr):
@@ -28,7 +24,7 @@ def get_mean_and_std_nested(nested_arr):
         mean, std = get_mean_and_std(arr)
         means.append(mean)
         stds.append(std)
-    return np.array(means), np.array(stds)
+    return means, stds
 
 def inf_list_eval(list_str):
     list_str = list_str.replace("inf", "'__inf__'")
@@ -56,54 +52,30 @@ for exp_dir in os.listdir(args.test_env_log_dir):
         helped_logs[log_key][perc] = os.path.join(args.test_env_log_dir, exp_dir, sorted(render_logs)[-1])  # always get last/most updated one
 
 
-if "coinrun" in args.train_env_log_dir:
-    # Weak agent in train environment
-    with open(os.path.join("logs/procgen/coinrun/eval_train_og/RENDER_seed_8888_06-17-2024_18-10-21", quant_eval_file_name), "r") as f:
-        evaluation = f.readlines()
-        for line in evaluation:
-            if "all rewards" in line.lower():
-                train_performance = eval(line[len("all rewards: "):].strip())
-                break
-    # Weak agent in test environment
-    # any help_test_* one is fine for test performance
-    with open(os.path.join("logs/procgen/coinrun_aisc/help_test_ent_og/RENDER_seed_8888_06-10-2024_20-50-28", quant_eval_file_name), "r") as f:
-        evaluation = f.readlines()
-        for line in evaluation:
-            if "all rewards" in line.lower():
-                test_performance = eval(line[len("all rewards: "):].strip())
-                break
-    # Expert in test environment
-    with open(os.path.join("logs/procgen/coinrun_aisc/expert/RENDER_seed_8888_06-21-2024_08-05-09", quant_eval_file_name), "r") as f:
-        evaluation = f.readlines()
-        for line in evaluation:
-            if "all rewards" in line.lower():
-                expert_performance = eval(line[len("all rewards: "):].strip())
-                break
-else:
-    # Weak agent in train environment
-    temp = os.listdir(os.path.join(args.train_env_log_dir, "eval_weak_train"))
-    with open(os.path.join(args.train_env_log_dir, "eval_weak_train", sorted(temp)[-1], quant_eval_file_name), "r") as f:
-        evaluation = f.readlines()
-        for line in evaluation:
-            if "all rewards" in line.lower():
-                train_performance = eval(line[len("all rewards: "):].strip())
-                break
-    # Weak agent in test environment
-    temp = os.listdir(os.path.join(args.test_env_log_dir, "eval_weak_test"))
-    with open(os.path.join(args.train_env_log_dir, "eval_weak_train", sorted(temp)[-1], quant_eval_file_name), "r") as f:
-        evaluation = f.readlines()
-            for line in evaluation:
-                if "all rewards" in line.lower():
-                    test_performance = eval(line[len("all rewards: "):].strip())
-                    break
-    # Expert in test environment
-    temp = os.listdir(os.path.join(args.test_env_log_dir, "eval_expert"))
-    with open(os.path.join(args.test_env_log_dir, "eval_expert", sorted(temp)[-1], quant_eval_file_name), "r") as f:
-        evaluation = f.readlines()
-        for line in evaluation:
-            if "all rewards" in line.lower():
-                expert_performance = eval(line[len("all rewards: "):].strip())
-                break
+# Weak agent in train environment
+temp = os.listdir(os.path.join(args.train_env_log_dir, "eval_weak_train"))
+with open(os.path.join(args.train_env_log_dir, "eval_weak_train", sorted(temp)[-1], quant_eval_file_name), "r") as f:
+    evaluation = f.readlines()
+    for line in evaluation:
+        if "all rewards" in line.lower():
+            train_performance = eval(line[len("all rewards: "):].strip())
+            break
+# Weak agent in test environment
+temp = os.listdir(os.path.join(args.test_env_log_dir, "eval_weak_test"))
+with open(os.path.join(args.test_env_log_dir, "eval_weak_test", sorted(temp)[-1], quant_eval_file_name), "r") as f:
+    evaluation = f.readlines()
+    for line in evaluation:
+        if "all rewards" in line.lower():
+            test_performance = eval(line[len("all rewards: "):].strip())
+            break
+# Expert in test environment
+temp = os.listdir(os.path.join(args.test_env_log_dir, "eval_expert"))
+with open(os.path.join(args.test_env_log_dir, "eval_expert", sorted(temp)[-1], quant_eval_file_name), "r") as f:
+    evaluation = f.readlines()
+    for line in evaluation:
+        if "all rewards" in line.lower():
+            expert_performance = eval(line[len("all rewards: "):].strip())
+            break
 train_perf_mean, train_perf_std = get_mean_and_std(train_performance)
 test_perf_mean, test_perf_std = get_mean_and_std(test_performance)
 expert_perf_mean, expert_perf_std = get_mean_and_std(expert_performance)
@@ -112,36 +84,47 @@ expert_perf_mean, expert_perf_std = get_mean_and_std(expert_performance)
 percentiles = range(5, 96, 5)
 print("Train:", args.train_env_log_dir.split("/")[-1])
 print("Test:", args.test_env_log_dir.split("/")[-1])
+table_data = {"metric": [], "reward AUC": [], "adj. reward AUC": []}
 for metric in helped_logs:
     rew_by_perc = []
     adj_rew_by_perc = []
     help_props_by_perc = []
-    help_asks_by_timestep = {round(k, 1): [] for k in run_portions}
     for perc in percentiles:
-        with open(os.path.join(helped_logs[metric][perc], quant_eval_file_name), "r") as f:
-            evaluation = f.readlines()
-        for line in evaluation:
-            if "all rewards" in line.lower():
-                rewards = eval(line[len("all rewards: "):].strip())
-                rew_by_perc.append(rewards)
-            if "all queries" in line.lower():
-                queries = eval(line[len("all queries: "):].strip())
-            if "all switches" in line.lower():
-                switches = eval(line[len("all switches: "):].strip())
-            if "help times" in line.lower():
-                help_times = eval(evaluation[-1])
-                help_props = []
-                for helps in help_times:
-                    help_props.append(sum(helps) / len(helps))
-                help_props_by_perc.append(help_props)
-        for reward, query, switch in zip(rewards, queries, switches):
-            adjusted_reward = reward
-            for q, s in zip(query, switch):
-                if query == 1:
-                    adjusted_reward -= 10/256 * args.query_cost
-                if switch == 1:
-                    adjusted_reward -= 10/256 * args.switching_cost
-            adj_rew_by_perc.append(adjusted_reward)
+        try:
+            with open(os.path.join(helped_logs[metric][perc], quant_eval_file_name), "r") as f:
+                evaluation = f.readlines()
+            run_lengths = []
+            for line in evaluation:
+                if "all rewards" in line.lower():
+                    rewards = eval(line[len("all rewards: "):].strip())
+                    rew_by_perc.append(rewards)
+                if "all queries" in line.lower():
+                    queries = eval(line[len("all queries: "):].strip())
+                if "all switches" in line.lower():
+                    switches = eval(line[len("all switches: "):].strip())
+                if "help times" in line.lower():
+                    help_times = eval(evaluation[-1])
+                    help_props = []
+                    for helps in help_times:
+                        help_props.append(sum(helps) / len(helps))
+                    help_props_by_perc.append(help_props)
+                    run_lengths.append(len(helps))
+            curr_idx = 0
+            perc_adjusted_rewards = []
+            for reward, run_length in zip(rewards, run_lengths):
+                curr_run_length = 0
+                adjusted_reward = reward
+                while curr_run_length < run_length:
+                    if queries[curr_idx] == 1:
+                        adjusted_reward -= 10/256 * args.query_cost
+                    if switches[curr_idx] == 1:
+                        adjusted_reward -= 10/256 * args.switching_cost
+                    curr_idx += 1
+                    curr_run_length += 1
+                perc_adjusted_rewards.append(adjusted_reward)
+            adj_rew_by_perc.append(perc_adjusted_rewards)
+        except:
+            print(f"Missing data for {metric} at percentile {perc}")
 
     # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
     afhp_means, afhp_stds = get_mean_and_std_nested(help_props_by_perc)
@@ -157,5 +140,16 @@ for metric in helped_logs:
     adj_rew_means.append(expert_perf_mean - (10/256 * args.query_cost * 256))
     reward_area = np.trapz(rew_means, afhp_means)
     adjusted_reward_area = np.trapz(adj_rew_means, afhp_means)
-    print("Reward AUC:", round(reward_area, 2))
-    print("Adjusted reward AUC:", round(adjusted_reward_area, 2))
+    table_data["metric"].append(metric)
+    table_data["reward AUC"].append(reward_area)
+    table_data["adj. reward AUC"].append(adjusted_reward_area)
+
+headings = list(table_data.keys())
+values = list(zip(*table_data.values()))
+column_widths = [max(len(str(item)) for item in [heading] + list(column)) for heading, column in zip(headings, table_data.values())]
+row_format = "| " + " | ".join(f"{{:<{width}}}" for width in column_widths) + " |"
+print(row_format.format(*headings))
+print("-" * (sum(column_widths) + 3 * len(headings) + 1))
+for value_set in values:
+    print(row_format.format(*value_set))
+

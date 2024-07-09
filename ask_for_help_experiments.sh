@@ -1,16 +1,11 @@
 #!/bin/bash
 
-index=$1
-gpu_device=$2
-risk_set=$3  # either A or B
-env_name=$4
+index=5
+gpu_device=5
+env_name="heist_aisc_many_keys"
 
 seed=8888
-if [ "$risk_set" == "A" ]; then
-    risk_values=(10)
-else
-    risk_values=(5 15 25 35 45 55 65 75 85 95)
-fi
+risk_values=(55 60 65 70 75 80 85 90 95)
 
 if [ "$env_name" == "maze" ]; then
     model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_aisc/model_200015872.pth"
@@ -32,9 +27,9 @@ fi
 
 names=(
     "receive_help_test_max_probs"
-    "receive_help_sample_probs"
-    "receive_help_max_logit"
-    "receive_help_sample_logit"
+    "receive_help_test_sample_probs"
+    "receive_help_test_max_logit"
+    "receive_help_test_sample_logit"
     "receive_help_test_ent"
     "receive_help_test_random"
 )
@@ -62,7 +57,7 @@ for risk in "${risk_values[@]}"; do
         --switching_cost 2 \
         --quant_eval \
         --seed ${seed} \
-	    --device gpu \
+	--device gpu \
         --gpu_device ${gpu_device} \
         --save_run
 done
