@@ -6,8 +6,8 @@ import re
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--train_env_log_dir", type = str, help = "for example: 'logs/procgen/coinrun'")
-parser.add_argument("--test_env_log_dir", type = str, help = "for example: 'logs/procgen/coinrun_aisc'")
+parser.add_argument("--train_env", type = str)
+parser.add_argument("--test_env", type = str)
 parser.add_argument("--query_cost", type = int, default = 1)
 parser.add_argument("--switching_cost", type = int, default = 0)
 args = parser.parse_args()
@@ -36,7 +36,7 @@ def inf_list_eval(list_str):
 quant_eval_file_name = "AAA_quant_eval_model_200015872.txt"
 colors = {"max prob": "blue", "sampled prob": "green", "max logit": "red", "sampled logit": "purple", "entropy": "orange", "random": "gold"}
 helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}, "random": {}}
-for exp_dir in os.listdir(args.test_env_log_dir):
+for exp_dir in os.listdir(f"logs/procgen/{args.test_env}"):
     # TODO: CHANGE HERE #
     if exp_dir.startswith("receive") and "unique_actions" not in exp_dir:
         perc = int(re.search(r"(\d+)", exp_dir).group(1))
@@ -48,29 +48,29 @@ for exp_dir in os.listdir(args.test_env_log_dir):
             log_key = "sampled prob" if "prob" in exp_dir else "sampled logit"
         else:
             log_key = "random"
-        render_logs = os.listdir(os.path.join(args.test_env_log_dir, exp_dir))
-        helped_logs[log_key][perc] = os.path.join(args.test_env_log_dir, exp_dir, sorted(render_logs)[-1])  # always get last/most updated one
+        render_logs = os.listdir(os.path.join(f"logs/procgen/{args.test_env}", exp_dir))
+        helped_logs[log_key][perc] = os.path.join(f"logs/procgen/{args.test_env}", exp_dir, sorted(render_logs)[-1])  # always get last/most updated one
 
 
 # Weak agent in train environment
-temp = os.listdir(os.path.join(args.train_env_log_dir, "eval_weak_train"))
-with open(os.path.join(args.train_env_log_dir, "eval_weak_train", sorted(temp)[-1], quant_eval_file_name), "r") as f:
+temp = os.listdir(os.path.join(f"logs/procgen/{args.train_env}", "eval_weak_train"))
+with open(os.path.join(f"logs/procgen/{args.train_env}", "eval_weak_train", sorted(temp)[-1], quant_eval_file_name), "r") as f:
     evaluation = f.readlines()
     for line in evaluation:
         if "all rewards" in line.lower():
             train_performance = eval(line[len("all rewards: "):].strip())
             break
 # Weak agent in test environment
-temp = os.listdir(os.path.join(args.test_env_log_dir, "eval_weak_test"))
-with open(os.path.join(args.test_env_log_dir, "eval_weak_test", sorted(temp)[-1], quant_eval_file_name), "r") as f:
+temp = os.listdir(os.path.join(f"logs/procgen/{args.test_env}", "eval_weak_test"))
+with open(os.path.join(f"logs/procgen/{args.test_env}", "eval_weak_test", sorted(temp)[-1], quant_eval_file_name), "r") as f:
     evaluation = f.readlines()
     for line in evaluation:
         if "all rewards" in line.lower():
             test_performance = eval(line[len("all rewards: "):].strip())
             break
 # Expert in test environment
-temp = os.listdir(os.path.join(args.test_env_log_dir, "eval_expert"))
-with open(os.path.join(args.test_env_log_dir, "eval_expert", sorted(temp)[-1], quant_eval_file_name), "r") as f:
+temp = os.listdir(os.path.join(f"logs/procgen/{args.test_env}", "eval_expert"))
+with open(os.path.join(f"logs/procgen/{args.test_env}", "eval_expert", sorted(temp)[-1], quant_eval_file_name), "r") as f:
     evaluation = f.readlines()
     for line in evaluation:
         if "all rewards" in line.lower():
@@ -82,8 +82,8 @@ expert_perf_mean, expert_perf_std = get_mean_and_std(expert_performance)
 
 
 percentiles = range(5, 96, 5)
-print("Train:", args.train_env_log_dir.split("/")[-1])
-print("Test:", args.test_env_log_dir.split("/")[-1])
+print("Train:", args.train_env)
+print("Test:", args.test_env)
 table_data = {"metric": [], "reward AUC": [], "adj. reward AUC": []}
 for metric in helped_logs:
     rew_by_perc = []
@@ -144,7 +144,7 @@ for metric in helped_logs:
     table_data["reward AUC"].append(reward_area)
     table_data["adj. reward AUC"].append(adjusted_reward_area)
 
-headings = list(table_data.keys())
+headings = [key.capitalize() for key in table_data.keys()]
 values = list(zip(*table_data.values()))
 column_widths = [max(len(str(item)) for item in [heading] + list(column)) for heading, column in zip(headings, table_data.values())]
 row_format = "| " + " | ".join(f"{{:<{width}}}" for width in column_widths) + " |"

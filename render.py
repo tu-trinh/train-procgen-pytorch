@@ -64,6 +64,9 @@ def create_venv_render(args, hyperparameters, env_seed, is_valid = False):
         continue_after_coin = args.continue_after_coin,
         rand_seed = env_seed
     )
+    print("AHAHAHAHAHAHAHAHAHAHA")
+    print(venv.get_env_chests())
+    return
     info_key = None if args.agent_view else "rgb"
     ob_key = "rgb" if args.agent_view else None
     if args.vid_dir is not None:
