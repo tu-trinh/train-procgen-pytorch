@@ -7,6 +7,7 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 import numpy as np
 import pickle
+import json
 import h5py
 import os
 import sys
@@ -98,7 +99,7 @@ class PPO(BaseAgent):
         self.request_limit = 3
         self.num_requests = 0
         self.num_actions = env.action_space.n
-        if percentile_dir is not None:
+        if self.detector_model is None and percentile_dir is not None:
             self.by_action = by_action
             if self.reduced_action_space:
                 pass
@@ -118,6 +119,9 @@ class PPO(BaseAgent):
             self.transforms = transforms.Compose([
                 transforms.Lambda(lambda x: global_contrast_normalization(x, scale = "l1"))
             ])
+            with open(percentile_dir, "r") as f:
+                detector_results = json.load(f)
+            self.detector_thresholds = {k: v for k, v in zip([1] + list(range(5, 96, 5)) + [99], detector_results["test_score_percentiles"])}
         self.all_help_info = all_help_info
         self.is_expert = is_expert
 
@@ -149,10 +153,9 @@ class PPO(BaseAgent):
             need_help = np.random.random() < risk / 100
         elif metric == "detector":
             input_obs = self.transforms(obs)
-            print("OBS SHAPE", input_obs.shape)
-            prediction = self.detector_model(input_obs)
-            print("SVDD PRED", prediction)
-            need_help = prediction == 1
+            features = self.detector_model(input_obs)
+            distance = torch.sum((features - self.detector_model.center)**2, dim = 1)
+            need_help = distance.item() > self.detector_thresholds[risk]
         help_info = {}
         sorted_probs, sorted_indices = torch.sort(dist.probs, descending = True)
         sorted_probs = sorted_probs.squeeze()
