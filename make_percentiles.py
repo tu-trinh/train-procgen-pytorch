@@ -68,3 +68,6 @@ if args.display:
     plt.savefig("percentiles_in_train_and_test.png")
 with open(os.path.join(percentile_dir, "percentiles.pkl"), "wb") as f:
     pickle.dump(percentiles, f)
+print("Percentiles file")
+print(os.path.join(percentile_dir, "percentiles.pkl"))
+

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-exp_name=$1
+exp_name=get_percentiles
 env_name=$2
 model_file=$3
-gpu_device=2
+gpu_device=$4
 
 python3 render.py \
     --exp_name ${exp_name} \
@@ -15,4 +15,4 @@ python3 render.py \
     --seed 8888 \
     --device gpu \
     --gpu_device ${gpu_device} \
-    --quant_eval
+    --store_percentiles

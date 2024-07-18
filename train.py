@@ -34,6 +34,7 @@ if __name__=='__main__':
     parser.add_argument('--log_level',        type=int, default = int(40), help='[10,20,30,40]')
     parser.add_argument('--num_checkpoints',  type=int, default = int(1), help='number of checkpoints to store')
     parser.add_argument('--save_timesteps',   type=int, nargs = "+", help = "list of timesteps for which model is saved")
+    parser.add_argument("--save_observations", action = "store_true", default = False)
     parser.add_argument('--model_file', type=str)
     parser.add_argument('--use_wandb',        action="store_true")
 
@@ -217,6 +218,7 @@ if __name__=='__main__':
     agent = AGENT(env, policy, logger, storage, device,
                   num_checkpoints,
                   save_timesteps=save_timesteps,
+                  save_observations=args.save_observations,
                   reduced_action_space=args.reduced_action_space,
                   store_percentiles=args.store_percentiles,
                   env_valid=env_valid,
