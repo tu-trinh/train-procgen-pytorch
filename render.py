@@ -12,7 +12,12 @@ from procgen import ProcgenGym3Env
 import random
 import torch
 import pickle
-import dill
+import sys
+sys.path.append("/Users/tutrinh/Work/CHAI/")
+sys.path.append("/nas/ucb/tutrinh/")
+sys.path.append("/Users/tutrinh/Work/CHAI/yield_request_control/")
+sys.path.append("/nas/ucb/tutrinh/yield_request_control/")
+from yield_request_control.detector.deep_svdd import DeepSVDD
 
 from PIL import Image
 import torchvision as tv
@@ -157,13 +162,14 @@ def make_agent(algo, env, n_envs, policy, logger, storage, device, args,
                all_entropies = [],
                probs_by_action = {}, logits_by_action = {}, entropies_by_action = {},
                percentile_dir = None,
+               detector_model = None,
                is_expert = False):
     # print('INITIALIZING AGENT...')
     if algo == 'ppo':
         from agents.ppo import PPO as AGENT
     else:
         raise NotImplementedError
-    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, store_percentiles = store_percentiles, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action, all_help_info = all_help_info, percentile_dir = percentile_dir, by_action = args.by_action, is_expert = is_expert, unique_actions = args.unique_actions, **hyperparameters)
+    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, store_percentiles = store_percentiles, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action, all_help_info = all_help_info, percentile_dir = percentile_dir, detector_model = detector_model, by_action = args.by_action, is_expert = is_expert, unique_actions = args.unique_actions, **hyperparameters)
     if is_expert:
         agent.policy.load_state_dict(torch.load(args.expert_model_file, map_location = device)["model_state_dict"])
     else:
@@ -402,6 +408,7 @@ if __name__=='__main__':
     parser.add_argument("--risk", type = int, default = None)
     parser.add_argument("--select_mode", type = str, default = "sample")
     parser.add_argument("--percentile_dir", type = str)
+    parser.add_argument("--detector_model_file", type = str, default = None)
     parser.add_argument("--by_action", action = "store_true")
     parser.add_argument("--expert_model_file", type = str, default = None)
     parser.add_argument("--expert_cost", type = float, default = None)
@@ -455,7 +462,14 @@ if __name__=='__main__':
                     help_info = {a: [] for a in range(len(ORIGINAL_ACTION_SPACE))}
                 else:
                     help_info = []
-                agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, all_help_info = help_info, percentile_dir = args.percentile_dir)
+                if args.detector_model_file is not None:
+                    svdd = DeepSVDD()
+                    svdd.set_network(args.env_name)
+                    svdd.load_model(network_save_path = args.detector_model_file)
+                    detector_model = svdd.net
+                else:
+                    detector_model = None
+                agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, all_help_info = help_info, percentile_dir = args.percentile_dir, detector_model = detector_model)
                 if args.expert_model_file is not None:
                     expert_agent = make_agent(algo, env, n_envs, expert_policy, logger, expert_storage, device, args, is_expert = True)
                 else:

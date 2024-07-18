@@ -32,6 +32,7 @@ class PPO(BaseAgent):
                  entropies_by_action={},
                  all_help_info=[],
                  percentile_dir=None,
+                 detector_model=None,
                  is_expert=False,
                  by_action=False,
                  unique_actions=False,
@@ -105,6 +106,7 @@ class PPO(BaseAgent):
                 # self.probability_thresholds_by_action = percentiles["entropies_by_action"]
                 # self.logit_thresholds_by_action = percentiles["logits_by_action"]
                 # self.entropy_thresholds_by_action = percentiles["probs_by_action"]
+        self.detector_model = detector_model
         self.all_help_info = all_help_info
         self.is_expert = is_expert
 
@@ -112,7 +114,7 @@ class PPO(BaseAgent):
         if self.unique_actions:
             self.state_action_tracker = HashSet()
 
-    def determine_ask_for_help(self, metric, risk, act, dist, logits):
+    def determine_ask_for_help(self, obs, metric, risk, act, dist, logits):
         if metric == "msp":
             need_help = torch.log(dist.probs.max()) < np.log(self.max_probability_thresholds[risk])
         elif metric == "sampled_p":
@@ -134,6 +136,10 @@ class PPO(BaseAgent):
                 need_help = dist.entropy() > self.entropy_thresholds[100 - risk]
         elif metric == "random":
             need_help = np.random.random() < risk / 100
+        elif metric == "detector":
+            prediction = self.detector_model(obs)
+            print("SVDD PRED", prediction)
+            need_help = prediction == 1
         help_info = {}
         sorted_probs, sorted_indices = torch.sort(dist.probs, descending = True)
         sorted_probs = sorted_probs.squeeze()
@@ -155,7 +161,7 @@ class PPO(BaseAgent):
         return need_help, help_info
     
     def predict(self, obs, hidden_state, done, ood_metric = None, risk = None, select_mode = "sample"):
-        assert ood_metric in [None, "msp", "ml", "sampled_p", "sampled_l", "ent", "random"], "Check ood metric"
+        assert ood_metric in [None, "msp", "ml", "sampled_p", "sampled_l", "ent", "random", "detector"], "Check ood metric"
         assert select_mode in ["sample", "max"], "Check select mode"
         if ood_metric is not None:
             assert risk is not None, "Must provide risk for ood metric"
@@ -217,7 +223,7 @@ class PPO(BaseAgent):
                     self.logits_by_action[act.cpu().numpy()[i]].append(action_logits[i])
                     self.entropies_by_action[act.cpu().numpy()[i]].append(entropies[i])
         if not self.is_expert and ood_metric is not None:
-            need_help, help_info = self.determine_ask_for_help(ood_metric, risk, act, dist, logits)
+            need_help, help_info = self.determine_ask_for_help(obs, ood_metric, risk, act, dist, logits)
             if need_help:
                 self.num_requests += 1
         else:
