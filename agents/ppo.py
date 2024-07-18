@@ -4,10 +4,17 @@ from common.constants import *
 from common.hasher import HashSet
 import torch
 import torch.optim as optim
+import torchvision.transforms as transforms
 import numpy as np
 import pickle
 import h5py
 import os
+import sys
+sys.path.append("/Users/tutrinh/Work/CHAI/")
+sys.path.append("/nas/ucb/tutrinh/")
+sys.path.append("/Users/tutrinh/Work/CHAI/yield_request_control/")
+sys.path.append("/nas/ucb/tutrinh/yield_request_control/")
+from yield_request_control.detector.dataset import global_contrast_normalization
 
 
 class PPO(BaseAgent):
@@ -107,6 +114,10 @@ class PPO(BaseAgent):
                 # self.logit_thresholds_by_action = percentiles["logits_by_action"]
                 # self.entropy_thresholds_by_action = percentiles["probs_by_action"]
         self.detector_model = detector_model
+        if self.detector_model is not None:
+            self.transforms = transforms.Compose([
+                transforms.Lambda(lambda x: global_contrast_normalization(x, scale = "l1"))
+            ])
         self.all_help_info = all_help_info
         self.is_expert = is_expert
 
@@ -137,7 +148,9 @@ class PPO(BaseAgent):
         elif metric == "random":
             need_help = np.random.random() < risk / 100
         elif metric == "detector":
-            prediction = self.detector_model(obs)
+            input_obs = self.transforms(obs)
+            print("OBS SHAPE", input_obs.shape)
+            prediction = self.detector_model(input_obs)
             print("SVDD PRED", prediction)
             need_help = prediction == 1
         help_info = {}
@@ -163,7 +176,7 @@ class PPO(BaseAgent):
     def predict(self, obs, hidden_state, done, ood_metric = None, risk = None, select_mode = "sample"):
         assert ood_metric in [None, "msp", "ml", "sampled_p", "sampled_l", "ent", "random", "detector"], "Check ood metric"
         assert select_mode in ["sample", "max"], "Check select mode"
-        if ood_metric is not None:
+        if ood_metric is not None and ood_metric != "detector":
             assert risk is not None, "Must provide risk for ood metric"
         if isinstance(done, list):
             done = torch.tensor(done).float()

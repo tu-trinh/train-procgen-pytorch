@@ -69,9 +69,6 @@ def create_venv_render(args, hyperparameters, env_seed, is_valid = False):
         continue_after_coin = args.continue_after_coin,
         rand_seed = env_seed
     )
-    print("AHAHAHAHAHAHAHAHAHAHA")
-    print(venv.get_env_chests())
-    return
     info_key = None if args.agent_view else "rgb"
     ob_key = "rgb" if args.agent_view else None
     if args.vid_dir is not None:
@@ -466,7 +463,7 @@ if __name__=='__main__':
                     svdd = DeepSVDD()
                     svdd.set_network(args.env_name)
                     svdd.load_model(network_save_path = args.detector_model_file)
-                    detector_model = svdd.net
+                    detector_model = svdd.net.to(device)
                 else:
                     detector_model = None
                 agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, all_help_info = help_info, percentile_dir = args.percentile_dir, detector_model = detector_model)
