@@ -6,6 +6,7 @@ import torch
 import torch.optim as optim
 import numpy as np
 import pickle
+import h5py
 import os
 
 
@@ -18,6 +19,7 @@ class PPO(BaseAgent):
                  device,
                  n_checkpoints,
                  save_timesteps=None,
+                 save_observations=False,
                  reduced_action_space=False,
                  store_percentiles=False,
                  all_sampled_probs=[],
@@ -59,6 +61,7 @@ class PPO(BaseAgent):
         self.n_envs = n_envs
         self.reduced_action_space = reduced_action_space
         self.store_percentiles = store_percentiles
+        self.save_observations = save_observations
         self.epoch = epoch
         self.mini_batch_per_epoch = mini_batch_per_epoch
         self.mini_batch_size = mini_batch_size
@@ -293,6 +296,9 @@ class PPO(BaseAgent):
         obs = self.env.reset()
         hidden_state = np.zeros((self.n_envs, self.storage.hidden_state_size))
         done = np.zeros(self.n_envs)
+        if self.save_observations:
+            this_run_obs = []
+            obs_set_num = 0
 
         if self.env_valid is not None:
             obs_v = self.env_valid.reset()
@@ -309,10 +315,22 @@ class PPO(BaseAgent):
                     assert act.shape == log_prob_act.shape, "Messed up converting actions"
                 next_obs, rew, done, info = self.env.step(act)
                 self.storage.store(obs, hidden_state, act, rew, rew.copy(), False, False, done, info, log_prob_act, value, help_info, 0)
+                if self.save_observations:  # obs is a numpy array
+                    this_run_obs.append(obs)
                 obs = next_obs
                 hidden_state = next_hidden_state
             value_batch = self.storage.value_batch[:self.n_steps]
             _, _, last_val, hidden_state, help_info, _ = self.predict(obs, hidden_state, done, ood_metric = None)
+            if self.save_observations:
+                this_run_obs.append(obs)
+                with h5py.File(os.path.join(self.logger.logdir, "saved_obs.h5"), "w" if self.t < 1 else "a") as f:
+                    for obs_idx, saved_obs in enumerate(this_run_obs):
+                        f.create_dataset(f"run_{obs_set_num}_obs_{obs_idx}", data = saved_obs, compression = "gzip", compression_opts = 9)
+                np.savez_compressed(os.path.join(self.logger.logdir, f"saved_obs_run_{obs_set_num}.npz"), np.array(this_run_obs))
+                print("FUCK THIS SHIT")
+                print(np.array(this_run_obs))
+                obs_set_num += 1
+                this_run_obs = []
             self.storage.store_last(obs, hidden_state, last_val, help_info, 0)
             self.storage.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 

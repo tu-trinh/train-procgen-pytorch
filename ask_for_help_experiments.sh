@@ -1,11 +1,16 @@
 #!/bin/bash
 
-index=5
-gpu_device=5
-env_name="heist_aisc_many_keys"
+index=$1
+gpu_device=4
+env_name="maze_aisc"
+risk_set=$2
 
 seed=8888
-risk_values=(55 60 65 70 75 80 85 90 95)
+if [ "$risk_set" == "A" ]; then
+    risk_values=(10 20 30 40 50 60 70 80 90)
+elif [ "$risk_set" == "B" ]; then
+    risk_values=(5 15 25 35 45 55 65 75 85 95)
+fi
 
 if [ "$env_name" == "maze" ]; then
     model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_aisc/model_200015872.pth"
@@ -23,6 +28,22 @@ elif [ "$env_name" == "coinrun_aisc" ]; then
     model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun/model_200015872.pth"
     percentile_dir="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun"
     expert_model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun_aisc/model_200015872.pth"
+elif [ "$env_name" == "coinrun" ]; then
+    model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun_aisc/model_200015872.pth"
+    percentile_dir="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun_aisc"
+    expert_model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun/model_200015872.pth"
+elif [ "$env_name" == "heist_aisc_many_chests" ]; then
+    model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/heist_aisc_many_keys/model_200015872.pth"
+    percentile_dir="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/heist_aisc_many_keys"
+    expert_model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/heist_aisc_many_chests/model_200015872.pth"
+elif [ "$env_name" == "maze_redline_yellowgem" ]; then
+    model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_yellowstar_redgem/model_200015872.pth"
+    percentile_dir="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_yellowstar_redgem"
+    expert_model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_redline_yellowgem/model_200015872.pth"
+elif [ "$env_name" == "maze_aisc" ]; then
+    model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze/model_200015872.pth"
+    percentile_dir="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze"
+    expert_model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_aisc/model_200015872.pth"
 fi
 
 names=(
