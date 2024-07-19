@@ -4,6 +4,7 @@ import numpy as np
 import ast
 import argparse
 import re
+from scipy import stats
 
 
 PLOT_PERF_VS_PERC = 1  # performance vs percentile
@@ -27,7 +28,7 @@ if args.suffix != "" and args.suffix[-1] != "_":
 
 def get_mean_and_std(arr):
     assert isinstance(arr[0], int) or isinstance(arr[0], float), "Whoopsie"
-    return np.mean(arr), np.std(arr)
+    return np.mean(arr), stats.sem(arr)
 
 def get_mean_and_std_nested(nested_arr):
     assert isinstance(nested_arr[0], list) or isinstance(nested_arr[0], np.array), "Oh no"
@@ -46,12 +47,12 @@ def inf_list_eval(list_str):
 
 
 quant_eval_file_name = "AAA_quant_eval_model_200015872.txt"
-colors = {"max prob": "blue", "sampled prob": "green", "max logit": "red", "sampled logit": "purple", "entropy": "orange", "random": "gold"}
-helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}, "random": {}}
+colors = {"max prob": "blue", "max logit": "red", "entropy": "orange", "random": "gold", "svdd": "fuchsia"}
+helped_logs = {"max prob": {},  "max logit": {}, "entropy": {}, "random": {}, "svdd": "fuchsia"}
 log_dir = f"logs/procgen/{args.test}"
 for exp_dir in os.listdir(log_dir):
     # CHANGE HERE #
-    if exp_dir.startswith("receive") and "unique_actions" not in exp_dir:
+    if "svdd_" in exp_dir or (exp_dir.startswith("receive") and "unique_actions" not in exp_dir):
         perc = int(re.search(r"(\d+)", exp_dir).group(1))
         if "ent" in exp_dir:
             log_key = "entropy"
@@ -256,7 +257,7 @@ for metric in helped_logs:
     if PLOT_PROP_VS_TIME in args.plots:
         ax = axes4[i // 3][i % 3]
         asks_mean = np.array([np.mean(asks) for _, asks in help_asks_by_timestep.items()])
-        asks_std = np.array([np.std(asks) for _, asks in help_asks_by_timestep.items()])
+        asks_std = np.array([stats.sem(asks) for _, asks in help_asks_by_timestep.items()])
         ax.plot(run_portions, asks_mean, color = colors[metric])
         ax.fill_between(run_portions, asks_mean - asks_std, asks_mean + asks_std, color = colors[metric], alpha = 0.3)
         ax.set_title(metric.capitalize())

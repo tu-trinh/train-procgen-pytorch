@@ -1,7 +1,7 @@
 #!/bin/bash
 
 index=$2
-gpu_device=4
+gpu_device=$4
 env_name=$1
 risk_set=$3
 
@@ -64,42 +64,25 @@ metrics=(
     "random"
     "detector"
 )
-# for risk in "${risk_values[@]}"; do
-#     python3 render.py \
-#         --exp_name "${names[index]}_risk_${risk}" \
-#         --env_name ${env_name} \
-#         --distribution_mode hard \
-#         --param_name hard-plus \
-#         --model_file ${model_file} \
-#         --percentile_dir ${percentile_dir} \
-#         --select_mode sample \
-#         --ood_metric ${metrics[index]} \
-#         --risk ${risk} \
-#         --expert_model_file ${expert_model_file} \
-#         --expert_cost 2 \
-#         --switching_cost 2 \
-#         --quant_eval \
-#         --seed ${seed} \
-#     	  --device gpu \
-#         --gpu_device ${gpu_device} \
-#         --save_run
-# done
-
-# For detector method
-python3 render.py \
-	--exp_name "${names[index]}" \
-	--env_name ${env_name} \
-	--distribution_mode hard \
-	--param_name hard-plus \
-	--model_file ${model_file} \
-	--select_mode sample \
-	--ood_metric detector \
+for risk in "${risk_values[@]}"; do
+    python3 render.py \
+        --exp_name "${names[index]}_risk_${risk}" \
+        --env_name ${env_name} \
+        --distribution_mode hard \
+        --param_name hard-plus \
+        --model_file ${model_file} \
+        --percentile_dir /nas/ucb/tutrinh/yield_request_control/logs/test_detector/coinrun/2024-07-18__03-02-52__seed_8888/results.json \
 	--detector_model_file /nas/ucb/tutrinh/yield_request_control/logs/train_detector/coinrun/2024-07-18__01-57-25__seed_8888/network.tar \
-	--expert_model_file ${expert_model_file} \
-	--expert_cost 2 \
-	--switching_cost 2 \
-	--quant_eval \
-	--seed ${seed} \
-	--device gpu \
-	--gpu_device ${gpu_device} \
-	--save_run
+        --select_mode sample \
+        --ood_metric ${metrics[index]} \
+        --risk ${risk} \
+        --expert_model_file ${expert_model_file} \
+        --expert_cost 2 \
+        --switching_cost 2 \
+        --quant_eval \
+        --seed ${seed} \
+   	--device gpu \
+        --gpu_device ${gpu_device} \
+        --save_run
+done
+

@@ -460,10 +460,11 @@ if __name__=='__main__':
                 else:
                     help_info = []
                 if args.detector_model_file is not None:
-                    svdd = DeepSVDD()
-                    svdd.set_network(args.env_name)
-                    svdd.load_model(network_save_path = args.detector_model_file)
-                    detector_model = svdd.net.to(device)
+                    detector_model = DeepSVDD()
+                    detector_model.set_network(args.env_name)
+                    detector_model.load_model(network_save_path = args.detector_model_file)
+                    detector_model.net = detector_model.net.to(device)
+                    detector_model.center = torch.tensor(detector_model.center).to(device)
                 else:
                     detector_model = None
                 agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, all_help_info = help_info, percentile_dir = args.percentile_dir, detector_model = detector_model)

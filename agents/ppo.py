@@ -99,7 +99,7 @@ class PPO(BaseAgent):
         self.request_limit = 3
         self.num_requests = 0
         self.num_actions = env.action_space.n
-        if self.detector_model is None and percentile_dir is not None:
+        if detector_model is None and percentile_dir is not None:
             self.by_action = by_action
             if self.reduced_action_space:
                 pass
@@ -153,7 +153,7 @@ class PPO(BaseAgent):
             need_help = np.random.random() < risk / 100
         elif metric == "detector":
             input_obs = self.transforms(obs)
-            features = self.detector_model(input_obs)
+            features = self.detector_model.net(input_obs)
             distance = torch.sum((features - self.detector_model.center)**2, dim = 1)
             need_help = distance.item() > self.detector_thresholds[risk]
         help_info = {}
@@ -349,8 +349,6 @@ class PPO(BaseAgent):
                     for obs_idx, saved_obs in enumerate(this_run_obs):
                         f.create_dataset(f"run_{obs_set_num}_obs_{obs_idx}", data = saved_obs, compression = "gzip", compression_opts = 9)
                 np.savez_compressed(os.path.join(self.logger.logdir, f"saved_obs_run_{obs_set_num}.npz"), np.array(this_run_obs))
-                print("FUCK THIS SHIT")
-                print(np.array(this_run_obs))
                 obs_set_num += 1
                 this_run_obs = []
             self.storage.store_last(obs, hidden_state, last_val, help_info, 0)
