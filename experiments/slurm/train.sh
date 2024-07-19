@@ -20,7 +20,7 @@ export PYTHONPATH="$PYTHONPATH:$PWD"
 
 python3 train.py \
         --env_name coinrun \
-        --exp_name save_obs \
+        --exp_name save_obs_throughout \
         --num_levels 100000 \
         --distribution_mode hard \
         --param_name hard-500 \
