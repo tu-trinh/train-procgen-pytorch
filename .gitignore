@@ -88,6 +88,6 @@ logs/
 sandbox/
 src/procgen/
 wandb/
-experiments/slurm/
+experiments/slurm/*.out
 test.txt
 nohup.out
