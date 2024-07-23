@@ -457,7 +457,7 @@ if __name__=='__main__':
         probs_by_action = {i: [] for i in range(len(ACTION_SPACE) if args.reduced_action_space else len(ORIGINAL_ACTION_SPACE))}
         logits_by_action = {i: [] for i in range(len(ACTION_SPACE) if args.reduced_action_space else len(ORIGINAL_ACTION_SPACE))}
         entropies_by_action = {i: [] for i in range(len(ACTION_SPACE) if args.reduced_action_space else len(ORIGINAL_ACTION_SPACE))}
-    if args.quant_eval or args.store_percentiles:
+    if args.quant_eval or args.store_percentiles or args.save_observations or args.save_latent_observations:
         eval_envs = []
         for i in range(total_envs):
             env = create_venv_render(args, hyperparameters, args.seed + i, is_valid = True)
@@ -489,7 +489,7 @@ if __name__=='__main__':
                     expert_agent = None
                 render(i, args.seed + i, agent, epochs, args, all_rewards, all_adjusted_rewards, all_queries, all_switches, all_achievement_timesteps, all_times_achieved, expert = expert_agent)
                 all_help_info.append(help_info)
-            elif args.store_percentiles:
+            elif args.store_percentiles or args.save_observations or args.save_latent_observations:
                 agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, store_percentiles = True, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action)
                 render(i, args.seed + i, agent, epochs, args)
             if i % 100 == 0:
