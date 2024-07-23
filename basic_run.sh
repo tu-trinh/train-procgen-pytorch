@@ -7,13 +7,13 @@ gpu_device=$2
 save_style=$3  # 0 for raw, 1 for latent
 
 if [ "$env_name" == "coinrun" ]; then
-    model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun_aisc/model_200015872.pth"
+    model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun/model_200015872.pth"
 elif [ "$env_name" == "heist_aisc_many_chests" ]; then
-    model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/heist_aisc_many_keys/model_200015872.pth"
+    model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/heist_aisc_many_chests/model_200015872.pth"
 elif [ "$env_name" == "maze_redline_yellowgem" ]; then
-    model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_yellowstar_redgem/model_200015872.pth"
+    model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_redline_yellowgem/model_200015872.pth"
 elif [ "$env_name" == "maze_aisc" ]; then
-    model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze/model_200015872.pth"
+    model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_aisc/model_200015872.pth"
 fi
 
 if [ "$save_style" == "0" ]; then
