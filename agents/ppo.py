@@ -187,7 +187,7 @@ class PPO(BaseAgent):
             obs = torch.FloatTensor(obs).to(device=self.device)
             hidden_state = torch.FloatTensor(hidden_state).to(device=self.device)
             mask = torch.FloatTensor(1 - done).to(device=self.device)
-            dist, logits, value, hidden_state = self.policy(obs, hidden_state, mask)
+            dist, logits, value, hidden_state, latent_rep = self.policy(obs, hidden_state, mask)
             if ood_metric is None or self.is_expert or not self.unique_actions:  # likely training phase, or this is the expert, or we don't care about repeated actions in repeat states
                 if select_mode == "sample":
                     act = dist.sample()
@@ -244,7 +244,7 @@ class PPO(BaseAgent):
                 self.num_requests += 1
         else:
             help_info = None
-        return act.cpu().numpy(), log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy(), help_info, repeated_state
+        return act.cpu().numpy(), log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy(), latent_rep.cpu().numpy(), help_info, repeated_state
 
     def predict_w_value_saliency(self, obs, hidden_state, done):
         obs = torch.FloatTensor(obs).to(device=self.device)
@@ -252,7 +252,7 @@ class PPO(BaseAgent):
         obs.retain_grad()
         hidden_state = torch.FloatTensor(hidden_state).to(device=self.device)
         mask = torch.FloatTensor(1-done).to(device=self.device)
-        dist, logits, value, hidden_state = self.policy(obs, hidden_state, mask)
+        dist, logits, value, hidden_state, latent_rep = self.policy(obs, hidden_state, mask)
         value.backward(retain_graph=True)
         act = dist.sample()
         log_prob_act = dist.log_prob(act)
@@ -276,7 +276,7 @@ class PPO(BaseAgent):
                 obs_batch, hidden_state_batch, act_batch, done_batch, \
                     old_log_prob_act_batch, old_value_batch, return_batch, adv_batch = sample
                 mask_batch = (1-done_batch)
-                dist_batch, logits_batch, value_batch, _ = self.policy(obs_batch, hidden_state_batch, mask_batch)
+                dist_batch, logits_batch, value_batch, _, _ = self.policy(obs_batch, hidden_state_batch, mask_batch)
 
                 # Clipped Surrogate Objective
                 log_prob_act_batch = dist_batch.log_prob(act_batch)
@@ -331,18 +331,18 @@ class PPO(BaseAgent):
             # Run Policy
             self.policy.eval()
             for _ in range(self.n_steps):
-                act, log_prob_act, value, next_hidden_state, help_info, _ = self.predict(obs, hidden_state, done, ood_metric = None)
+                act, log_prob_act, value, next_hidden_state, latent_rep, help_info, _ = self.predict(obs, hidden_state, done, ood_metric = None)
                 if reduced_action_space:
                     act = ACTION_TRANSLATION[act]
                     assert act.shape == log_prob_act.shape, "Messed up converting actions"
                 next_obs, rew, done, info = self.env.step(act)
-                self.storage.store(obs, hidden_state, act, rew, rew.copy(), False, False, done, info, log_prob_act, value, help_info, 0)
+                self.storage.store(obs, latent_rep, hidden_state, act, rew, rew.copy(), False, False, done, info, log_prob_act, value, help_info, 0)
                 if self.save_observations:  # obs is a numpy array
                     this_run_obs.append(obs)
                 obs = next_obs
                 hidden_state = next_hidden_state
             value_batch = self.storage.value_batch[:self.n_steps]
-            _, _, last_val, hidden_state, help_info, _ = self.predict(obs, hidden_state, done, ood_metric = None)
+            _, _, last_val, hidden_state, latent_rep, help_info, _ = self.predict(obs, hidden_state, done, ood_metric = None)
             if self.save_observations:
                 this_run_obs.append(obs)
                 with h5py.File(os.path.join(self.logger.logdir, "saved_obs.h5"), "w" if self.t < 1 else "a") as f:
@@ -351,24 +351,24 @@ class PPO(BaseAgent):
                 np.savez_compressed(os.path.join(self.logger.logdir, f"saved_obs_run_{obs_set_num}.npz"), np.array(this_run_obs))
                 obs_set_num += 1
                 this_run_obs = []
-            self.storage.store_last(obs, hidden_state, last_val, help_info, 0)
+            self.storage.store_last(obs, latent_rep, hidden_state, last_val, help_info, 0)
             self.storage.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
             #valid
             if self.env_valid is not None:
                 for _ in range(self.n_steps):
-                    act_v, log_prob_act_v, value_v, next_hidden_state_v, help_info, _ = self.predict(obs_v, hidden_state_v, done_v, ood_metric = None)
+                    act_v, log_prob_act_v, value_v, next_hidden_state_v, latent_rep_v, help_info, _ = self.predict(obs_v, hidden_state_v, done_v, ood_metric = None)
                     if reduced_action_space:
                         act = ACTION_TRANSLATION[act]
                         assert act.shape == log_prob_act.shape, "Messed up converting actions (val)"
                     next_obs_v, rew_v, done_v, info_v = self.env_valid.step(act)
-                    self.storage_valid.store(obs_v, hidden_state_v, act_v,
+                    self.storage_valid.store(obs_v, latent_rep_v, hidden_state_v, act_v,
                                              rew_v, rew_v.copy(), False, False, done_v, info_v,
                                              log_prob_act_v, value_v, help_info, 0)
                     obs_v = next_obs_v
                     hidden_state_v = next_hidden_state_v
-                _, _, last_val_v, hidden_state_v, help_info, _ = self.predict(obs_v, hidden_state_v, done_v, ood_metric = None)
-                self.storage_valid.store_last(obs_v, hidden_state_v, last_val_v, help_info, 0)
+                _, _, last_val_v, hidden_state_v, latent_rep_v, help_info, _ = self.predict(obs_v, hidden_state_v, done_v, ood_metric = None)
+                self.storage_valid.store_last(obs_v, latent_rep_v, hidden_state_v, last_val_v, help_info, 0)
                 self.storage_valid.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
             # Optimize policy & valueq

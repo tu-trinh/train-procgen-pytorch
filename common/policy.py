@@ -34,4 +34,4 @@ class CategoricalPolicy(nn.Module):
         log_probs = F.log_softmax(logits, dim=1)
         p = Categorical(logits=log_probs)
         v = self.fc_value(hidden).reshape(-1)
-        return p, logits, v, hx
+        return p, logits, v, hx, hidden

@@ -177,21 +177,30 @@ def make_agent(algo, env, n_envs, policy, logger, storage, device, args,
 ##########
 ## SAVE ##
 ##########
-def save_run_data(logdir, storage, eval_env_idx, eval_env_seed, as_npy = True):
+def save_run_data(logdir, storage, eval_env_idx, eval_env_seed, as_npz = True, raw = True):
     run_data = {
         "help_info_storage": storage.help_info_storage,
         "action_storage": storage.act_batch.cpu().numpy(),
-        "repeated_state_storage": storage.repeated_state_storage    
+        "repeated_state_storage": storage.repeated_state_storage
     }
     with open(logdir + f"/AAA_storage_env_{eval_env_idx}_seed_{eval_env_seed}.pkl", "wb") as f:
         pickle.dump(run_data, f)
     
-    """write observations and value estimates to npy / human-readable files"""
+    """write observations and value estimates to npz / human-readable files"""
     print(f"Saving observations and values to {logdir}")
-    if as_npy:
-        pass  # FIXME: epoch idx to eval env idx, etc..
-        # np.save(logdir + f"/observations_{epoch_idx}", storage.obs_batch)
-        # np.save(logdir + f"/value_{epoch_idx}", storage.value_batch)
+    if as_npz:
+        if raw:
+            if isinstance(storage.obs_batch, torch.Tensor):
+                save_obj = tensor_array.cpu().detach().numpy()
+            else:
+                save_obj = storage.obs_batch
+            np.savez_compressed(os.path.join(logdir, f"saved_obs_env_{eval_env_seed}_run_{eval_env_idx}.npz"), save_obj)
+        else:
+            if isinstance(storage.latent_obs_batch, torch.Tensor):
+                save_obj = tensor_array.cpu().detach().numpy()
+            else:
+                save_obj = storage.latent_obs_batch
+            np.savez_compressed(os.path.join(logdir, f"saved_latent_obs_env_{eval_env_seed}_run_{eval_env_idx}.npz"), save_obj)
     else:
         # obs_batch shape: total_steps, num_envs, obs
         values = ""
@@ -260,9 +269,9 @@ def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], a
         curr_agent = 0
         for step in range(agent.n_steps):
             if not args.value_saliency:
-                act, log_prob_act, value, next_hidden_state, help_info, repeated_state = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, risk = args.risk, select_mode = args.select_mode)
+                act, log_prob_act, value, next_hidden_state, latent_rep, help_info, repeated_state = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, risk = args.risk, select_mode = args.select_mode)
                 if expert is not None and help_info["need_help"]:
-                    act, _, _, _, _, _ = expert.predict(obs, hidden_state, done, select_mode = args.select_mode)
+                    act, _, _, _, _, _, _ = expert.predict(obs, hidden_state, done, select_mode = args.select_mode)
                     curr_agent = 1
                 else:
                     curr_agent = 0
@@ -334,14 +343,14 @@ def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], a
                 cum_adjusted_reward += adjusted_rew
                 all_queries.append(int(received_help))
                 all_switches.append(int(switched))
-            agent.storage.store(obs, hidden_state, act, rew, adjusted_rew, received_help, switched, done, info, log_prob_act, value, help_info, repeated_state)
+            agent.storage.store(obs, latent_rep, hidden_state, act, rew, adjusted_rew, received_help, switched, done, info, log_prob_act, value, help_info, repeated_state)
             if all(done):
                 break
             obs = next_obs
             hidden_state = next_hidden_state
 
-        _, _, last_val, hidden_state, help_info, repeated_state = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, risk = args.risk, select_mode = args.select_mode)
-        agent.storage.store_last(obs, hidden_state, last_val, help_info, repeated_state)
+        _, _, last_val, hidden_state, latent_rep, help_info, repeated_state = agent.predict(obs, hidden_state, done, ood_metric = args.ood_metric, risk = args.risk, select_mode = args.select_mode)
+        agent.storage.store_last(obs, latent_rep, hidden_state, last_val, help_info, repeated_state)
 
         if args.quant_eval:
             all_rewards.append(cum_reward[0])
@@ -356,8 +365,8 @@ def render(eval_env_idx, eval_env_seed, agent, epochs, args, all_rewards = [], a
                 else:  # encountered an enemy
                     all_achievement_timesteps.append(-step)
         
-        if args.save_run and (eval_env_idx % 100 == 0 or random.random() < 0.015):
-            save_run_data(agent.logger.logdir, agent.storage, eval_env_idx, eval_env_seed, args.save_as_npy)
+        if (args.save_observations or args.save_latent_observations) or (args.save_run and (eval_env_idx % 100 == 0 or random.random() < 0.015)):
+            save_run_data(agent.logger.logdir, agent.storage, eval_env_idx, eval_env_seed, args.save_as_npz, args.save_observations)  # only save_observations or save_latent_observations will be True
 
         agent.storage.compute_estimates(agent.gamma, agent.lmbda, agent.use_gae, agent.normalize_adv)
         epoch_idx += 1
@@ -389,7 +398,7 @@ if __name__=='__main__':
     parser.add_argument('--model_file', type=str)
     parser.add_argument('--save_run', action='store_true')
     parser.add_argument("--quant_eval", action = "store_true")
-    parser.add_argument("--save_as_npy", action="store_true")
+    parser.add_argument("--save_as_npz", action="store_true")
     parser.add_argument('--value_saliency', action='store_true')
 
     parser.add_argument('--random_percent',   type=float, default=0., help='percent of environments in which coin is randomized (only for coinrun)')
@@ -411,6 +420,8 @@ if __name__=='__main__':
     parser.add_argument("--expert_cost", type = float, default = None)
     parser.add_argument("--switching_cost", type = float, default = None)
     parser.add_argument("--unique_actions", action = "store_true", default = False)
+    parser.add_argument("--save_observations", action = "store_true", default = False)
+    parser.add_argument("--save_latent_observations", action = "store_true", default = False)
 
     args = parser.parse_args()
 
@@ -426,6 +437,10 @@ if __name__=='__main__':
 
     device = set_device(args)
     logger = set_logger(args)
+    if args.save_observations:
+        print("SAVING RAW OBSERVATIONS")
+    elif args.save_latent_observations:
+        print("SAVING LATENT OBSERVATIONS")
 
     if args.quant_eval:
         all_rewards = []
