@@ -187,7 +187,6 @@ def save_run_data(logdir, storage, eval_env_idx, eval_env_seed, as_npz = True, r
         pickle.dump(run_data, f)
     
     """write observations and value estimates to npz / human-readable files"""
-    print(f"Saving observations and values to {logdir}")
     if as_npz:
         if raw:
             if isinstance(storage.obs_batch, torch.Tensor):
@@ -489,8 +488,11 @@ if __name__=='__main__':
                     expert_agent = None
                 render(i, args.seed + i, agent, epochs, args, all_rewards, all_adjusted_rewards, all_queries, all_switches, all_achievement_timesteps, all_times_achieved, expert = expert_agent)
                 all_help_info.append(help_info)
-            elif args.store_percentiles or args.save_observations or args.save_latent_observations:
+            elif args.store_percentiles:
                 agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, store_percentiles = True, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action)
+                render(i, args.seed + i, agent, epochs, args)
+            elif args.save_observations or args.save_latent_observations:
+                agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args)
                 render(i, args.seed + i, agent, epochs, args)
             if i % 100 == 0:
                 end = time.time()
