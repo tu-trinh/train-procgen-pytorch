@@ -188,18 +188,19 @@ def save_run_data(logdir, storage, eval_env_idx, eval_env_seed, as_npz = True, r
     
     """write observations and value estimates to npz / human-readable files"""
     if as_npz:
-        if raw:
+        if raw:  # save complete ndarray of entire run's observations
             if isinstance(storage.obs_batch, torch.Tensor):
-                save_obj = tensor_array.cpu().detach().numpy()
+                save_obj = storage.obs_batch.cpu().detach().numpy()
             else:
                 save_obj = storage.obs_batch
             np.savez_compressed(os.path.join(logdir, f"saved_obs_env_{eval_env_seed}_run_{eval_env_idx}.npz"), save_obj)
-        else:
+        else:  # save individual observations
             if isinstance(storage.latent_obs_batch, torch.Tensor):
-                save_obj = tensor_array.cpu().detach().numpy()
+                save_obj = storage.latent_obs_batch.cpu().detach().numpy()
             else:
                 save_obj = storage.latent_obs_batch
-            np.savez_compressed(os.path.join(logdir, f"saved_latent_obs_env_{eval_env_seed}_run_{eval_env_idx}.npz"), save_obj)
+            for obs_idx, so in enumerate(save_obj):
+                np.savez_compressed(os.path.join(logdir, f"saved_latent_obs_{obs_idx}_env_{eval_env_seed}_run_{eval_env_idx}.npz"), so)
     else:
         # obs_batch shape: total_steps, num_envs, obs
         values = ""
