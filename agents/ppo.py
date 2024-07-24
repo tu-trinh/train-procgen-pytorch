@@ -16,6 +16,7 @@ sys.path.append("/nas/ucb/tutrinh/")
 sys.path.append("/Users/tutrinh/Work/CHAI/yield_request_control/")
 sys.path.append("/nas/ucb/tutrinh/yield_request_control/")
 from yield_request_control.detector.dataset import global_contrast_normalization, standardization
+from yield_request_control.detector.trainers import dynamic_permute
 
 
 class PPO(BaseAgent):
@@ -120,15 +121,16 @@ class PPO(BaseAgent):
         if self.detector_model is not None:
             if use_latent:
                 self.transforms = transforms.Compose([
-                    transforms.Lambda(lambda x: standardization(x))
+                    transforms.Lambda(lambda x: standardization(x.squeeze()))
                 ])
             else:
                 self.transforms = transforms.Compose([
-                    transforms.Lambda(lambda x: global_contrast_normalization(x, scale = "l1"))
+                    transforms.Lambda(lambda x: global_contrast_normalization(x, scale = "l1")),
+                    transforms.Lambda(lambda x: (x - x.min()) / (x.max() - x.min()))
                 ])
             with open(os.path.join(percentile_dir, "results.json"), "r") as f:
                 detector_results = json.load(f)
-            self.detector_thresholds = detector_results["test_thresholds"]  # risk is pseudo-percentiles from 50 to 150
+            self.detector_thresholds = {int(k): v for k, v in detector_results["test_thresholds"].items()}  # risk is pseudo-percentiles from 50 to 150
         self.all_help_info = all_help_info
         self.is_expert = is_expert
 
@@ -163,6 +165,9 @@ class PPO(BaseAgent):
                 inputs = self.transforms(latent_rep)
             else:
                 inputs = self.transforms(obs)
+            inputs = dynamic_permute(inputs.float().to(self.device))
+            if inputs.size(0) != 1:
+                inputs = inputs.unsqueeze(0)
             outputs = self.detector_model.net(inputs)
             distance = torch.sum((outputs - self.detector_model.center)**2, dim = 1)
             need_help = distance.item() > self.detector_thresholds[risk]

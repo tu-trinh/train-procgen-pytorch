@@ -45,7 +45,6 @@ helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled log
 for exp_dir in os.listdir(f"logs/procgen/{args.test_env}"):
     # TODO: CHANGE HERE #
     if exp_dir.startswith("receive") and "unique_actions" not in exp_dir:
-        print(exp_dir)
         perc = int(re.search(r"(\d+)", exp_dir).group(1))
         if "ent" in exp_dir:
             log_key = "entropy"
@@ -59,8 +58,6 @@ for exp_dir in os.listdir(f"logs/procgen/{args.test_env}"):
             log_key = "random"
         render_logs = os.listdir(os.path.join(f"logs/procgen/{args.test_env}", exp_dir))
         helped_logs[log_key][perc] = os.path.join(f"logs/procgen/{args.test_env}", exp_dir, sorted(render_logs)[-1])  # always get last/most updated one
-print("AJKDLJKSLFLKFJLFJLS")
-print(helped_logs["svdd"])
 
 
 # Weak agent in train environment

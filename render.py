@@ -425,6 +425,7 @@ if __name__=='__main__':
     parser.add_argument("--save_latent_observations", action = "store_true", default = False)
 
     args = parser.parse_args()
+    print("LOADING DETECTOR MODEL FROM", args.detector_model_file)
 
     set_global_seeds(args.seed)
     set_global_log_levels(args.log_level)
@@ -476,11 +477,12 @@ if __name__=='__main__':
                 else:
                     help_info = []
                 if args.detector_model_file is not None:
-                    detector_model = DeepSVDD(args.use_latent)
+                    detector_model = DeepSVDD(for_latent = args.use_latent)
                     detector_model.set_network(args.env_name)
                     detector_model.load_model(network_save_path = args.detector_model_file)
                     detector_model.net = detector_model.net.to(device)
                     detector_model.center = torch.tensor(detector_model.center).to(device)
+                    detector_model.net.eval()
                 else:
                     detector_model = None
                 agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, all_help_info = help_info, percentile_dir = args.percentile_dir, detector_model = detector_model)
