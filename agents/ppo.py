@@ -126,7 +126,7 @@ class PPO(BaseAgent):
                 self.transforms = transforms.Compose([
                     transforms.Lambda(lambda x: global_contrast_normalization(x, scale = "l1"))
                 ])
-            with open(percentile_dir, "r") as f:
+            with open(os.path.join(percentile_dir, "results.json"), "r") as f:
                 detector_results = json.load(f)
             self.detector_thresholds = detector_results["test_thresholds"]  # risk is pseudo-percentiles from 50 to 150
         self.all_help_info = all_help_info
