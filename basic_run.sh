@@ -32,4 +32,5 @@ python3 render.py \
     --seed 8888 \
     --device gpu \
     --gpu_device ${gpu_device} \
+    --save_as_npz \
     $(if [ "$save_style" == "0" ]; then echo "--save_observations"; else echo "--save_latent_observations"; fi)
