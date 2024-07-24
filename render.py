@@ -166,7 +166,7 @@ def make_agent(algo, env, n_envs, policy, logger, storage, device, args,
         from agents.ppo import PPO as AGENT
     else:
         raise NotImplementedError
-    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, store_percentiles = store_percentiles, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action, all_help_info = all_help_info, percentile_dir = percentile_dir, detector_model = detector_model, by_action = args.by_action, is_expert = is_expert, unique_actions = args.unique_actions, **hyperparameters)
+    agent = AGENT(env, policy, logger, storage, device, args.num_checkpoints, reduced_action_space = args.reduced_action_space, store_percentiles = store_percentiles, all_max_probs = all_max_probs, all_sampled_probs = all_sampled_probs, all_max_logits = all_max_logits, all_sampled_logits = all_sampled_logits, all_entropies = all_entropies, probs_by_action = probs_by_action, logits_by_action = logits_by_action, entropies_by_action = entropies_by_action, all_help_info = all_help_info, percentile_dir = percentile_dir, detector_model = detector_model, use_latent = args.use_latent, by_action = args.by_action, is_expert = is_expert, unique_actions = args.unique_actions, **hyperparameters)
     if is_expert:
         agent.policy.load_state_dict(torch.load(args.expert_model_file, map_location = device)["model_state_dict"])
     else:
@@ -415,6 +415,7 @@ if __name__=='__main__':
     parser.add_argument("--select_mode", type = str, default = "sample")
     parser.add_argument("--percentile_dir", type = str)
     parser.add_argument("--detector_model_file", type = str, default = None)
+    parser.add_argument("--use_latent", action = "store_true", default = False)
     parser.add_argument("--by_action", action = "store_true")
     parser.add_argument("--expert_model_file", type = str, default = None)
     parser.add_argument("--expert_cost", type = float, default = None)
@@ -475,7 +476,7 @@ if __name__=='__main__':
                 else:
                     help_info = []
                 if args.detector_model_file is not None:
-                    detector_model = DeepSVDD()
+                    detector_model = DeepSVDD(args.use_latent)
                     detector_model.set_network(args.env_name)
                     detector_model.load_model(network_save_path = args.detector_model_file)
                     detector_model.net = detector_model.net.to(device)

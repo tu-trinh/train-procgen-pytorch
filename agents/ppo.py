@@ -15,7 +15,7 @@ sys.path.append("/Users/tutrinh/Work/CHAI/")
 sys.path.append("/nas/ucb/tutrinh/")
 sys.path.append("/Users/tutrinh/Work/CHAI/yield_request_control/")
 sys.path.append("/nas/ucb/tutrinh/yield_request_control/")
-from yield_request_control.detector.dataset import global_contrast_normalization
+from yield_request_control.detector.dataset import global_contrast_normalization, standardization
 
 
 class PPO(BaseAgent):
@@ -41,6 +41,7 @@ class PPO(BaseAgent):
                  all_help_info=[],
                  percentile_dir=None,
                  detector_model=None,
+                 use_latent=False,
                  is_expert=False,
                  by_action=False,
                  unique_actions=False,
@@ -115,13 +116,19 @@ class PPO(BaseAgent):
                 # self.logit_thresholds_by_action = percentiles["logits_by_action"]
                 # self.entropy_thresholds_by_action = percentiles["probs_by_action"]
         self.detector_model = detector_model
+        self.use_latent = use_latent
         if self.detector_model is not None:
-            self.transforms = transforms.Compose([
-                transforms.Lambda(lambda x: global_contrast_normalization(x, scale = "l1"))
-            ])
+            if use_latent:
+                self.transforms = transforms.Compose([
+                    transforms.Lambda(lambda x: standardization(x))
+                ])
+            else:
+                self.transforms = transforms.Compose([
+                    transforms.Lambda(lambda x: global_contrast_normalization(x, scale = "l1"))
+                ])
             with open(percentile_dir, "r") as f:
                 detector_results = json.load(f)
-            self.detector_thresholds = {k: v for k, v in zip([1] + list(range(5, 96, 5)) + [99], detector_results["test_score_percentiles"])}
+            self.detector_thresholds = detector_results["test_thresholds"]  # risk is pseudo-percentiles from 50 to 150
         self.all_help_info = all_help_info
         self.is_expert = is_expert
 
@@ -129,7 +136,7 @@ class PPO(BaseAgent):
         if self.unique_actions:
             self.state_action_tracker = HashSet()
 
-    def determine_ask_for_help(self, obs, metric, risk, act, dist, logits):
+    def determine_ask_for_help(self, obs, latent_rep, metric, risk, act, dist, logits):
         if metric == "msp":
             need_help = torch.log(dist.probs.max()) < np.log(self.max_probability_thresholds[risk])
         elif metric == "sampled_p":
@@ -152,9 +159,12 @@ class PPO(BaseAgent):
         elif metric == "random":
             need_help = np.random.random() < risk / 100
         elif metric == "detector":
-            input_obs = self.transforms(obs)
-            features = self.detector_model.net(input_obs)
-            distance = torch.sum((features - self.detector_model.center)**2, dim = 1)
+            if self.use_latent:
+                inputs = self.transforms(latent_rep)
+            else:
+                inputs = self.transforms(obs)
+            outputs = self.detector_model.net(inputs)
+            distance = torch.sum((outputs - self.detector_model.center)**2, dim = 1)
             need_help = distance.item() > self.detector_thresholds[risk]
         help_info = {}
         sorted_probs, sorted_indices = torch.sort(dist.probs, descending = True)
@@ -179,7 +189,7 @@ class PPO(BaseAgent):
     def predict(self, obs, hidden_state, done, ood_metric = None, risk = None, select_mode = "sample"):
         assert ood_metric in [None, "msp", "ml", "sampled_p", "sampled_l", "ent", "random", "detector"], "Check ood metric"
         assert select_mode in ["sample", "max"], "Check select mode"
-        if ood_metric is not None and ood_metric != "detector":
+        if ood_metric is not None:
             assert risk is not None, "Must provide risk for ood metric"
         if isinstance(done, list):
             done = torch.tensor(done).float()
@@ -239,7 +249,7 @@ class PPO(BaseAgent):
                     self.logits_by_action[act.cpu().numpy()[i]].append(action_logits[i])
                     self.entropies_by_action[act.cpu().numpy()[i]].append(entropies[i])
         if not self.is_expert and ood_metric is not None:
-            need_help, help_info = self.determine_ask_for_help(obs, ood_metric, risk, act, dist, logits)
+            need_help, help_info = self.determine_ask_for_help(obs, latent_rep, ood_metric, risk, act, dist, logits)
             if need_help:
                 self.num_requests += 1
         else:
