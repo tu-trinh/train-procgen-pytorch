@@ -3,7 +3,8 @@
 env_name=$1
 index=$2
 risk_set=$3
-gpu_device=$4
+detector_type=$4
+gpu_device=$5
 seed=8888
 
 if [ "$risk_set" == "A" ]; then
@@ -24,26 +25,46 @@ if [ "$env_name" == "coinrun_aisc" ]; then
     model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun/model_200015872.pth"
     percentile_dir="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun"
     expert_model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun_aisc/model_200015872.pth"
-    detector_percentile_dir="/nas/ucb/tutrinh/yield_request_control/logs/test_detector/coinrun/perfect_raw/2024-07-24__20-40-13__seed_8888/"
-    detector_model_file="/nas/ucb/tutrinh/yield_request_control/logs/train_detector/coinrun/perfect_raw/2024-07-24__01-05-57__seed_8888/network.tar"
+    if [ "$detector_type" == "raw" ]; then
+        detector_percentile_dir="/nas/ucb/tutrinh/yield_request_control/logs/test_detector/coinrun/perfect_raw/2024-07-24__20-40-13__seed_8888/"
+        detector_model_file="/nas/ucb/tutrinh/yield_request_control/logs/train_detector/coinrun/perfect_raw/2024-07-24__01-05-57__seed_8888/network.tar"
+    elif [ "$detector_type" == "latent" ]; then
+        detector_percentile_dir="/nas/ucb/tutrinh/yield_request_control/logs/test_detector/coinrun/perfect_latent/2024-07-24__13-54-42__seed_8888/"
+        detector_model_file="/nas/ucb/tutrinh/yield_request_control/logs/train_detector/coinrun/perfect_latent/2024-07-24__19-35-37__seed_8888/network.tar"
+    fi
 elif [ "$env_name" == "maze" ]; then
     model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_aisc/model_200015872.pth"
     percentile_dir="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_aisc"
     expert_model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze/model_200015872.pth"
-    detector_percentile_dir="/nas/ucb/tutrinh/yield_request_control/logs/test_detector/maze_aisc/perfect_raw/2024-07-24__20-42-41__seed_8888/"
-    detector_model_file="/nas/ucb/tutrinh/yield_request_control/logs/train_detector/maze_aisc/perfect_raw/2024-07-24__01-09-01__seed_8888/network.tar"
+    if [ "$detector_type" == "raw" ]; then
+        detector_percentile_dir="/nas/ucb/tutrinh/yield_request_control/logs/test_detector/maze_aisc/perfect_raw/2024-07-24__20-42-41__seed_8888/"
+        detector_model_file="/nas/ucb/tutrinh/yield_request_control/logs/train_detector/maze_aisc/perfect_raw/2024-07-24__01-09-01__seed_8888/network.tar"
+    elif [ "$detector_type" == "latent" ]; then
+        detector_percentile_dir="/nas/ucb/tutrinh/yield_request_control/logs/test_detector/maze_aisc/perfect_latent/2024-07-24__20-56-47__seed_8888/"
+        detector_model_file="/nas/ucb/tutrinh/yield_request_control/logs/train_detector/maze_aisc/perfect_latent/2024-07-24__12-37-32__seed_8888/network.tar"
+    fi
 elif [ "$env_name" == "maze_yellowstar_redgem" ]; then
     model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_redline_yellowgem/model_200015872.pth"
     percentile_dir="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_redline_yellowgem"
     expert_model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/maze_yellowstar_redgem/model_200015872.pth"
-    detector_percentile_dir="/nas/ucb/tutrinh/yield_request_control/logs/test_detector/maze_redline_yellowgem/perfect_raw/2024-07-24__13-48-09__seed_8888/"
-    detector_model_file="/nas/ucb/tutrinh/yield_request_control/logs/train_detector/maze_redline_yellowgem/perfect_raw/2024-07-24__01-09-31__seed_8888/network.tar"
+    if [ "$detector_type" == "raw" ]; then
+        detector_percentile_dir="/nas/ucb/tutrinh/yield_request_control/logs/test_detector/maze_redline_yellowgem/perfect_raw/2024-07-24__13-48-09__seed_8888/"
+        detector_model_file="/nas/ucb/tutrinh/yield_request_control/logs/train_detector/maze_redline_yellowgem/perfect_raw/2024-07-24__01-09-31__seed_8888/network.tar"
+    elif [ "$detector_type" == "latent" ]; then
+        detector_percentile_dir="/nas/ucb/tutrinh/yield_request_control/logs/test_detector/maze_redline_yellowgem/perfect_latent/2024-07-24__20-57-23__seed_8888/"
+        detector_model_file="/nas/ucb/tutrinh/yield_request_control/logs/train_detector/maze_redline_yellowgem/perfect_latent/2024-07-24__12-38-06__seed_8888/network.tar"
+    fi
 elif [ "$env_name" == "heist_aisc_many_keys" ]; then
     model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/heist_aisc_many_chests/model_200015872.pth"
     percentile_dir="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/heist_aisc_many_chests"
     expert_model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/heist_aisc_many_keys/model_200015872.pth"
-    detector_percentile_dir="/nas/ucb/tutrinh/yield_request_control/logs/test_detector/heist_aisc_many_chests/perfect_raw/2024-07-24__13-50-17__seed_8888/"
-    detector_model_file="/nas/ucb/tutrinh/yield_request_control/logs/train_detector/heist_aisc_many_chests/perfect_raw/2024-07-24__01-09-31__seed_8888/network.tar"
+    if [ "$detector_type" == "raw" ]; then
+        detector_percentile_dir="/nas/ucb/tutrinh/yield_request_control/logs/test_detector/heist_aisc_many_chests/perfect_raw/2024-07-24__13-50-17__seed_8888/"
+        detector_model_file="/nas/ucb/tutrinh/yield_request_control/logs/train_detector/heist_aisc_many_chests/perfect_raw/2024-07-24__01-09-31__seed_8888/network.tar"
+    elif [ "$detector_type" == "latent" ]; then
+        detector_percentile_dir="/nas/ucb/tutrinh/yield_request_control/logs/test_detector/heist_aisc_many_chests/perfect_latent/2024-07-24__20-57-47__seed_8888/"
+        detector_model_file="/nas/ucb/tutrinh/yield_request_control/logs/train_detector/heist_aisc_many_chests/perfect_latent/2024-07-24__12-38-40__seed_8888/network.tar"
+    fi
 elif [ "$env_name" == "coinrun" ]; then
     model_file="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun_aisc/model_200015872.pth"
     percentile_dir="/nas/ucb/tutrinh/train-procgen-pytorch/logs/using/coinrun_aisc"
