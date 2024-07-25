@@ -187,6 +187,7 @@ class PPO(BaseAgent):
                 action_info.append((mapping[idx.item()], sorted_probs[idx.item()].item(), sorted_logits[idx.item()].item()))
         help_info["action_info"] = action_info
         help_info["entropy"] = dist.entropy().item()
+        help_info["distance"] = distance.item()
         help_info["need_help"] = need_help.item() if isinstance(need_help, torch.Tensor) else need_help
         self.all_help_info.append(help_info)
         return need_help, help_info

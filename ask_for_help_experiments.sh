@@ -27,13 +27,13 @@ gpu_device=$5
 seed=8888
 
 if [ "$risk_set" == "A" ]; then
-    if [ "$index" == "6" ]; then
+    if [ "$index" == "6" ] || [ "$index" == "7" ]; then
         risk_values=(50 60 70 80 90 100)
     else
         risk_values=(10 20 30 40 50 60 70 80 90)
     fi
 elif [ "$risk_set" == "B" ]; then
-    if [ "$index" == "6" ]; then
+    if [ "$index" == "6" ] || [ "$index" == "7" ]; then
         risk_values=(110 120 130 140 150)
     else
         risk_values=(5 15 25 35 45 55 65 75 85 95)
@@ -109,7 +109,8 @@ names=(
     "receive_help_test_sample_logit"
     "receive_help_test_ent"
     "receive_help_test_random"
-    "recieve_help_test_svdd"
+    "recieve_help_test_svdd_raw"
+    "receive_help_test_svdd_latent"
 )
 metrics=(
     "msp"
@@ -118,6 +119,7 @@ metrics=(
     "sampled_l"
     "ent"
     "random"
+    "detector"
     "detector"
 )
 for idx in "${!risk_values[@]}"; do
@@ -140,7 +142,7 @@ for idx in "${!risk_values[@]}"; do
         --device gpu \
         --gpu_device ${gpu_device} \
         --save_run"
-    if [ $index -eq 6 ]; then
+    if [ $index -eq 6 ] || [ $index -eq 7 ]; then
         cmd="${cmd} --detector_model_file ${detector_model_file}"
     fi
     if [ "$detector_type" == "latent" ]; then

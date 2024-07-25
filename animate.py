@@ -8,7 +8,7 @@ from common.constants import ORIGINAL_ACTION_SPACE
 
 
 def add_border_and_text(frame, step, env_idx, seed, taken_action, help_info, repeated_state):
-    # help_info is dictionary containing `action_info`, list of (act, prob, logit); `entropy`; and `need_help`
+    # help_info is dictionary containing `action_info`, list of (act, prob, logit); `entropy`; `distance`; and `need_help`
     border_size = 60
     # new_size = (frame.width + 2 * border_size, frame.height + border_size + border_size // 3)
     new_size = (frame.width + 2 * border_size, frame.height + border_size + border_size // 2)

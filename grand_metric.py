@@ -40,11 +40,11 @@ def flatten_list(lst):
 
 
 quant_eval_file_name = "AAA_quant_eval_model_200015872.txt"
-colors = {"max prob": "blue", "sampled prob": "green", "max logit": "red", "sampled logit": "purple", "entropy": "orange", "random": "gold", "svdd": "fuchsia"}
-helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}, "random": {}, "svdd": {}}
+colors = {"max prob": "blue", "sampled prob": "green", "max logit": "red", "sampled logit": "purple", "entropy": "orange", "random": "gold", "svdd_raw": "fuchsia", "svdd_latent": "lightseagreen"}
+helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}, "random": {}, "svdd_raw": {}, "svdd_latent": {}}
 for exp_dir in os.listdir(f"logs/procgen/{args.test_env}"):
     # TODO: CHANGE HERE #
-    if exp_dir.startswith("receive") and "unique_actions" not in exp_dir:
+    if exp_dir.startswith("receive") and "unique_actions" not in exp_dir and ("svdd_raw" in exp_dir or "svdd_latent" in exp_dir):
         perc = int(re.search(r"(\d+)", exp_dir).group(1))
         if "ent" in exp_dir:
             log_key = "entropy"
@@ -53,7 +53,7 @@ for exp_dir in os.listdir(f"logs/procgen/{args.test_env}"):
         elif "sample" in exp_dir:
             log_key = "sampled prob" if "prob" in exp_dir else "sampled logit"
         elif "svdd" in exp_dir:
-            log_key = "svdd"
+            log_key = "svdd_raw" if "raw" in exp_dir else "svdd_latent"
         else:
             log_key = "random"
         render_logs = os.listdir(os.path.join(f"logs/procgen/{args.test_env}", exp_dir))
@@ -78,6 +78,7 @@ with open(os.path.join(f"logs/procgen/{args.test_env}", "eval_weak_test", sorted
             break
 # Expert in test environment
 temp = os.listdir(os.path.join(f"logs/procgen/{args.test_env}", "eval_expert"))
+with open(os.path.join(f"logs/procgen/{args.test_env}", "eval_expert", sorted(temp)[-1], quant_eval_file_name), "r") as f:
     evaluation = f.readlines()
     for line in evaluation:
         if "all rewards" in line.lower():
@@ -105,23 +106,24 @@ expert_perf_mean /= norm_factor
 
 
 percentiles = range(5, 96, 5)
+pseudo_percentiles = range(50, 151, 10)
 table_data = {"metric": [], "AUC": [], "mean reward": []}
-include_keys = [k for k in helped_logs.keys() if k in args.include and k not in args.exclude]
-for metric in include_keys:
+include_metrics = [m for m in helped_logs.keys() if m in args.include and m not in args.exclude]
+for metric in include_metrics:
     rew_by_perc = []
     adj_rew_by_perc = []
     help_props_by_perc = []
-    for perc in percentiles:
+    iterable = percentiles if "svdd" not in metrics else pseudo_percentiles
+    for it in iterable:
         try:
-            with open(os.path.join(helped_logs[metric][perc], quant_eval_file_name), "r") as f:
+            with open(os.path.join(helped_logs[metric][it], quant_eval_file_name), "r") as f:
                 evaluation = f.readlines()
             run_lengths = []
             for line in evaluation:
                 if "all rewards" in line.lower():
                     rewards = eval(line[len("all rewards: "):].strip())
-                    assert all([reward <= 10 for reward in rewards]), f"wtf {metric} {perc}"
+                    assert all([reward <= 10 for reward in rewards]), f"wtf {metric} {it}"
                     rew_by_perc.append([reward / norm_factor for reward in rewards])
-                    # print(f"Mean reward for {perc} = {np.mean(rewards)}")
                 if "all queries" in line.lower():
                     queries = eval(line[len("all queries: "):].strip())
                 if "all switches" in line.lower():
@@ -147,10 +149,10 @@ for metric in include_keys:
                     curr_run_length += 1
                 perc_adjusted_rewards.append(adjusted_reward)
             adj_rew_by_perc.append(perc_adjusted_rewards)
-            # print(f"Mean adj. reward for {perc} = {np.mean(perc_adjusted_rewards)}")
+            # print(f"Mean adj. reward for {it} = {np.mean(perc_adjusted_rewards)}")
         except Exception as e:
             print(e)
-            print(f"Missing data for {metric} at percentile {perc}")
+            print(f"Missing data for {metric} at (pseudo) percentile {it}")
 
     # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
     afhp_means, afhp_stds = get_mean_and_std_nested(help_props_by_perc)
