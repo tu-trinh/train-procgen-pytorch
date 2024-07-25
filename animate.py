@@ -85,7 +85,7 @@ if __name__ == "__main__":
                 try:
                     img_path = os.path.join(args.dir, f"obs_env_{env_idx}_seed_{seed}_step_{step}.png")
                     frame = Image.open(img_path)
-                    frame = add_border_and_text(frame, step, env, args.seed[i], taken_actions[step], all_action_info[step], repeated_states_log[step])
+                    frame = add_border_and_text(frame, step, env_idx, seed, taken_actions[step], all_action_info[step], repeated_states_log[step])
                     frames.append(frame)
                     step += 1
                 except (IndexError, FileNotFoundError):

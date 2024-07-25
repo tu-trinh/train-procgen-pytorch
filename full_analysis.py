@@ -251,6 +251,8 @@ elif args.plotting:
                             queries = eval(line[len("all queries: "):].strip())
                         if "all switches" in line.lower():
                             switches = eval(line[len("all switches: "):].strip())
+                        if "all adjusted rewards" in line.lower():
+                            logged_adjusted_rewards = eval(line[len("all adjusted rewards: "):].strip())
                     if PLOT_PERF_VS_PROP in args.plots or PLOT_PROP_VS_PERC in args.plots:
                         if "help times" in line.lower():
                             help_times = eval(evaluation[-1])
@@ -276,18 +278,21 @@ elif args.plotting:
                 if PLOT_PERF_VS_PERC in args.plots or PLOT_PERF_VS_PROP in args.plots:
                     curr_idx = 0
                     perc_adjusted_rewards = []
-                    for reward, run_length in zip(rewards, run_lengths):
-                        curr_run_length = 0
-                        adjusted_reward = reward
-                        while curr_run_length < run_length:
-                            if queries[curr_idx] == 1:
-                                adjusted_reward -= 10/256 * args.query_cost
-                            if switches[curr_idx] == 1:
-                                adjusted_reward -= 10/256 * args.switching_cost
-                            curr_idx += 1
-                            curr_run_length += 1
-                        perc_adjusted_rewards.append(adjusted_reward)
-                    adj_rew_by_perc[metric].append(perc_adjusted_rewards)
+                    try:
+                        for reward, run_length in zip(rewards, run_lengths):
+                            curr_run_length = 0
+                            adjusted_reward = reward
+                            while curr_run_length < run_length:
+                                if queries[curr_idx] == 1:
+                                    adjusted_reward -= 10/256 * args.query_cost
+                                if switches[curr_idx] == 1:
+                                    adjusted_reward -= 10/256 * args.switching_cost
+                                curr_idx += 1
+                                curr_run_length += 1
+                            perc_adjusted_rewards.append(adjusted_reward)
+                        adj_rew_by_perc[metric].append(perc_adjusted_rewards)
+                    except NameError:
+                        adj_rew_by_perc[metric].append(logged_adjusted_rewards)
             except FileNotFoundError:
                 print(f"Missing data for {metric} at (pseudo) percentile {it}")
         
