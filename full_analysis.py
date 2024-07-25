@@ -24,8 +24,8 @@ parser.add_argument("--grand_metric", "-gm", action = "store_true", default = Fa
 parser.add_argument("--include", type = str, nargs = "+", default = ["max prob", "sampled prob", "max logit", "sampled logit", "entropy", "random", "svdd_raw", "svdd_latent"])
 parser.add_argument("--exclude", type = str, nargs = "+", default = [])
 # Plotting arguments
-parser.add_argument("--plotting", "-p", action = "store_true", default = False)
-parser.add_argument("--plots", type = int, nargs = "+", default = [1, 2, 3, 4, 5])
+parser.add_argument("--plotting", "-pt", action = "store_true", default = False)
+parser.add_argument("--plots", type = int, nargs = "+", default = [1, 2, 3])
 parser.add_argument("--bucketed", "-b", action = "store_true")  # only applies to plot 3!
 parser.add_argument("--grouped", "-g", action = "store_true")  # only applies to plot 3!
 parser.add_argument("--prefix", type = str, default = "receive_help")
@@ -35,6 +35,7 @@ args = parser.parse_args()
 assert (args.grand_metric and not args.plotting) or (args.plotting and not args.grand_metric), "Only one of grand_metric or plotting at a time"
 if args.suffix != "" and args.suffix[-1] != "_":
     args.suffix = "_" + args.suffix
+args.prefix += "_" + args.test_env
 print("Train:", args.train_env)
 print("Test:", args.test_env)
 
@@ -68,11 +69,11 @@ quant_eval_file_name = "AAA_quant_eval_model_200015872.txt"
 colors = {"max prob": "blue", "sampled prob": "green", "max logit": "red", "sampled logit": "purple", "entropy": "orange", "random": "gold", "svdd_raw": "fuchsia", "svdd_latent": "lightseagreen"}
 helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}, "random": {}, "svdd_raw": {}, "svdd_latent": {}}
 log_dir = f"logs/procgen/{args.test_env}"
-for exp_dir in os.listdir(logdir):
+for exp_dir in os.listdir(log_dir):
     # TODO: CHANGE HERE #
-    if exp_dir.startswith("receive") and "unique_actions" not in exp_dir and ("svdd" not in exp_dir or ("svdd_raw" in exp_dir or "svdd_latent" in exp_dir)):
+    if exp_dir.startswith("rec") and "unique_actions" not in exp_dir and ("svdd" not in exp_dir or ("svdd_raw" in exp_dir or "svdd_latent" in exp_dir)):
         perc = int(re.search(r"(\d+)", exp_dir).group(1))
-        if "ent" in exp_dir:
+        if "_ent" in exp_dir:
             log_key = "entropy"
         elif "max" in exp_dir:
             log_key = "max prob" if "prob" in exp_dir else "max logit"
@@ -141,7 +142,7 @@ if args.grand_metric:
         rew_by_perc = []
         adj_rew_by_perc = []
         help_props_by_perc = []
-        iterable = percentiles if "svdd" not in metrics else pseudo_percentiles
+        iterable = percentiles if "svdd" not in metric else pseudo_percentiles
         for it in iterable:
             try:
                 with open(os.path.join(helped_logs[metric][it], quant_eval_file_name), "r") as f:
@@ -178,13 +179,16 @@ if args.grand_metric:
                     perc_adjusted_rewards.append(adjusted_reward)
                 adj_rew_by_perc.append(perc_adjusted_rewards)
                 # print(f"Mean adj. reward for {it} = {np.mean(perc_adjusted_rewards)}")
+            except KeyError:
+                print(f"Risk values found for {metric}: {helped_logs[metric].keys()}")
+                exit()
             except FileNotFoundError:
                 print(f"Missing data for {metric} at (pseudo) percentile {it}")
 
         # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
-        afhp_means, afhp_stds = get_mean_and_std_nested(help_props_by_perc)
-        rew_means, rew_stds = get_mean_and_std_nested(rew_by_perc)
-        adj_rew_means, adj_rew_stds = get_mean_and_std_nested(adj_rew_by_perc)
+        afhp_means, afhp_stds = get_mean_and_std_nested(help_props_by_perc, False)
+        rew_means, rew_stds = get_mean_and_std_nested(rew_by_perc, False)
+        adj_rew_means, adj_rew_stds = get_mean_and_std_nested(adj_rew_by_perc, False)
         # Adding 0% ask for help
         afhp_means.insert(0, 0)
         rew_means.insert(0, test_perf_mean)
@@ -214,24 +218,24 @@ elif args.plotting:
     print("Making plots")
     run_portions = [round(k, 1) for k in np.arange(0.1, 1.01, 0.1)]
     if PLOT_PERF_VS_PERC in args.plots:
-        fig1, axes1 = plt.subplots(2, 3, figsize = (15, 8))
+        fig1, axes1 = plt.subplots(2, 4, figsize = (15, 8))
     if PLOT_PROP_VS_PERC in args.plots:
-        fig2, axes2 = plt.subplots(2, 3, figsize = (15, 8))
+        fig2, axes2 = plt.subplots(2, 4, figsize = (15, 8))
     if PLOT_PERF_VS_PROP in args.plots:
-        fig3, axes3 = plt.subplots(2, 3, figsize = (15, 8))
+        fig3, axes3 = plt.subplots(2, 4, figsize = (15, 8))
         if args.grouped:
             fig5, axes5 = plt.subplots(1, 1)
     if PLOT_PROP_VS_TIME in args.plots:
-        fig4, axes4 = plt.subplots(2, 3, figsize = (15, 8))
+        fig4, axes4 = plt.subplots(2, 4, figsize = (15, 8))
     i = 0
     mega_mean_timestep_achieved = []
-    rew_by_perc[metric] = {m: [] for m in helped_logs}
-    adj_rew_by_perc[metric] = {m: [] for m in helped_logs}
-    help_props_by_perc[metric] = {m: [] for m in helped_logs}
-    help_asks_by_timestep[metric] = {m: {round(k, 1): [] for k in run_portions} for m in helped_logs}
+    rew_by_perc = {m: [] for m in helped_logs}
+    adj_rew_by_perc = {m: [] for m in helped_logs}
+    help_props_by_perc = {m: [] for m in helped_logs}
+    help_asks_by_timestep = {m: {round(k, 1): [] for k in run_portions} for m in helped_logs}
     for metric in helped_logs:
         print("Doing metric", metric)
-        iterable = percentiles if "svdd" not in metrics else pseudo_percentiles
+        iterable = percentiles if "svdd" not in metric else pseudo_percentiles
         for it in iterable:
             try:
                 with open(os.path.join(helped_logs[metric][perc], quant_eval_file_name), "r") as f:
@@ -243,10 +247,10 @@ elif args.plotting:
                             rewards = eval(line[len("all rewards: "):].strip())
                             assert all([reward <= 10 for reward in rewards]), f"wtf {metric} {it}"
                             rew_by_perc[metric].append([reward / norm_factor for reward in rewards])
-                            if "all queries" in line.lower():
-                                queries = eval(line[len("all queries: "):].strip())
-                            if "all switches" in line.lower():
-                                switches = eval(line[len("all switches: "):].strip())
+                        if "all queries" in line.lower():
+                            queries = eval(line[len("all queries: "):].strip())
+                        if "all switches" in line.lower():
+                            switches = eval(line[len("all switches: "):].strip())
                     if PLOT_PERF_VS_PROP in args.plots or PLOT_PROP_VS_PERC in args.plots:
                         if "help times" in line.lower():
                             help_times = eval(evaluation[-1])
@@ -289,18 +293,18 @@ elif args.plotting:
         
         # 1: Plotting performance vs percentile
         if PLOT_PERF_VS_PERC in args.plots:
-            ax = axes1[i // 3][i % 3]
-            rew_means, rew_stds = get_mean_and_std_nested(rew_by_perc[metric])
-            adj_rew_means, adj_rew_stds = get_mean_and_std_nested(adj_rew_by_perc[metric])
-            ax.plot(percentiles, rew_means, color = colors[metric], label = f"Reward (mean SD: {round(np.mean(rew_stds), 2)})", linewidth = 2.5)
+            ax = axes1[i // 4][i % 4]
+            rew_means, rew_stds = get_mean_and_std_nested(rew_by_perc[metric], True)
+            adj_rew_means, adj_rew_stds = get_mean_and_std_nested(adj_rew_by_perc[metric], True)
+            ax.plot(iterable, rew_means, color = colors[metric], label = f"Reward (mean SD: {round(np.mean(rew_stds), 2)})", linewidth = 2.5)
             # ax.fill_between(percentiles, rew_means - rew_stds, rew_means + rew_stds, color = colors[metric], alpha = 0.3)
-            ax.plot(percentiles, adj_rew_means, color = colors[metric], linestyle = "dashed", label = f"Adj. Reward (mean SD: {round(np.mean(adj_rew_stds), 2)})", linewidth = 2.5)
-            ax.fill_between(percentiles, adj_rew_means - adj_rew_stds, adj_rew_means + adj_rew_stds, color = colors[metric], alpha = 0.3)
-            ax.plot(percentiles, [train_perf_mean] * len(percentiles), color = "black", label = f"Train (SD: {round(train_perf_std, 2)})", linewidth = 2.5)
+            ax.plot(iterable, adj_rew_means, color = colors[metric], linestyle = "dashed", label = f"Adj. Reward (mean SD: {round(np.mean(adj_rew_stds), 2)})", linewidth = 2.5)
+            ax.fill_between(iterable, adj_rew_means - adj_rew_stds, adj_rew_means + adj_rew_stds, color = colors[metric], alpha = 0.3)
+            ax.plot(iterable, [train_perf_mean] * len(iterable), color = "black", label = f"Train (SD: {round(train_perf_std, 2)})", linewidth = 2.5)
             # ax.fill_between(percentiles, [train_perf_mean - train_perf_std] * len(percentiles), [train_perf_mean + train_perf_std] * len(percentiles), color = "black", alpha = 0.3)
-            ax.plot(percentiles, [test_perf_mean] * len(percentiles), color = "gray", label = f"Test (SD: {round(test_perf_std, 2)})", linewidth = 2.5)
+            ax.plot(iterable, [test_perf_mean] * len(iterable), color = "gray", label = f"Test (SD: {round(test_perf_std, 2)})", linewidth = 2.5)
             # ax.fill_between(percentiles, [test_perf_mean - test_perf_std] * len(percentiles), [test_perf_mean + test_perf_std] * len(percentiles), color = "gray", alpha = 0.3)
-            ax.plot(percentiles, [expert_perf_mean] * len(percentiles), color = "tab:brown", label = f"Expert (SD: {round(expert_perf_std, 2)})", linewidth = 2.5)
+            ax.plot(iterable, [expert_perf_mean] * len(iterable), color = "tab:brown", label = f"Expert (SD: {round(expert_perf_std, 2)})", linewidth = 2.5)
             # ax.fill_between(percentiles, [expert_perf_mean - expert_perf_std] * len(percentiles), [expert_perf_mean + expert_perf_std] * len(percentiles), color = "brown", alpha = 0.3)
             ax.set_title(metric.capitalize())
             ax.set_xlabel("Percentile")
@@ -316,10 +320,10 @@ elif args.plotting:
 
         # 2: Plotting ask-for-help percentage vs percentile
         if PLOT_PROP_VS_PERC in args.plots:
-            ax = axes2[i // 3][i % 3]
-            help_prop_means, help_prop_stds = get_mean_and_std_nested(help_props_by_perc[metric])
-            ax.plot(percentiles, help_prop_means, color = colors[metric])
-            ax.fill_between(percentiles, help_prop_means - help_prop_stds, help_prop_means + help_prop_stds, color = colors[metric], alpha = 0.3)
+            ax = axes2[i // 4][i % 4]
+            help_prop_means, help_prop_stds = get_mean_and_std_nested(help_props_by_perc[metric], True)
+            ax.plot(iterable, help_prop_means, color = colors[metric])
+            ax.fill_between(iterable, help_prop_means - help_prop_stds, help_prop_means + help_prop_stds, color = colors[metric], alpha = 0.3)
             # for x, y in zip(percentiles, help_prop_means):
                 # ax.hlines(y, 0, x, colors = "gray", linestyles = "dashed", linewidth = 0.5)
             ax.set_title(metric.capitalize())
@@ -335,12 +339,12 @@ elif args.plotting:
 
         # 3: Plotting performance vs ask-for-help percentage
         if PLOT_PERF_VS_PROP in args.plots:
-            ax = axes3[i // 3][i % 3]
+            ax = axes3[i // 4][i % 4]
             if args.bucketed:
                 # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
-                afhp_means, afhp_stds = get_mean_and_std_nested(help_props_by_perc[metric])
-                rew_means, rew_stds = get_mean_and_std_nested(rew_by_perc[metric])
-                adj_rew_means, adj_rew_stds = get_mean_and_std_nested(adj_rew_by_perc[metric])
+                afhp_means, afhp_stds = get_mean_and_std_nested(help_props_by_perc[metric], True)
+                rew_means, rew_stds = get_mean_and_std_nested(rew_by_perc[metric], True)
+                adj_rew_means, adj_rew_stds = get_mean_and_std_nested(adj_rew_by_perc[metric], True)
                 ax.plot(afhp_means, rew_means, color = colors[metric], label = f"Reward (mean SD: {np.round(np.mean(rew_stds), 2)})")
                 # ax.fill_between(afhp_means, rew_means - rew_stds, rew_means + rew_stds, color = colors[metric], alpha = 0.3)
                 ax.plot(afhp_means, adj_rew_means, color = colors[metric], linestyle = "dashed", label = f"Adj. Reward (mean SD: {np.round(np.mean(adj_rew_stds), 2)})")
@@ -370,7 +374,7 @@ elif args.plotting:
 
         # 4: Plotting proportion of asking for help vs run timestep
         if PLOT_PROP_VS_TIME in args.plots:
-            ax = axes4[i // 3][i % 3]
+            ax = axes4[i // 4][i % 4]
             asks_mean = np.array([np.mean(asks) for _, asks in help_asks_by_timestep[metric].items()])
             asks_std = np.array([stats.sem(asks) for _, asks in help_asks_by_timestep[metric].items()])
             ax.plot(run_portions, asks_mean, color = colors[metric])
@@ -389,13 +393,12 @@ elif args.plotting:
 
     if PLOT_PERF_VS_PROP in args.plots and args.grouped:
         # This one is bucketed by default
-        ax = axes5[0][0]
         # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
         for metric in helped_logs:
-            afhp_means, afhp_stds = get_mean_and_std_nested(help_props_by_perc[metric])
-            rew_means, rew_stds = get_mean_and_std_nested(rew_by_perc[metric])
-            adj_rew_means, adj_rew_stds = get_mean_and_std_nested(adj_rew_by_perc[metric])
-            ax.plot(afhp_means, rew_means, color = colors[metric], label = f"Reward (mean SD: {np.round(np.mean(rew_stds), 2)})")
+            afhp_means, afhp_stds = get_mean_and_std_nested(help_props_by_perc[metric], True)
+            rew_means, rew_stds = get_mean_and_std_nested(rew_by_perc[metric], True)
+            adj_rew_means, adj_rew_stds = get_mean_and_std_nested(adj_rew_by_perc[metric], True)
+            axes5.plot(afhp_means, rew_means, color = colors[metric], label = f"Reward (mean SD: {np.round(np.mean(rew_stds), 2)})")
             # ax.plot(afhp_means, adj_rew_means, color = colors[metric], linestyle = "dashed", label = f"Adj. Reward (mean SD: {np.round(np.mean(adj_rew_stds), 2)})")
         fig5.suptitle("Performance vs. AFHP, All Metrics")
         fig5.tight_layout()

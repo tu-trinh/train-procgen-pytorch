@@ -465,6 +465,15 @@ if __name__=='__main__':
             env = create_venv_render(args, hyperparameters, args.seed + i, is_valid = True)
             eval_envs.append(env)
         start = time.time()
+        if args.detector_model_file is not None:
+            detector_model = DeepSVDD(for_latent = args.use_latent)
+            detector_model.set_network(args.env_name)
+            detector_model.load_model(network_save_path = args.detector_model_file)
+            detector_model.net = detector_model.net.to(device)
+            detector_model.center = torch.tensor(detector_model.center).to(device)
+            detector_model.net.eval()
+        else:
+            detector_model = None
         for i, env in enumerate(eval_envs):
             model, policy = make_model_and_policy(args, env)
             storage = set_storage(model, env, n_steps, n_envs, device)
@@ -476,15 +485,6 @@ if __name__=='__main__':
                     help_info = {a: [] for a in range(len(ORIGINAL_ACTION_SPACE))}
                 else:
                     help_info = []
-                if args.detector_model_file is not None:
-                    detector_model = DeepSVDD(for_latent = args.use_latent)
-                    detector_model.set_network(args.env_name)
-                    detector_model.load_model(network_save_path = args.detector_model_file)
-                    detector_model.net = detector_model.net.to(device)
-                    detector_model.center = torch.tensor(detector_model.center).to(device)
-                    detector_model.net.eval()
-                else:
-                    detector_model = None
                 agent = make_agent(algo, env, n_envs, policy, logger, storage, device, args, all_help_info = help_info, percentile_dir = args.percentile_dir, detector_model = detector_model)
                 if args.expert_model_file is not None:
                     expert_agent = make_agent(algo, env, n_envs, expert_policy, logger, expert_storage, device, args, is_expert = True)

@@ -30,7 +30,8 @@ if [ "$risk_set" == "A" ]; then
     if [ "$index" == "6" ] || [ "$index" == "7" ]; then
         risk_values=(50 60 70 80 90 100)
     else
-        risk_values=(10 20 30 40 50 60 70 80 90)
+        # risk_values=(10 20 30 40 50 60 70 80 90)
+	risk_values=(5 10)
     fi
 elif [ "$risk_set" == "B" ]; then
     if [ "$index" == "6" ] || [ "$index" == "7" ]; then
@@ -130,7 +131,7 @@ for idx in "${!risk_values[@]}"; do
         --distribution_mode hard \
         --param_name hard-plus \
         --model_file ${model_file} \
-        --percentile_dir $( [ $index -eq 6 ] && echo ${detector_percentile_dir} || echo ${percentile_dir} ) \
+        --percentile_dir $( [ $index -eq 6 ] || [ $index -eq 7 ] && echo ${detector_percentile_dir} || echo ${percentile_dir} ) \
         --select_mode sample \
         --ood_metric ${metrics[index]} \
         --risk ${risk} \

@@ -48,7 +48,10 @@ def add_border_and_text(frame, step, env_idx, seed, taken_action, help_info, rep
     #     draw.text((new_size[0] - border_size + 10, new_size[1] - border_size + 10 + i * 15), f"{action} | {prob:.2f} | {logit:.2f}", fill = "black", font = font)
 
     draw.text((new_size[0] - border_size + 10, 10), f"Entropy: {help_info['entropy']:.2f}", fill = "black", font = font)
-    draw.text((new_size[0] - border_size + 10, 30), f"SVDD dist: {help_info['distance']:.6f}", fill = "black", font = font)
+    try:
+        draw.text((new_size[0] - border_size + 10, 30), f"SVDD dist: {help_info['distance']:.6f}", fill = "black", font = font)
+    except KeyError:  # not doing svdd => no distance
+        pass
     if help_info["need_help"]:
         draw.text((new_size[0] - border_size + 10, 50), "Asked for help!!!", fill = "red", font = font)
     # if repeated_state:
