@@ -1,7 +1,9 @@
 #!/bin/bash
 
+env_name=$1
+detector_type=$2
 directories=()
-for f in ./logs/procgen/coinrun_aisc/*_svdd_*; do
+for f in ./logs/procgen/${env_name}/*_svdd_${detector_type}*; do
     if [ -d "$f" ]; then
         for subdir in "$f"/*; do
             if [ -d "$subdir" ]; then
@@ -12,5 +14,5 @@ for f in ./logs/procgen/coinrun_aisc/*_svdd_*; do
 done
 
 for i in "${!directories[@]}"; do
-    python3 animate.py -d ${directories[i]} -e 0 100 200 300 400 500 600 700 800 900 -s 8888 8988 9088 9188 9288 9388 9488 9588 9688 9788
+    python3 animate.py -d ${directories[i]}
 done
