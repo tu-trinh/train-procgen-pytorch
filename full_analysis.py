@@ -121,13 +121,13 @@ if args.grand_metric or (args.plotting and (PLOT_PERF_VS_PERC in args.plots or P
         norm_factor = 4
     else:
         norm_factor = 10
-    train_perf_mean, train_perf_std = get_statistics(train_performance)
+    train_perf_mean, train_perf_std, train_perf_sem = get_statistics(train_performance)
     print(f"Weak agent reward = {round(train_perf_mean / norm_factor, 2)}")
     train_perf_mean /= norm_factor
-    test_perf_mean, test_perf_std = get_statistics(test_performance)
+    test_perf_mean, test_perf_std, test_perf_sem = get_statistics(test_performance)
     print(f"Weak agent on TEST reward = {round(test_perf_mean / norm_factor, 2)}")
     test_perf_mean /= norm_factor
-    expert_perf_mean, expert_perf_std = get_statistics(expert_performance)
+    expert_perf_mean, expert_perf_std, expert_perf_sem = get_statistics(expert_performance)
     print(f"Expert reward = {round(expert_perf_mean / norm_factor, 2)}")
     expert_perf_mean /= norm_factor
 
@@ -163,7 +163,7 @@ if args.grand_metric:
                         help_props = []
                         for helps in help_times:
                             help_props.append(sum(helps) / len(helps))
-                            run_lengths.append(len(helps))
+                        run_lengths.append(len(helps))
                         help_props_by_perc.append(help_props)
                 curr_idx = 0
                 perc_adjusted_rewards = []
@@ -260,8 +260,9 @@ elif args.plotting:
                             help_props = []
                             for helps in help_times:
                                 help_props.append(sum(helps) / len(helps))
-                                run_lengths.append(len(helps))
                             help_props_by_perc[metric].append(help_props)
+                            print("SOME OF HELP PROPS", help_props[:10])
+                            run_lengths.append(len(helps))
                     if PLOT_PROP_VS_TIME in args.plots:
                         if "help times" in line.lower():
                             help_times = eval(evaluation[-1])
@@ -346,16 +347,13 @@ elif args.plotting:
             print("Done one plot of", PLOT_PROP_VS_PERC)
 
         # 3: Plotting performance vs ask-for-help percentage
-        if PLOT_PERF_VS_PROP in args.plots:
+        # if PLOT_PERF_VS_PROP in args.plots:
+        if False:
             ax = axes3[i // 4][i % 4]
             if args.bucketed:
                 # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
                 afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc[metric], True)
-                print("BUCKETED... afhp means?")
-                print(afhp_means)
                 rew_means, rew_stds, rew_sems = get_statistics_nested(rew_by_perc[metric], True)
-                print("BUCKTED... rew means?")
-                print(rew_means)
                 adj_rew_means, adj_rew_stds, adj_rew_sems = get_statistics_nested(adj_rew_by_perc[metric], True)
                 ax.plot(afhp_means, rew_means, color = colors[metric], label = f"Reward (mean SD: {np.round(np.mean(rew_stds), 2)})")
                 # ax.fill_between(afhp_means, rew_means - rew_stds, rew_means + rew_stds, color = colors[metric], alpha = 0.3)

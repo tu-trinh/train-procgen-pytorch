@@ -12,7 +12,7 @@ def add_border_and_text(frame, step, env_idx, seed, taken_action, help_info, rep
     # help_info is dictionary containing `action_info`, list of (act, prob, logit); `entropy`; `distance`; and `need_help`
     border_size = 60
     # new_size = (frame.width + 2 * border_size, frame.height + border_size + border_size // 3)
-    new_size = (frame.width + 2 * border_size, frame.height + border_size + border_size // 2)
+    new_size = (frame.width + 3 * border_size, frame.height + border_size + border_size // 2)
     new_frame = Image.new("RGB", new_size, "white")
     new_frame.paste(frame, (border_size, border_size // 3))
     draw = ImageDraw.Draw(new_frame)
@@ -47,9 +47,9 @@ def add_border_and_text(frame, step, env_idx, seed, taken_action, help_info, rep
     # for i, (action, prob, logit) in enumerate(help_info["action_info"][10:15]):
     #     draw.text((new_size[0] - border_size + 10, new_size[1] - border_size + 10 + i * 15), f"{action} | {prob:.2f} | {logit:.2f}", fill = "black", font = font)
 
-    draw.text((new_size[0] - border_size + 10, 10), f"Entropy: {help_info['entropy']:.2f}", fill = "black", font = font)
+    draw.text((new_size[0] - (2*border_size) + 10, 10), f"Entropy: {help_info['entropy']:.2f}", fill = "black", font = font)
     try:
-        draw.text((new_size[0] - border_size + 10, 30), f"SVDD dist: {help_info['distance']:.6f}", fill = "black", font = font)
+        draw.text((new_size[0] - (2*border_size) + 10, 30), f"SVDD dist: {help_info['distance']:.6f}", fill = "black", font = font)
     except KeyError:  # not doing svdd => no distance
         pass
     if help_info["need_help"]:
