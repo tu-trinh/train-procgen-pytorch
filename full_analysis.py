@@ -19,10 +19,10 @@ parser.add_argument("--train_env", type = str, required = True)
 parser.add_argument("--test_env", type = str, required = True)
 parser.add_argument("--query_cost", type = int, default = 1)
 parser.add_argument("--switching_cost", type = int, default = 0)
-# Grand metric arguments
-parser.add_argument("--grand_metric", "-gm", action = "store_true", default = False)
 parser.add_argument("--include", type = str, nargs = "+", default = ["max prob", "sampled prob", "max logit", "sampled logit", "entropy", "random", "svdd_raw", "svdd_latent", "T1", "T2", "T3"])
 parser.add_argument("--exclude", type = str, nargs = "+", default = [])
+# Grand metric arguments
+parser.add_argument("--grand_metric", "-gm", action = "store_true", default = False)
 # Plotting arguments
 parser.add_argument("--plotting", "-pt", action = "store_true", default = False)
 parser.add_argument("--plots", type = int, nargs = "+", default = [1, 2, 3])
@@ -36,6 +36,10 @@ assert (args.grand_metric and not args.plotting) or (args.plotting and not args.
 if args.suffix != "" and args.suffix[-1] != "_":
     args.suffix = "_" + args.suffix
 args.prefix += "_" + args.test_env
+if args.grand_metric:
+    print("Calculating grand metric")
+else:
+    print("Making plots")
 print("Train:", args.train_env)
 print("Test:", args.test_env)
 
@@ -114,121 +118,151 @@ for exp_dir in os.listdir(skyline_log_dir):
             query_cost = float(re.search(r"query-cost-([\d.]+)-", exp_dir).group(1))
             helped_logs[log_key][query_cost] = os.path.join(skyline_log_dir, exp_dir)
 
-if args.grand_metric or (args.plotting and (PLOT_PERF_VS_PERC in args.plots or PLOT_PERF_VS_PROP in args.plots)):
-    # Weak agent in train environment
-    temp = os.listdir(os.path.join(f"logs/procgen/{args.train_env}", "eval_weak_train"))
-    with open(os.path.join(f"logs/procgen/{args.train_env}", "eval_weak_train", sorted(temp)[-1], quant_eval_file_name), "r") as f:
-        evaluation = f.readlines()
-        for line in evaluation:
-            if "all rewards" in line.lower():
-                train_performance = eval(line[len("all rewards: "):].strip())
-                break
-    # Weak agent in test environment
-    temp = os.listdir(os.path.join(f"logs/procgen/{args.test_env}", "eval_weak_test"))
-    with open(os.path.join(f"logs/procgen/{args.test_env}", "eval_weak_test", sorted(temp)[-1], quant_eval_file_name), "r") as f:
-        evaluation = f.readlines()
-        for line in evaluation:
-            if "all rewards" in line.lower():
-                test_performance = eval(line[len("all rewards: "):].strip())
-                break
-    # Expert in test environment
-    temp = os.listdir(os.path.join(f"logs/procgen/{args.test_env}", "eval_expert"))
-    with open(os.path.join(f"logs/procgen/{args.test_env}", "eval_expert", sorted(temp)[-1], quant_eval_file_name), "r") as f:
-        evaluation = f.readlines()
-        for line in evaluation:
-            if "all rewards" in line.lower():
-                expert_performance = eval(line[len("all rewards: "):].strip())
-                break
 
-    if args.test_env == "heist_aisc_many_chests":
-        norm_factor = 8
-    elif args.test_env == "heist_aisc_many_keys":
-        norm_factor = 4
-    else:
-        norm_factor = 10
-    train_perf_mean, train_perf_std, train_perf_sem = get_statistics(train_performance)
-    print(f"Weak agent reward = {round(train_perf_mean / norm_factor, 2)}")
-    train_perf_mean /= norm_factor
-    test_perf_mean, test_perf_std, test_perf_sem = get_statistics(test_performance)
-    print(f"Weak agent on TEST reward = {round(test_perf_mean / norm_factor, 2)}")
-    test_perf_mean /= norm_factor
-    expert_perf_mean, expert_perf_std, expert_perf_sem = get_statistics(expert_performance)
-    print(f"Expert reward = {round(expert_perf_mean / norm_factor, 2)}")
-    expert_perf_mean /= norm_factor
+# Weak agent in train environment
+temp = os.listdir(os.path.join(f"logs/procgen/{args.train_env}", "eval_weak_train"))
+with open(os.path.join(f"logs/procgen/{args.train_env}", "eval_weak_train", sorted(temp)[-1], quant_eval_file_name), "r") as f:
+    evaluation = f.readlines()
+    for line in evaluation:
+        if "all rewards" in line.lower():
+            train_performance = eval(line[len("all rewards: "):].strip())
+            break
+# Weak agent in test environment
+temp = os.listdir(os.path.join(f"logs/procgen/{args.test_env}", "eval_weak_test"))
+with open(os.path.join(f"logs/procgen/{args.test_env}", "eval_weak_test", sorted(temp)[-1], quant_eval_file_name), "r") as f:
+    evaluation = f.readlines()
+    for line in evaluation:
+        if "all rewards" in line.lower():
+            test_performance = eval(line[len("all rewards: "):].strip())
+            break
+# Expert in test environment
+temp = os.listdir(os.path.join(f"logs/procgen/{args.test_env}", "eval_expert"))
+with open(os.path.join(f"logs/procgen/{args.test_env}", "eval_expert", sorted(temp)[-1], quant_eval_file_name), "r") as f:
+    evaluation = f.readlines()
+    for line in evaluation:
+        if "all rewards" in line.lower():
+            expert_performance = eval(line[len("all rewards: "):].strip())
+            break
+
+if args.test_env == "heist_aisc_many_chests":
+    norm_factor = 8
+elif args.test_env == "heist_aisc_many_keys":
+    norm_factor = 4
+else:
+    norm_factor = 10
+train_perf_mean, train_perf_std, train_perf_sem = get_statistics(train_performance)
+print(f"Weak agent reward = {round(train_perf_mean / norm_factor, 2)}")
+train_perf_mean /= norm_factor
+test_perf_mean, test_perf_std, test_perf_sem = get_statistics(test_performance)
+print(f"Weak agent on TEST reward = {round(test_perf_mean / norm_factor, 2)}")
+test_perf_mean /= norm_factor
+expert_perf_mean, expert_perf_std, expert_perf_sem = get_statistics(expert_performance)
+print(f"Expert reward = {round(expert_perf_mean / norm_factor, 2)}")
+expert_perf_mean /= norm_factor
+
 
 percentiles = range(5, 96, 5)
 pseudo_percentiles = [1, 5] + list(range(10, 151, 10))
 query_costs = [0, 0.1, 0.5, 1, 5, 10, 20, 50]
-
+include_metrics = [m for m in helped_logs.keys() if m in args.include and m not in args.exclude]
 if args.grand_metric:
-    print("Calculating grand metric")
     table_data = {"metric": [], "AUC": []}
-    include_metrics = [m for m in helped_logs.keys() if m in args.include and m not in args.exclude]
-    for metric in include_metrics:
-        print("Doing metric", metric)
-        rew_by_perc = []
-        adj_rew_by_perc = []
-        help_props_by_perc = []
-        if "T" in metric:
-            iterable = query_costs
-        elif "svdd" not in metric:
-            iterable = percentiles
-        else:
-            iterable = pseudo_percentiles
-        for it in iterable:
-            try:
-                with open(os.path.join(helped_logs[metric][it], quant_eval_file_name), "r") as f:
-                    evaluation = f.readlines()
-                run_lengths = []
-                for line in evaluation:
-                    if "all rewards" in line.lower():
-                        rewards = eval(line[len("all rewards: "):].strip())
-                        if "T" not in metric:
-                            assert all([reward <= 10 for reward in rewards]), f"wtf {metric} {it} {rewards}"
-                            rew_by_perc.append([reward / norm_factor for reward in rewards])
-                    if "all queries" in line.lower():
-                        queries = eval(line[len("all queries: "):].strip())
-                    if "all switches" in line.lower():
-                        switches = eval(line[len("all switches: "):].strip())
-                    if "run lengths" in line.lower():
-                        if "T" in metric:
-                            run_lengths = eval(line[len("all run lengths: "):].strip())
-                            max_run_length = max(run_lengths)
-                            for i, rew in enumerate(rewards):
-                                if rew > norm_factor:
-                                    rewards[i] -= norm_factor * (max_run_length - run_lengths[i])
-                            print("new rewards", rewards)
-                            rew_by_perc.append([reward / norm_factor for reward in rewards])
-                    if "help times" in line.lower():
-                        help_times = eval(evaluation[-1])
-                        if "T" in metric:
-                            help_times = np.transpose(np.array(help_times))
-                        help_props = []
-                        for i, helps in enumerate(help_times):
-                            denom = len(run_lengths[i]) if "T" in metric else len(helps)
-                            help_props.append(sum(helps) / denom)
-                            if "T" not in metric:
-                                run_lengths.append(len(helps))
-                        help_props_by_perc.append(help_props)
-                assert len(run_lengths) == len(rewards), f"Mismatch in lengths: len(run_lengths) == {len(run_lengths)} and len(rewards) == {len(rewards)}"
-                curr_idx = 0
-                perc_adjusted_rewards = []
-                for reward, run_length in zip(rewards, run_lengths):
-                    curr_run_length = 0
-                    adjusted_reward = reward
-                    while curr_run_length < run_length:
-                        if queries[curr_idx] == 1:
-                            adjusted_reward -= 10/256 * args.query_cost
-                        if switches[curr_idx] == 1:
-                            adjusted_reward -= 10/256 * args.switching_cost
-                        curr_idx += 1
-                        curr_run_length += 1
-                    perc_adjusted_rewards.append(adjusted_reward)
-                adj_rew_by_perc.append(perc_adjusted_rewards)
-                # print(f"Mean adj. reward for {it} = {np.mean(perc_adjusted_rewards)}")
-            except (FileNotFoundError, KeyError):
-                print(f"Missing data for {metric} at (pseudo) percentile/query cost {it}")
+if args.plotting:
+    if PLOT_PERF_VS_PERC in args.plots:
+        fig1, axes1 = plt.subplots(3, 4, figsize = (15, 8))
+    if PLOT_PROP_VS_PERC in args.plots:
+        fig2, axes2 = plt.subplots(3, 4, figsize = (15, 8))
+    if PLOT_PERF_VS_PROP in args.plots:
+        fig3, axes3 = plt.subplots(3, 4, figsize = (15, 8))
+        if args.grouped:
+            fig5, axes5 = plt.subplots(1, 1)
+    if PLOT_PROP_VS_TIME in args.plots:
+        fig4, axes4 = plt.subplots(3, 4, figsize = (15, 8))
+    plot_i = 0
+    mega_mean_timestep_achieved = []
+    run_portions = [round(k, 1) for k in np.arange(0.1, 1.01, 0.1)]
+    rew_by_perc = {m: [] for m in include_metrics}
+    adj_rew_by_perc = {m: [] for m in include_metrics}
+    help_props_by_perc = {m: [] for m in include_metrics}
+    help_asks_by_timestep = {m: {round(k, 1): [] for k in run_portions} for m in include_metrics}
 
+for metric in include_metrics:
+    print("Doing metric", metric)
+    rew_by_perc = []
+    adj_rew_by_perc = []
+    help_props_by_perc = []
+    if "T" in metric:
+        iterable = query_costs
+    elif "svdd" not in metric:
+        iterable = percentiles
+    else:
+        iterable = pseudo_percentiles
+    for it in iterable:
+        try:
+            with open(os.path.join(helped_logs[metric][it], quant_eval_file_name), "r") as f:
+                evaluation = f.readlines()
+            run_lengths = []
+            for line in evaluation:
+                if "all rewards" in line.lower():
+                    rewards = eval(line[len("all rewards: "):].strip())
+                    if "T" not in metric:
+                        assert all([reward <= 10 for reward in rewards]), f"wtf {metric} {it} {rewards}"
+                        rew_by_perc.append([reward / norm_factor for reward in rewards])
+                if "all queries" in line.lower():
+                    queries = eval(line[len("all queries: "):].strip())
+                if "all switches" in line.lower():
+                    switches = eval(line[len("all switches: "):].strip())
+                if "all adjusted rewards" in line.lower():
+                    logged_adjusted_rewards = eval(line[len("all adjusted rewards: "):].strip())
+                if "run lengths" in line.lower():
+                    if "T" in metric:
+                        run_lengths = eval(line[len("all run lengths: "):].strip())
+                        max_run_length = max(run_lengths)
+                        for i, rew in enumerate(rewards):
+                            if rew > norm_factor:
+                                rewards[i] -= norm_factor * (max_run_length - run_lengths[i])
+                        print("new rewards", rewards)
+                        rew_by_perc.append([reward / norm_factor for reward in rewards])
+                if "help times" in line.lower():
+                    help_times = eval(evaluation[-1])
+                    if "T" in metric:
+                        help_times = np.transpose(np.array(help_times))
+                    help_props = []
+                    num_segments = 10
+                    for i, helps in enumerate(help_times):
+                        run_length = len(run_lengths[i]) if "T" in metric else len(helps)
+                        help_props.append(sum(helps) / run_length)
+                        if "T" not in metric:
+                            run_lengths.append(len(helps))
+                        segment_length = run_length // num_segments
+                        for j in range(num_segments):
+                            start = j * segment_length
+                            end = start + segment_length if j < num_segments - 1 else run_length
+                            segment = helps[start:end]
+                            help_asks_by_timestep[metric][round((k + 1) / 10, 1)].append(sum(segment) / len(segment))
+                    help_props_by_perc.append(help_props)
+                if "mean timestep achieved" in line.lower():
+                    mega_mean_timestep_achieved.append(int(re.search(r"(\d+)", line).group(1)))
+            assert len(run_lengths) == len(rewards), f"Mismatch in lengths: len(run_lengths) == {len(run_lengths)} and len(rewards) == {len(rewards)}"
+            curr_idx = 0
+            perc_adjusted_rewards = []
+            for reward, run_length in zip(rewards, run_lengths):
+                curr_run_length = 0
+                adjusted_reward = reward
+                while curr_run_length < run_length:
+                    if queries[curr_idx] == 1:
+                        adjusted_reward -= 10/256 * args.query_cost
+                    if switches[curr_idx] == 1:
+                        adjusted_reward -= 10/256 * args.switching_cost
+                    curr_idx += 1
+                    curr_run_length += 1
+                perc_adjusted_rewards.append(adjusted_reward)
+            adj_rew_by_perc.append(perc_adjusted_rewards)
+            # print(f"Mean adj. reward for {it} = {np.mean(perc_adjusted_rewards)}")
+        except (FileNotFoundError, KeyError):
+            print(f"Missing data for {metric} at (pseudo) percentile/query cost {it}")
+
+    if args.grand_metric:
         # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
         afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc, False)
         rew_means, rew_stds, rew_sems = get_statistics_nested(rew_by_perc, False)
@@ -248,107 +282,11 @@ if args.grand_metric:
         # table_data["std. err reward"].append(round(stats.sem(flatten_list(rew_by_perc), axis = None), 2))
         table_data["AUC"].append(round(reward_area, 2))
         # table_data["adj. reward AUC"].append(round(adjusted_reward_area, 2))
-
-    headings = [key.capitalize() for key in table_data.keys()]
-    values = list(zip(*table_data.values()))
-    column_widths = [max(len(str(item)) for item in [heading] + list(column)) for heading, column in zip(headings, table_data.values())]
-    row_format = "| " + " | ".join(f"{{:<{width}}}" for width in column_widths) + " |"
-    print(row_format.format(*headings))
-    print("-" * (sum(column_widths) + 3 * len(headings) + 1))
-    for value_set in values:
-        print(row_format.format(*value_set))
-
-elif args.plotting:
-    print("Making plots")
-    if PLOT_PERF_VS_PERC in args.plots:
-        fig1, axes1 = plt.subplots(2, 4, figsize = (15, 8))
-    if PLOT_PROP_VS_PERC in args.plots:
-        fig2, axes2 = plt.subplots(2, 4, figsize = (15, 8))
-    if PLOT_PERF_VS_PROP in args.plots:
-        fig3, axes3 = plt.subplots(2, 4, figsize = (15, 8))
-        if args.grouped:
-            fig5, axes5 = plt.subplots(1, 1)
-    if PLOT_PROP_VS_TIME in args.plots:
-        fig4, axes4 = plt.subplots(2, 4, figsize = (15, 8))
-    i = 0
-    mega_mean_timestep_achieved = []
-    run_portions = [round(k, 1) for k in np.arange(0.1, 1.01, 0.1)]
-    rew_by_perc = {m: [] for m in helped_logs}
-    adj_rew_by_perc = {m: [] for m in helped_logs}
-    help_props_by_perc = {m: [] for m in helped_logs}
-    help_asks_by_timestep = {m: {round(k, 1): [] for k in run_portions} for m in helped_logs}
-    for metric in helped_logs:
-        print("Doing metric", metric)
-        if "T" in metric:
-            iterable = query_costs
-        elif "svdd" not in metric:
-            iterable = percentiles
-        else:
-            iterable = pseudo_percentiles
-        for it in iterable:
-            try:
-                with open(os.path.join(helped_logs[metric][perc], quant_eval_file_name), "r") as f:
-                    evaluation = f.readlines()
-                run_lengths = []
-                for line in evaluation:
-                    if PLOT_PERF_VS_PERC in args.plots or PLOT_PERF_VS_PROP in args.plots:
-                        if "all rewards" in line.lower():
-                            rewards = eval(line[len("all rewards: "):].strip())
-                            assert all([reward <= 10 for reward in rewards]), f"wtf {metric} {it}"
-                            rew_by_perc[metric].append([reward / norm_factor for reward in rewards])
-                        if "all queries" in line.lower():
-                            queries = eval(line[len("all queries: "):].strip())
-                        if "all switches" in line.lower():
-                            switches = eval(line[len("all switches: "):].strip())
-                        if "all adjusted rewards" in line.lower():
-                            logged_adjusted_rewards = eval(line[len("all adjusted rewards: "):].strip())
-                    if PLOT_PERF_VS_PROP in args.plots or PLOT_PROP_VS_PERC in args.plots:
-                        if "help times" in line.lower():
-                            help_times = eval(evaluation[-1])
-                            help_props = []
-                            for helps in help_times:
-                                help_props.append(sum(helps) / len(helps))
-                                run_lengths.append(len(helps))
-                            help_props_by_perc[metric].append(help_props)
-                            print("SOME OF HELP PROPS", help_props[:10])
-                    if PLOT_PROP_VS_TIME in args.plots:
-                        if "help times" in line.lower():
-                            help_times = eval(evaluation[-1])
-                            num_segments = 10
-                            for helps in help_times:
-                                run_length = len(helps)
-                                segment_length = run_length // num_segments
-                                for k in range(num_segments):
-                                    start = k * segment_length
-                                    end = start + segment_length if i < num_segments - 1 else run_length
-                                    segment = helps[start:end]
-                                    help_asks_by_timestep[metric][round((k + 1) / 10, 1)].append(sum(segment) / len(segment))
-                    if "mean timestep achieved" in line.lower():
-                        mega_mean_timestep_achieved.append(int(re.search(r"(\d+)", line).group(1)))
-                if PLOT_PERF_VS_PERC in args.plots or PLOT_PERF_VS_PROP in args.plots:
-                    curr_idx = 0
-                    perc_adjusted_rewards = []
-                    try:
-                        for reward, run_length in zip(rewards, run_lengths):
-                            curr_run_length = 0
-                            adjusted_reward = reward
-                            while curr_run_length < run_length:
-                                if queries[curr_idx] == 1:
-                                    adjusted_reward -= 10/256 * args.query_cost
-                                if switches[curr_idx] == 1:
-                                    adjusted_reward -= 10/256 * args.switching_cost
-                                curr_idx += 1
-                                curr_run_length += 1
-                            perc_adjusted_rewards.append(adjusted_reward)
-                        adj_rew_by_perc[metric].append(perc_adjusted_rewards)
-                    except NameError:
-                        adj_rew_by_perc[metric].append(logged_adjusted_rewards)
-            except FileNotFoundError:
-                print(f"Missing data for {metric} at (pseudo) percentile {it}")
-        
+    
+    if args.plotting:
         # 1: Plotting performance vs percentile
         if PLOT_PERF_VS_PERC in args.plots:
-            ax = axes1[i // 4][i % 4]
+            ax = axes1[plot_i // 4][plot_i % 4]
             rew_means, rew_stds, rew_sems = get_statistics_nested(rew_by_perc[metric], True)
             adj_rew_means, adj_rew_stds, adj_rew_sems = get_statistics_nested(adj_rew_by_perc[metric], True)
             ax.plot(iterable, rew_means, color = colors[metric], label = f"Reward (mean SD: {round(np.mean(rew_stds), 2)})", linewidth = 2.5)
@@ -370,12 +308,12 @@ elif args.plotting:
             fig1.suptitle("Performance by Percentile")
             fig1.tight_layout()
             fig1.subplots_adjust(hspace = 0.3, wspace = 0.2)
-            fig1.savefig(f"{args.prefix}_performance_by_percentile{args.suffix}.png")
+            fig1.savefig(f"plots/{args.test_env}/{args.prefix}_performance_by_percentile{args.suffix}.png")
             print("Done one plot of", PLOT_PERF_VS_PERC)
-
+    
         # 2: Plotting ask-for-help percentage vs percentile
         if PLOT_PROP_VS_PERC in args.plots:
-            ax = axes2[i // 4][i % 4]
+            ax = axes2[plot_i // 4][plot_i % 4]
             help_prop_means, help_prop_stds, help_prop_sems = get_statistics_nested(help_props_by_perc[metric], True)
             print("HELP PROP MEANS???")
             print(help_prop_means)
@@ -391,13 +329,12 @@ elif args.plotting:
             fig2.suptitle("Ask-For-Help Percentage vs. Percentile")
             fig2.tight_layout()
             fig2.subplots_adjust(hspace = 0.3, wspace = 0.2)
-            fig2.savefig(f"{args.prefix}_help_percentage_by_percentile{args.suffix}.png")
+            fig2.savefig(f"plots/{args.test_env}/{args.prefix}_help_percentage_by_percentile{args.suffix}.png")
             print("Done one plot of", PLOT_PROP_VS_PERC)
 
         # 3: Plotting performance vs ask-for-help percentage
-        # if PLOT_PERF_VS_PROP in args.plots:
-        if False:
-            ax = axes3[i // 4][i % 4]
+        if PLOT_PERF_VS_PROP in args.plots and not args.grouped:
+            ax = axes3[plot_i // 4][plot_i % 4]
             if args.bucketed:
                 # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
                 afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc[metric], True)
@@ -427,12 +364,12 @@ elif args.plotting:
             fig3.suptitle("Performance vs. Ask-For-Help Percentage")
             fig3.tight_layout()
             fig3.subplots_adjust(hspace = 0.3, wspace = 0.2)
-            fig3.savefig(f"{args.prefix}_performance_by_help_percentage{'_bucketed' if args.bucketed else ''}{args.suffix}.png")
+            fig3.savefig(f"plots/{args.test_env}/{args.prefix}_performance_by_help_percentage{'_bucketed' if args.bucketed else ''}{args.suffix}.png")
             print("Done one plot of", PLOT_PERF_VS_PROP)
 
         # 4: Plotting proportion of asking for help vs run timestep
         if PLOT_PROP_VS_TIME in args.plots:
-            ax = axes4[i // 4][i % 4]
+            ax = axes4[plot_i // 4][plot_i % 4]
             asks_mean = np.array([np.mean(asks) for _, asks in help_asks_by_timestep[metric].items()])
             asks_std = np.array([stats.sem(asks) for _, asks in help_asks_by_timestep[metric].items()])
             ax.plot(run_portions, asks_mean, color = colors[metric])
@@ -444,28 +381,23 @@ elif args.plotting:
             fig4.suptitle("Ask-For-Help Percentage by Segment of Run")
             fig4.tight_layout()
             fig4.subplots_adjust(hspace = 0.3, wspace = 0.2)
-            fig4.savefig(f"{args.prefix}_help_percentage_by_timestep{args.suffix}.png")
+            fig4.savefig(f"plots/{args.test_env}/{args.prefix}_help_percentage_by_timestep{args.suffix}.png")
             print("Done one plot of", PLOT_PROP_VS_TIME)
 
-        i += 1
+        plot_i += 1
 
-    if PLOT_PERF_VS_PROP in args.plots and args.grouped:
-        # This one is bucketed by default
-        # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
-        for metric in helped_logs:
-            afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc[metric], True)
-            print("GROUPED... afhp means?")
-            print(afhp_means)
-            rew_means, rew_stds, rew_sems = get_statistics_nested(rew_by_perc[metric], True)
-            print("GROUPED... rew means?")
-            print(rew_means)
-            adj_rew_means, adj_rew_stds, adj_rew_sems = get_statistics_nested(adj_rew_by_perc[metric], True)
-            axes5.plot(afhp_means, rew_means, color = colors[metric], label = f"Reward (mean SD: {np.round(np.mean(rew_stds), 2)})")
-            # ax.plot(afhp_means, adj_rew_means, color = colors[metric], linestyle = "dashed", label = f"Adj. Reward (mean SD: {np.round(np.mean(adj_rew_stds), 2)})")
-        fig5.suptitle("Performance vs. AFHP, All Metrics")
-        fig5.tight_layout()
-        fig5.savefig(f"{args.prefix}_performance_by_afhp_all{args.suffix}.png")
-    
+
+if args.grand_metric:
+    headings = [key.capitalize() for key in table_data.keys()]
+    values = list(zip(*table_data.values()))
+    column_widths = [max(len(str(item)) for item in [heading] + list(column)) for heading, column in zip(headings, table_data.values())]
+    row_format = "| " + " | ".join(f"{{:<{width}}}" for width in column_widths) + " |"
+    print(row_format.format(*headings))
+    print("-" * (sum(column_widths) + 3 * len(headings) + 1))
+    for value_set in values:
+        print(row_format.format(*value_set))
+
+if args.plotting:
     if PLOT_COST_BREAKEVEN in args.plots:
         mega_mean_timestep_achieved = round(np.mean(mega_mean_timestep_achieved))
         print(mega_mean_timestep_achieved)
@@ -477,3 +409,19 @@ elif args.plotting:
         plt.ylabel("Ask-For-Help Percentage")
         plt.savefig("ask_for_help_breakeven.png")
         print("Done breakeven plot")
+    if PLOT_PERF_VS_PROP in args.plots and args.grouped:
+        # This one is bucketed by default
+        # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
+        for metric in include_metrics:
+            afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc[metric], True)
+            print("GROUPED... afhp means?")
+            print(afhp_means)
+            rew_means, rew_stds, rew_sems = get_statistics_nested(rew_by_perc[metric], True)
+            print("GROUPED... rew means?")
+            print(rew_means)
+            adj_rew_means, adj_rew_stds, adj_rew_sems = get_statistics_nested(adj_rew_by_perc[metric], True)
+            axes5.plot(afhp_means, rew_means, color = colors[metric], label = f"Reward (mean SD: {np.round(np.mean(rew_stds), 2)})")
+            # ax.plot(afhp_means, adj_rew_means, color = colors[metric], linestyle = "dashed", label = f"Adj. Reward (mean SD: {np.round(np.mean(adj_rew_stds), 2)})")
+        fig5.suptitle("Performance vs. AFHP, All Metrics")
+        fig5.tight_layout()
+        fig5.savefig(f"plots/{args.test_env}/{args.prefix}_performance_by_afhp_all{args.suffix}.png")
