@@ -21,7 +21,7 @@ parser.add_argument("--query_cost", type = int, default = 1)
 parser.add_argument("--switching_cost", type = int, default = 0)
 # Grand metric arguments
 parser.add_argument("--grand_metric", "-gm", action = "store_true", default = False)
-parser.add_argument("--include", type = str, nargs = "+", default = ["max prob", "sampled prob", "max logit", "sampled logit", "entropy", "random", "svdd_raw", "svdd_latent"])
+parser.add_argument("--include", type = str, nargs = "+", default = ["max prob", "sampled prob", "max logit", "sampled logit", "entropy", "random", "svdd_raw", "svdd_latent", "T1", "T2", "T3"])
 parser.add_argument("--exclude", type = str, nargs = "+", default = [])
 # Plotting arguments
 parser.add_argument("--plotting", "-pt", action = "store_true", default = False)
@@ -183,21 +183,34 @@ if args.grand_metric:
                 for line in evaluation:
                     if "all rewards" in line.lower():
                         rewards = eval(line[len("all rewards: "):].strip())
-                        assert all([reward <= 10 for reward in rewards]), f"wtf {metric} {it}"
-                        rew_by_perc.append([reward / norm_factor for reward in rewards])
+                        if "T" not in metric:
+                            assert all([reward <= 10 for reward in rewards]), f"wtf {metric} {it} {rewards}"
+                            rew_by_perc.append([reward / norm_factor for reward in rewards])
                     if "all queries" in line.lower():
                         queries = eval(line[len("all queries: "):].strip())
                     if "all switches" in line.lower():
                         switches = eval(line[len("all switches: "):].strip())
+                    if "run lengths" in line.lower():
+                        if "T" in metric:
+                            run_lengths = eval(line[len("all run lengths: "):].strip())
+                            max_run_length = max(run_lengths)
+                            for i, rew in enumerate(rewards):
+                                if rew > norm_factor:
+                                    rewards[i] -= norm_factor * (max_run_length - run_lengths[i])
+                            print("new rewards", rewards)
+                            rew_by_perc.append([reward / norm_factor for reward in rewards])
                     if "help times" in line.lower():
                         help_times = eval(evaluation[-1])
+                        if "T" in metric:
+                            help_times = np.transpose(np.array(help_times))
                         help_props = []
-                        for helps in help_times:
-                            help_props.append(sum(helps) / len(helps))
-                            run_lengths.append(len(helps))
+                        for i, helps in enumerate(help_times):
+                            denom = len(run_lengths[i]) if "T" in metric else len(helps)
+                            help_props.append(sum(helps) / denom)
+                            if "T" not in metric:
+                                run_lengths.append(len(helps))
                         help_props_by_perc.append(help_props)
-                print("LENGTH OF `run_lengths`:", len(run_lengths))
-                print("LENGTH OF REWARDS:", len(rewards))
+                assert len(run_lengths) == len(rewards), f"Mismatch in lengths: len(run_lengths) == {len(run_lengths)} and len(rewards) == {len(rewards)}"
                 curr_idx = 0
                 perc_adjusted_rewards = []
                 for reward, run_length in zip(rewards, run_lengths):
@@ -213,12 +226,8 @@ if args.grand_metric:
                     perc_adjusted_rewards.append(adjusted_reward)
                 adj_rew_by_perc.append(perc_adjusted_rewards)
                 # print(f"Mean adj. reward for {it} = {np.mean(perc_adjusted_rewards)}")
-            except KeyError:
-                print(f"Risk values found for {metric}: {helped_logs[metric].keys()}")
-                print("Exiting now")
-                exit()
-            except FileNotFoundError:
-                print(f"Missing data for {metric} at (pseudo) percentile / query cost {it}")
+            except (FileNotFoundError, KeyError):
+                print(f"Missing data for {metric} at (pseudo) percentile/query cost {it}")
 
         # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
         afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc, False)
@@ -299,9 +308,9 @@ elif args.plotting:
                             help_props = []
                             for helps in help_times:
                                 help_props.append(sum(helps) / len(helps))
+                                run_lengths.append(len(helps))
                             help_props_by_perc[metric].append(help_props)
                             print("SOME OF HELP PROPS", help_props[:10])
-                            run_lengths.append(len(helps))
                     if PLOT_PROP_VS_TIME in args.plots:
                         if "help times" in line.lower():
                             help_times = eval(evaluation[-1])
