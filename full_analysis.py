@@ -188,9 +188,10 @@ if args.plotting:
 
 for metric in include_metrics:
     print("Doing metric", metric)
-    rew_by_perc = []
-    adj_rew_by_perc = []
-    help_props_by_perc = []
+    if args.grand_metric:
+        rew_by_perc = []
+        adj_rew_by_perc = []
+        help_props_by_perc = []
     if "T" in metric:
         iterable = query_costs
     elif "svdd" not in metric:
@@ -205,13 +206,8 @@ for metric in include_metrics:
             for line in evaluation:
                 if "all rewards" in line.lower():
                     rewards = eval(line[len("all rewards: "):].strip())
-                    print("old rewards", rewards)
                     if "T" in metric:
-                        max_run_length = max(run_lengths)
-                        for i, rew in enumerate(rewards):
-                            if rew > norm_factor:
-                                rewards[i] -= norm_factor * (max_run_length - run_lengths[i])
-                        print("new rewards", rewards)
+                        rewards = [min(reward, norm_factor) for reward in rewards]
                     else:
                         assert all([reward <= 10 for reward in rewards]), f"wtf {metric} {it} {rewards}"
                     if args.grand_metric:
@@ -234,17 +230,17 @@ for metric in include_metrics:
                     help_props = []
                     num_segments = 10
                     for i, helps in enumerate(help_times):
-                        run_length = len(run_lengths[i]) if "T" in metric else len(helps)
+                        run_length = run_lengths[i] if "T" in metric else len(helps)
                         help_props.append(sum(helps) / run_length)
                         if "T" not in metric:
                             run_lengths.append(len(helps))
-                        if args.plotting:
-                            segment_length = run_length // num_segments
-                            for j in range(num_segments):
-                                start = j * segment_length
-                                end = start + segment_length if j < num_segments - 1 else run_length
-                                segment = helps[start:end]
-                                help_asks_by_timestep[metric][round((k + 1) / 10, 1)].append(sum(segment) / len(segment))
+                        # if args.plotting:
+                            # segment_length = run_length // num_segments
+                            # for j in range(num_segments):
+                                # start = j * segment_length
+                                # end = start + segment_length if j < num_segments - 1 else run_length
+                                # segment = helps[start:end]
+                                # help_asks_by_timestep[metric][round((j + 1) / 10, 1)].append(sum(segment) / len(segment))
                     if args.grand_metric:
                         help_props_by_perc.append(help_props)
                     elif args.plotting:
@@ -253,26 +249,38 @@ for metric in include_metrics:
                     if args.plotting:
                         mega_mean_timestep_achieved.append(int(re.search(r"(\d+)", line).group(1)))
             assert len(run_lengths) == len(rewards), f"Mismatch in lengths: len(run_lengths) == {len(run_lengths)} and len(rewards) == {len(rewards)}"
-            curr_idx = 0
-            perc_adjusted_rewards = []
-            for reward, run_length in zip(rewards, run_lengths):
-                curr_run_length = 0
-                adjusted_reward = reward
-                while curr_run_length < run_length:
-                    if queries[curr_idx] == 1:
-                        adjusted_reward -= 10/256 * args.query_cost
-                    if switches[curr_idx] == 1:
-                        adjusted_reward -= 10/256 * args.switching_cost
-                    curr_idx += 1
-                    curr_run_length += 1
-                perc_adjusted_rewards.append(adjusted_reward)
-            if args.grand_metric:
-                adj_rew_by_perc.append(perc_adjusted_rewards)
-            elif args.plotting:
-                adj_rew_by_perc[metric].append(perc_adjusted_rewards)
+            try:
+                curr_idx = 0
+                perc_adjusted_rewards = []
+                for reward, run_length in zip(rewards, run_lengths):
+                    curr_run_length = 0
+                    adjusted_reward = reward
+                    while curr_run_length < run_length:
+                        if queries[curr_idx] == 1:
+                            adjusted_reward -= 10/256 * args.query_cost
+                        if switches[curr_idx] == 1:
+                            adjusted_reward -= 10/256 * args.switching_cost
+                        curr_idx += 1
+                        curr_run_length += 1
+                    perc_adjusted_rewards.append(adjusted_reward)
+                if args.grand_metric:
+                    adj_rew_by_perc.append(perc_adjusted_rewards)
+                elif args.plotting:
+                    adj_rew_by_perc[metric].append(perc_adjusted_rewards)
+            except (IndexError, UnboundLocalError):
+                if args.grand_metric:
+                    adj_rew_by_perc.append(logged_adjusted_rewards)
+                elif args.plotting:
+                    adj_rew_by_perc[metric].append(logged_adjusted_rewards)
             # print(f"Mean adj. reward for {it} = {np.mean(perc_adjusted_rewards)}")
         except (FileNotFoundError, KeyError):
             print(f"Missing data for {metric} at (pseudo) percentile/query cost {it}")
+            if args.plotting:
+                rew_by_perc[metric].append([np.nan])
+                adj_rew_by_perc[metric].append([np.nan])
+                help_props_by_perc[metric].append([np.nan])
+                for k in run_portions:
+                    help_asks_by_timestep[metric][round(k, 1)].append(np.nan)
 
     if args.grand_metric:
         # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
@@ -327,8 +335,6 @@ for metric in include_metrics:
         if PLOT_PROP_VS_PERC in args.plots:
             ax = axes2[plot_i // 4][plot_i % 4]
             help_prop_means, help_prop_stds, help_prop_sems = get_statistics_nested(help_props_by_perc[metric], True)
-            print("HELP PROP MEANS???")
-            print(help_prop_means)
             ax.plot(iterable, help_prop_means, color = colors[metric])
             ax.fill_between(iterable, help_prop_means - help_prop_stds, help_prop_means + help_prop_stds, color = colors[metric], alpha = 0.3)
             # for x, y in zip(percentiles, help_prop_means):
@@ -426,14 +432,11 @@ if args.plotting:
         # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
         for metric in include_metrics:
             afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc[metric], True)
-            print("GROUPED... afhp means?")
-            print(afhp_means)
             rew_means, rew_stds, rew_sems = get_statistics_nested(rew_by_perc[metric], True)
-            print("GROUPED... rew means?")
-            print(rew_means)
             adj_rew_means, adj_rew_stds, adj_rew_sems = get_statistics_nested(adj_rew_by_perc[metric], True)
             axes5.plot(afhp_means, rew_means, color = colors[metric], label = f"Reward (mean SD: {np.round(np.mean(rew_stds), 2)})")
             # ax.plot(afhp_means, adj_rew_means, color = colors[metric], linestyle = "dashed", label = f"Adj. Reward (mean SD: {np.round(np.mean(adj_rew_stds), 2)})")
         fig5.suptitle("Performance vs. AFHP, All Metrics")
         fig5.tight_layout()
         fig5.savefig(f"plots/{args.test_env}/{args.prefix}_performance_by_afhp_all{args.suffix}.png")
+        print("Done one plot of grouped 3")
