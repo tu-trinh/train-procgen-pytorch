@@ -67,9 +67,22 @@ def flatten_list(lst):
 
 
 quant_eval_file_name = "AAA_quant_eval_model_200015872.txt"
-colors = {"max prob": "blue", "sampled prob": "green", "max logit": "red", "sampled logit": "purple", "entropy": "orange", "random": "gold", "svdd_raw": "fuchsia", "svdd_latent": "lightseagreen"}
-helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}, "random": {}, "svdd_raw": {}, "svdd_latent": {}}
+colors = {
+    "max prob": "blue",
+    "sampled prob": "green",
+    "max logit": "red",
+    "sampled logit": "purple",
+    "entropy": "orange",
+    "random": "gold",
+    "svdd_raw": "fuchsia",
+    "svdd_latent": "lightseagreen",
+    "T1": "tab:brown",
+    "T2": "gray",
+    "T3": "black"
+}
+helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}, "random": {}, "svdd_raw": {}, "svdd_latent": {}, "T1": {}, "T2": {}, "T3": {}}
 log_dir = f"logs/procgen/{args.test_env}"
+skyline_log_dir = f"/nas/ucb/tutrinh/yield_request_control/logs/{args.test_env}"
 for exp_dir in os.listdir(log_dir):
     # TODO: CHANGE HERE #
     if exp_dir.startswith("rec") and "unique_actions" not in exp_dir and ("svdd" not in exp_dir or ("svdd_raw" in exp_dir or "svdd_latent" in exp_dir)):
@@ -86,6 +99,20 @@ for exp_dir in os.listdir(log_dir):
             log_key = "random"
         render_logs = os.listdir(os.path.join(f"logs/procgen/{args.test_env}", exp_dir))
         helped_logs[log_key][perc] = os.path.join(f"logs/procgen/{args.test_env}", exp_dir, sorted(render_logs)[-1])  # always get last/most updated one
+for exp_dir in os.listdir(skyline_log_dir):
+    # TODO: CHANGE HERE #
+    # PPO-procgen-help-coinrun_aisc-type-T2-query-cost-2.0-d8b42b10
+    if f"-{args.test_env}-" in exp_dir:
+        contents = os.listdir(os.path.join(skyline_log_dir, exp_dir))
+        if any([".txt" in content for content in contents]):
+            if "T1" in exp_dir:
+                log_key = "T1"
+            elif "T2" in exp_dir:
+                log_key = "T2"
+            elif "T3" in exp_dir:
+                log_key = "T3"
+            query_cost = float(re.search(r"query-cost-([\d.]+)-", exp_dir).group(1))
+            helped_logs[log_key][query_cost] = os.path.join(skyline_log_dir, exp_dir)
 
 if args.grand_metric or (args.plotting and (PLOT_PERF_VS_PERC in args.plots or PLOT_PERF_VS_PROP in args.plots)):
     # Weak agent in train environment
@@ -112,8 +139,6 @@ if args.grand_metric or (args.plotting and (PLOT_PERF_VS_PERC in args.plots or P
             if "all rewards" in line.lower():
                 expert_performance = eval(line[len("all rewards: "):].strip())
                 break
-    # Skyline
-    # TODO: SKYLINE #
 
     if args.test_env == "heist_aisc_many_chests":
         norm_factor = 8
@@ -132,18 +157,24 @@ if args.grand_metric or (args.plotting and (PLOT_PERF_VS_PERC in args.plots or P
     expert_perf_mean /= norm_factor
 
 percentiles = range(5, 96, 5)
-pseudo_percentiles = range(50, 151, 10)
+pseudo_percentiles = [1, 5] + list(range(10, 151, 10))
+query_costs = [0, 0.1, 0.5, 1, 5, 10, 20, 50]
 
 if args.grand_metric:
     print("Calculating grand metric")
-    table_data = {"metric": [], "AUC": [], "mean reward": []}
+    table_data = {"metric": [], "AUC": []}
     include_metrics = [m for m in helped_logs.keys() if m in args.include and m not in args.exclude]
     for metric in include_metrics:
         print("Doing metric", metric)
         rew_by_perc = []
         adj_rew_by_perc = []
         help_props_by_perc = []
-        iterable = percentiles if "svdd" not in metric else pseudo_percentiles
+        if "T" in metric:
+            iterable = query_costs
+        elif "svdd" not in metric:
+            iterable = percentiles
+        else:
+            iterable = pseudo_percentiles
         for it in iterable:
             try:
                 with open(os.path.join(helped_logs[metric][it], quant_eval_file_name), "r") as f:
@@ -182,9 +213,10 @@ if args.grand_metric:
                 # print(f"Mean adj. reward for {it} = {np.mean(perc_adjusted_rewards)}")
             except KeyError:
                 print(f"Risk values found for {metric}: {helped_logs[metric].keys()}")
+                print("Exiting now")
                 exit()
             except FileNotFoundError:
-                print(f"Missing data for {metric} at (pseudo) percentile {it}")
+                print(f"Missing data for {metric} at (pseudo) percentile / query cost {it}")
 
         # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
         afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc, False)
@@ -201,7 +233,7 @@ if args.grand_metric:
         reward_area = np.trapz(rew_means, afhp_means)
         adjusted_reward_area = np.trapz(adj_rew_means, afhp_means)
         table_data["metric"].append(metric)
-        table_data["mean reward"].append(round(np.mean(flatten_list(rew_by_perc)), 2))
+        # table_data["mean reward"].append(round(np.mean(flatten_list(rew_by_perc)), 2))
         # table_data["std. err reward"].append(round(stats.sem(flatten_list(rew_by_perc), axis = None), 2))
         table_data["AUC"].append(round(reward_area, 2))
         # table_data["adj. reward AUC"].append(round(adjusted_reward_area, 2))
