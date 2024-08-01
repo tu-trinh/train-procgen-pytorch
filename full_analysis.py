@@ -207,7 +207,10 @@ for metric in include_metrics:
                     rewards = eval(line[len("all rewards: "):].strip())
                     if "T" not in metric:
                         assert all([reward <= 10 for reward in rewards]), f"wtf {metric} {it} {rewards}"
-                        rew_by_perc.append([reward / norm_factor for reward in rewards])
+                        if args.grand_metric:
+                            rew_by_perc.append([reward / norm_factor for reward in rewards])
+                        elif args.plotting:
+                            rew_by_perc[metric].append([reward / norm_factor for reward in rewards])
                 if "all queries" in line.lower():
                     queries = eval(line[len("all queries: "):].strip())
                 if "all switches" in line.lower():
@@ -222,7 +225,10 @@ for metric in include_metrics:
                             if rew > norm_factor:
                                 rewards[i] -= norm_factor * (max_run_length - run_lengths[i])
                         print("new rewards", rewards)
-                        rew_by_perc.append([reward / norm_factor for reward in rewards])
+                        if args.grand_metric:
+                            rew_by_perc.append([reward / norm_factor for reward in rewards])
+                        elif args.plotting:
+                            rew_by_perc[metric].append([reward / norm_factor for reward in rewards])
                 if "help times" in line.lower():
                     help_times = eval(evaluation[-1])
                     if "T" in metric:
@@ -234,15 +240,20 @@ for metric in include_metrics:
                         help_props.append(sum(helps) / run_length)
                         if "T" not in metric:
                             run_lengths.append(len(helps))
-                        segment_length = run_length // num_segments
-                        for j in range(num_segments):
-                            start = j * segment_length
-                            end = start + segment_length if j < num_segments - 1 else run_length
-                            segment = helps[start:end]
-                            help_asks_by_timestep[metric][round((k + 1) / 10, 1)].append(sum(segment) / len(segment))
-                    help_props_by_perc.append(help_props)
+                        if args.plotting:
+                            segment_length = run_length // num_segments
+                            for j in range(num_segments):
+                                start = j * segment_length
+                                end = start + segment_length if j < num_segments - 1 else run_length
+                                segment = helps[start:end]
+                                help_asks_by_timestep[metric][round((k + 1) / 10, 1)].append(sum(segment) / len(segment))
+                    if args.grand_metric:
+                        help_props_by_perc.append(help_props)
+                    elif args.plotting:
+                        help_props_by_perc[metric].append(help_props)
                 if "mean timestep achieved" in line.lower():
-                    mega_mean_timestep_achieved.append(int(re.search(r"(\d+)", line).group(1)))
+                    if args.plotting:
+                        mega_mean_timestep_achieved.append(int(re.search(r"(\d+)", line).group(1)))
             assert len(run_lengths) == len(rewards), f"Mismatch in lengths: len(run_lengths) == {len(run_lengths)} and len(rewards) == {len(rewards)}"
             curr_idx = 0
             perc_adjusted_rewards = []
@@ -257,7 +268,10 @@ for metric in include_metrics:
                     curr_idx += 1
                     curr_run_length += 1
                 perc_adjusted_rewards.append(adjusted_reward)
-            adj_rew_by_perc.append(perc_adjusted_rewards)
+            if args.grand_metric:
+                adj_rew_by_perc.append(perc_adjusted_rewards)
+            elif args.plotting:
+                adj_rew_by_perc[metric].append(perc_adjusted_rewards)
             # print(f"Mean adj. reward for {it} = {np.mean(perc_adjusted_rewards)}")
         except (FileNotFoundError, KeyError):
             print(f"Missing data for {metric} at (pseudo) percentile/query cost {it}")
