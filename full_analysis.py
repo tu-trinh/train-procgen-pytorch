@@ -194,8 +194,10 @@ if args.grand_metric:
                         help_props = []
                         for helps in help_times:
                             help_props.append(sum(helps) / len(helps))
-                        run_lengths.append(len(helps))
+                            run_lengths.append(len(helps))
                         help_props_by_perc.append(help_props)
+                print("LENGTH OF `run_lengths`:", len(run_lengths))
+                print("LENGTH OF REWARDS:", len(rewards))
                 curr_idx = 0
                 perc_adjusted_rewards = []
                 for reward, run_length in zip(rewards, run_lengths):
@@ -268,7 +270,12 @@ elif args.plotting:
     help_asks_by_timestep = {m: {round(k, 1): [] for k in run_portions} for m in helped_logs}
     for metric in helped_logs:
         print("Doing metric", metric)
-        iterable = percentiles if "svdd" not in metric else pseudo_percentiles
+        if "T" in metric:
+            iterable = query_costs
+        elif "svdd" not in metric:
+            iterable = percentiles
+        else:
+            iterable = pseudo_percentiles
         for it in iterable:
             try:
                 with open(os.path.join(helped_logs[metric][perc], quant_eval_file_name), "r") as f:
