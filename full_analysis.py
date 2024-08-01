@@ -169,15 +169,16 @@ if args.grand_metric:
     table_data = {"metric": [], "AUC": []}
 if args.plotting:
     if PLOT_PERF_VS_PERC in args.plots:
-        fig1, axes1 = plt.subplots(3, 4, figsize = (15, 11))
+        fig1, axes1 = plt.subplots(3, 4, figsize = (15, 10))
     if PLOT_PROP_VS_PERC in args.plots:
-        fig2, axes2 = plt.subplots(3, 4, figsize = (15, 11))
+        fig2, axes2 = plt.subplots(3, 4, figsize = (15, 10))
     if PLOT_PERF_VS_PROP in args.plots:
-        fig3, axes3 = plt.subplots(3, 4, figsize = (15, 11))
+        fig3, axes3 = plt.subplots(3, 4, figsize = (15, 10))
         if args.grouped:
             fig5, axes5 = plt.subplots(1, 1)
+            fig6, axes6 = plt.subplots(1, 1)
     if PLOT_PROP_VS_TIME in args.plots:
-        fig4, axes4 = plt.subplots(3, 4, figsize = (15, 11))
+        fig4, axes4 = plt.subplots(3, 4, figsize = (15, 10))
     plot_i = 0
     mega_mean_timestep_achieved = []
     run_portions = [round(k, 1) for k in np.arange(0.1, 1.01, 0.1)]
@@ -295,9 +296,6 @@ for metric in include_metrics:
         # Adding 100% ask for help
         afhp_means.append(1)
         rew_means.append(expert_perf_mean)
-        if "T" in metric:
-            print("AFHP MEANS:", afhp_means)
-            print("REW MEANS:", rew_means)
         adj_rew_means.append(expert_perf_mean - (10/256 * args.query_cost * 256))
         reward_area = np.trapz(rew_means, afhp_means)
         adjusted_reward_area = np.trapz(adj_rew_means, afhp_means)
@@ -439,7 +437,19 @@ if args.plotting:
             rew_means, rew_stds, rew_sems = get_statistics_nested(rew_by_perc[metric], True)
             adj_rew_means, adj_rew_stds, adj_rew_sems = get_statistics_nested(adj_rew_by_perc[metric], True)
             axes5.plot(afhp_means, rew_means, color = colors[metric], label = metric)
-            # ax.plot(afhp_means, adj_rew_means, color = colors[metric], linestyle = "dashed", label = f"Adj. Reward (mean SD: {np.round(np.mean(adj_rew_stds), 2)})")
+            # Adding 0% ask for help and 100% ask for help
+            afhp_means.insert(0, 0)
+            rew_means.insert(0, test_perf_mean)
+            adj_rew_means.insert(0, test_perf_mean)
+            afhp_means.append(1)
+            rew_means.append(expert_perf_mean)
+            adj_rew_means.append(expert_perf_mean - (10/256 * args.query_cost * 256))
+            if "T" in metric:
+                print("COORDINATES")
+                print("\n".join(list(zip(afhp_means, rew_means))))
+            axes6.plot(afhp_means, rew_means, color = colors[metric], label =  metric)
+            axes6.plot(afhp_means[0], rew_means[0], "o")
+            axes6.plot(afhp_means[-1], rew_means[-1], "o")
         axes5.legend()
         fig5.suptitle("Performance vs. AFHP, All Metrics")
         fig5.tight_layout()
