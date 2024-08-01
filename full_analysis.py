@@ -439,8 +439,8 @@ if args.plotting:
             axes5.plot(afhp_means, rew_means, color = colors[metric], label = metric)
             # Adding 0% ask for help and 100% ask for help
             axes6.plot(afhp_means, rew_means, color = colors[metric], label = metric)
-            axes6.plot(0, test_perf_mean, "o")
-            axes6.plot(1, expert_perf_mean, "o")
+            axes6.plot(0, test_perf_mean, marker = "o", color = "black")
+            axes6.plot(1, expert_perf_mean, marker = "o", color = "black")
         axes5.legend()
         axes6.legend()
         fig5.suptitle("Performance vs. AFHP, All Metrics")
