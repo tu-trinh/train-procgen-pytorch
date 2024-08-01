@@ -338,7 +338,7 @@ for metric in include_metrics:
             ax = axes2[plot_i // 4][plot_i % 4]
             help_prop_means, help_prop_stds, help_prop_sems = get_statistics_nested(help_props_by_perc[metric], True)
             ax.plot(iterable, help_prop_means, color = colors[metric])
-            ax.fill_between(iterable, help_prop_means - help_prop_stds, help_prop_means + help_prop_stds, color = colors[metric], alpha = 0.3)
+            ax.fill_between(iterable, help_prop_means - help_prop_sems, help_prop_means + help_prop_sems, color = colors[metric], alpha = 0.3)
             # for x, y in zip(percentiles, help_prop_means):
                 # ax.hlines(y, 0, x, colors = "gray", linestyles = "dashed", linewidth = 0.5)
             ax.set_title(metric.capitalize())
@@ -451,7 +451,11 @@ if args.plotting:
             axes6.plot(afhp_means[0], rew_means[0], "o")
             axes6.plot(afhp_means[-1], rew_means[-1], "o")
         axes5.legend()
+        axes6.legend()
         fig5.suptitle("Performance vs. AFHP, All Metrics")
+        fig6.suptitle("Performance vs. AFHP, All Metrics")
         fig5.tight_layout()
+        fig6.tight_layout()
         fig5.savefig(f"plots/{args.test_env}/{args.prefix}_performance_by_afhp_all{args.suffix}.png")
+        fig6.savefig(f"plots/{args.test_env}/{args.prefix}_grand_metric_all{args.suffix}.png")
         print("Done one plot of grouped 3")
