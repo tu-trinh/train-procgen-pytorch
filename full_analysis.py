@@ -210,16 +210,17 @@ for metric in include_metrics:
                         rewards = [min(reward, norm_factor) for reward in rewards]
                     else:
                         assert all([reward <= 10 for reward in rewards]), f"wtf {metric} {it} {rewards}"
+                    normalized_rewards = [reward / norm_factor for reward in rewards]
                     if args.grand_metric:
-                        rew_by_perc.append([reward / norm_factor for reward in rewards])
+                        rew_by_perc.append(normalized_rewards)
                     elif args.plotting:
-                        rew_by_perc[metric].append([reward / norm_factor for reward in rewards])
+                        rew_by_perc[metric].append(normalized_rewards)
                 if "all queries" in line.lower():
                     queries = eval(line[len("all queries: "):].strip())
                 if "all switches" in line.lower():
                     switches = eval(line[len("all switches: "):].strip())
                 if "all adjusted rewards" in line.lower():
-                    logged_adjusted_rewards = eval(line[len("all adjusted rewards: "):].strip())
+                    logged_adjusted_rewards = [lar / norm_factor for lar in eval(line[len("all adjusted rewards: "):].strip())]
                 if "run lengths" in line.lower():
                     if "T" in metric:
                         run_lengths = eval(line[len("all run lengths: "):].strip())
@@ -262,7 +263,7 @@ for metric in include_metrics:
                             adjusted_reward -= 10/256 * args.switching_cost
                         curr_idx += 1
                         curr_run_length += 1
-                    perc_adjusted_rewards.append(adjusted_reward)
+                    perc_adjusted_rewards.append(adjusted_reward / norm_factor)
                 if args.grand_metric:
                     adj_rew_by_perc.append(perc_adjusted_rewards)
                 elif args.plotting:
@@ -294,6 +295,9 @@ for metric in include_metrics:
         # Adding 100% ask for help
         afhp_means.append(1)
         rew_means.append(expert_perf_mean)
+        if "T" in metric:
+            print("AFHP MEANS:", afhp_means)
+            print("REW MEANS:", rew_means)
         adj_rew_means.append(expert_perf_mean - (10/256 * args.query_cost * 256))
         reward_area = np.trapz(rew_means, afhp_means)
         adjusted_reward_area = np.trapz(adj_rew_means, afhp_means)
@@ -327,7 +331,7 @@ for metric in include_metrics:
             # axes1[-1][-1].text(0.5, 0.5, "made you look", horizontalalignment = "center", verticalalignment = "center", transform = axes1[-1][-1].transAxes, fontsize = 6)
             fig1.suptitle("Performance by Percentile")
             fig1.tight_layout()
-            fig1.subplots_adjust(hspace = 0.3, wspace = 0.2)
+            fig1.subplots_adjust(hspace = 0.5, wspace = 0.2)
             fig1.savefig(f"plots/{args.test_env}/{args.prefix}_performance_by_percentile{args.suffix}.png")
             print("Done one plot of", PLOT_PERF_VS_PERC)
     
@@ -346,7 +350,7 @@ for metric in include_metrics:
             # axes2[-1][-1].text(0.5, 0.5, "again?", horizontalalignment = "center", verticalalignment = "center", transform = axes2[-1][-1].transAxes, fontsize = 6)
             fig2.suptitle("Ask-For-Help Percentage vs. Percentile")
             fig2.tight_layout()
-            fig2.subplots_adjust(hspace = 0.3, wspace = 0.2)
+            fig2.subplots_adjust(hspace = 0.5, wspace = 0.2)
             fig2.savefig(f"plots/{args.test_env}/{args.prefix}_help_percentage_by_percentile{args.suffix}.png")
             print("Done one plot of", PLOT_PROP_VS_PERC)
 
@@ -381,7 +385,7 @@ for metric in include_metrics:
             # axes3[-1][-1].text(0.5, 0.5, "( ͡° ͜ʖ ͡°)", horizontalalignment = "center", verticalalignment = "center", transform = axes3[-1][-1].transAxes, fontsize = 5)
             fig3.suptitle("Performance vs. Ask-For-Help Percentage")
             fig3.tight_layout()
-            fig3.subplots_adjust(hspace = 0.3, wspace = 0.2)
+            fig3.subplots_adjust(hspace = 0.5, wspace = 0.2)
             fig3.savefig(f"plots/{args.test_env}/{args.prefix}_performance_by_help_percentage{'_bucketed' if args.bucketed else ''}{args.suffix}.png")
             print("Done one plot of", PLOT_PERF_VS_PROP)
 
@@ -398,7 +402,7 @@ for metric in include_metrics:
             # axes4[-1][-1].text(0.5, 0.5, "hey there", horizontalalignment = "center", verticalalignment = "center", transform = axes4[-1][-1].transAxes, fontsize = 5)
             fig4.suptitle("Ask-For-Help Percentage by Segment of Run")
             fig4.tight_layout()
-            fig4.subplots_adjust(hspace = 0.3, wspace = 0.2)
+            fig4.subplots_adjust(hspace = 0.5, wspace = 0.2)
             fig4.savefig(f"plots/{args.test_env}/{args.prefix}_help_percentage_by_timestep{args.suffix}.png")
             print("Done one plot of", PLOT_PROP_VS_TIME)
 
@@ -436,6 +440,7 @@ if args.plotting:
             adj_rew_means, adj_rew_stds, adj_rew_sems = get_statistics_nested(adj_rew_by_perc[metric], True)
             axes5.plot(afhp_means, rew_means, color = colors[metric], label = f"Reward (mean SD: {np.round(np.mean(rew_stds), 2)})")
             # ax.plot(afhp_means, adj_rew_means, color = colors[metric], linestyle = "dashed", label = f"Adj. Reward (mean SD: {np.round(np.mean(adj_rew_stds), 2)})")
+        axes5.legend()
         fig5.suptitle("Performance vs. AFHP, All Metrics")
         fig5.tight_layout()
         fig5.savefig(f"plots/{args.test_env}/{args.prefix}_performance_by_afhp_all{args.suffix}.png")
