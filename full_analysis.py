@@ -205,12 +205,19 @@ for metric in include_metrics:
             for line in evaluation:
                 if "all rewards" in line.lower():
                     rewards = eval(line[len("all rewards: "):].strip())
-                    if "T" not in metric:
+                    print("old rewards", rewards)
+                    if "T" in metric:
+                        max_run_length = max(run_lengths)
+                        for i, rew in enumerate(rewards):
+                            if rew > norm_factor:
+                                rewards[i] -= norm_factor * (max_run_length - run_lengths[i])
+                        print("new rewards", rewards)
+                    else:
                         assert all([reward <= 10 for reward in rewards]), f"wtf {metric} {it} {rewards}"
-                        if args.grand_metric:
-                            rew_by_perc.append([reward / norm_factor for reward in rewards])
-                        elif args.plotting:
-                            rew_by_perc[metric].append([reward / norm_factor for reward in rewards])
+                    if args.grand_metric:
+                        rew_by_perc.append([reward / norm_factor for reward in rewards])
+                    elif args.plotting:
+                        rew_by_perc[metric].append([reward / norm_factor for reward in rewards])
                 if "all queries" in line.lower():
                     queries = eval(line[len("all queries: "):].strip())
                 if "all switches" in line.lower():
@@ -220,15 +227,6 @@ for metric in include_metrics:
                 if "run lengths" in line.lower():
                     if "T" in metric:
                         run_lengths = eval(line[len("all run lengths: "):].strip())
-                        max_run_length = max(run_lengths)
-                        for i, rew in enumerate(rewards):
-                            if rew > norm_factor:
-                                rewards[i] -= norm_factor * (max_run_length - run_lengths[i])
-                        print("new rewards", rewards)
-                        if args.grand_metric:
-                            rew_by_perc.append([reward / norm_factor for reward in rewards])
-                        elif args.plotting:
-                            rew_by_perc[metric].append([reward / norm_factor for reward in rewards])
                 if "help times" in line.lower():
                     help_times = eval(evaluation[-1])
                     if "T" in metric:
