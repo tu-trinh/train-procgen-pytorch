@@ -28,14 +28,13 @@ seed=8888
 
 if [ "$risk_set" == "A" ]; then
     if [ "$index" == "6" ] || [ "$index" == "7" ]; then
-        risk_values=(50 60 70 80 90 100)
+        risk_values=(1 5 10)
     else
-        # risk_values=(10 20 30 40 50 60 70 80 90)
-        risk_values=(5 10)
+        risk_values=(10 20 30 40 50 60 70 80 90)
     fi
 elif [ "$risk_set" == "B" ]; then
     if [ "$index" == "6" ] || [ "$index" == "7" ]; then
-        risk_values=(110 120 130 140 150)
+        risk_values=(20 30 40)
     else
         risk_values=(5 15 25 35 45 55 65 75 85 95)
     fi
