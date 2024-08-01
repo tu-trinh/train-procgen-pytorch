@@ -169,15 +169,15 @@ if args.grand_metric:
     table_data = {"metric": [], "AUC": []}
 if args.plotting:
     if PLOT_PERF_VS_PERC in args.plots:
-        fig1, axes1 = plt.subplots(3, 4, figsize = (15, 8))
+        fig1, axes1 = plt.subplots(3, 4, figsize = (15, 11))
     if PLOT_PROP_VS_PERC in args.plots:
-        fig2, axes2 = plt.subplots(3, 4, figsize = (15, 8))
+        fig2, axes2 = plt.subplots(3, 4, figsize = (15, 11))
     if PLOT_PERF_VS_PROP in args.plots:
-        fig3, axes3 = plt.subplots(3, 4, figsize = (15, 8))
+        fig3, axes3 = plt.subplots(3, 4, figsize = (15, 11))
         if args.grouped:
             fig5, axes5 = plt.subplots(1, 1)
     if PLOT_PROP_VS_TIME in args.plots:
-        fig4, axes4 = plt.subplots(3, 4, figsize = (15, 8))
+        fig4, axes4 = plt.subplots(3, 4, figsize = (15, 11))
     plot_i = 0
     mega_mean_timestep_achieved = []
     run_portions = [round(k, 1) for k in np.arange(0.1, 1.01, 0.1)]
@@ -324,7 +324,7 @@ for metric in include_metrics:
             ax.plot(iterable, [expert_perf_mean] * len(iterable), color = "tab:brown", label = f"Expert (SD: {round(expert_perf_std, 2)})", linewidth = 2.5)
             # ax.fill_between(percentiles, [expert_perf_mean - expert_perf_std] * len(percentiles), [expert_perf_mean + expert_perf_std] * len(percentiles), color = "brown", alpha = 0.3)
             ax.set_title(metric.capitalize())
-            ax.set_xlabel("Percentile")
+            ax.set_xlabel("Threshold")
             ax.set_ylabel("Performance")
             # ax.set_yticks(range(-1, 11))
             ax.legend()
@@ -344,7 +344,7 @@ for metric in include_metrics:
             # for x, y in zip(percentiles, help_prop_means):
                 # ax.hlines(y, 0, x, colors = "gray", linestyles = "dashed", linewidth = 0.5)
             ax.set_title(metric.capitalize())
-            ax.set_xlabel("Percentile")
+            ax.set_xlabel("Threshold")
             ax.set_ylabel("Ask-For-Help Percentage")
             ax.set_yticks(np.arange(0, 1.01, 0.1))
             # axes2[-1][-1].text(0.5, 0.5, "again?", horizontalalignment = "center", verticalalignment = "center", transform = axes2[-1][-1].transAxes, fontsize = 6)
@@ -438,7 +438,7 @@ if args.plotting:
             afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc[metric], True)
             rew_means, rew_stds, rew_sems = get_statistics_nested(rew_by_perc[metric], True)
             adj_rew_means, adj_rew_stds, adj_rew_sems = get_statistics_nested(adj_rew_by_perc[metric], True)
-            axes5.plot(afhp_means, rew_means, color = colors[metric], label = f"Reward (mean SD: {np.round(np.mean(rew_stds), 2)})")
+            axes5.plot(afhp_means, rew_means, color = colors[metric], label = metric)
             # ax.plot(afhp_means, adj_rew_means, color = colors[metric], linestyle = "dashed", label = f"Adj. Reward (mean SD: {np.round(np.mean(adj_rew_stds), 2)})")
         axes5.legend()
         fig5.suptitle("Performance vs. AFHP, All Metrics")
