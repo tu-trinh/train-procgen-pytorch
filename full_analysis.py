@@ -117,6 +117,8 @@ for exp_dir in os.listdir(skyline_log_dir):
                 log_key = "T3"
             query_cost = float(re.search(r"query-cost-([\d.]+)-", exp_dir).group(1))
             helped_logs[log_key][query_cost] = os.path.join(skyline_log_dir, exp_dir)
+# print("WAH DA FUH")
+# print(helped_logs["T1"].keys())
 
 
 # Weak agent in train environment
@@ -275,7 +277,8 @@ for metric in include_metrics:
                 elif args.plotting:
                     adj_rew_by_perc[metric].append(logged_adjusted_rewards)
             # print(f"Mean adj. reward for {it} = {np.mean(perc_adjusted_rewards)}")
-        except (FileNotFoundError, KeyError):
+        except (FileNotFoundError, KeyError) as e:
+            print(e)
             print(f"Missing data for {metric} at (pseudo) percentile/query cost {it}")
             if args.plotting:
                 rew_by_perc[metric].append([np.nan])
@@ -297,13 +300,16 @@ for metric in include_metrics:
         afhp_means.append(1)
         rew_means.append(expert_perf_mean)
         adj_rew_means.append(expert_perf_mean - (10/256 * args.query_cost * 256))
+        # Calculate area
         afhp_means = np.array(afhp_means)
         rew_means = np.array(rew_means)
         adj_rew_means = np.array(adj_rew_means)
-        considered_rew_idx = ~np.isnan(rew_means)
-        reward_area = np.trapz(rew_means[considered_rew_idx], afhp_means[considered_rew_idx])
-        considered_adj_rew_idx = ~np.isnan(adj_rew_means)
-        adjusted_reward_area = np.trapz(adj_rew_means[considered_adj_rew_idx], afhp_means[considered_adj_rew_idx])
+        considered_idx = ~np.isnan(rew_means)
+        sort_idx = np.argsort(afhp_means[considered_idx])
+        reward_area = np.trapz(rew_means[considered_idx][sort_idx], afhp_means[considered_idx][sort_idx])
+        considered_idx = ~np.isnan(adj_rew_means)
+        sort_idx = np.argsort(afhp_means[considered_idx])
+        adjusted_reward_area = np.trapz(adj_rew_means[considered_idx][sort_idx], afhp_means[considered_idx][sort_idx])
         table_data["metric"].append(metric)
         # table_data["mean reward"].append(round(np.mean(flatten_list(rew_by_perc)), 2))
         # table_data["std. err reward"].append(round(stats.sem(flatten_list(rew_by_perc), axis = None), 2))
