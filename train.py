@@ -48,6 +48,8 @@ if __name__=='__main__':
     parser.add_argument("--reduced_action_space", action = "store_true")
     parser.add_argument("--store_percentiles", action = "store_true")
     parser.add_argument("--save_observations", action = "store_true", default = False)
+    parser.add_argument("--concurrent_svdd", action = "store_true", default = False)
+    parser.add_argument("--use_latent", action = "store_true", default = False)
 
 
     #multi threading
@@ -218,7 +220,9 @@ if __name__=='__main__':
     agent = AGENT(env, policy, logger, storage, device,
                   num_checkpoints,
                   save_timesteps=save_timesteps,
-                  save_observations=args.save_observations,
+                  save_observations=args.save_observations if not args.concurrent_svdd else True,
+                  concurrent_svdd=args.concurrent_svdd,
+                  use_latent=args.use_latent,
                   reduced_action_space=args.reduced_action_space,
                   store_percentiles=args.store_percentiles,
                   env_valid=env_valid,

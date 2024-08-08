@@ -15,8 +15,9 @@ sys.path.append("/Users/tutrinh/Work/CHAI/")
 sys.path.append("/nas/ucb/tutrinh/")
 sys.path.append("/Users/tutrinh/Work/CHAI/yield_request_control/")
 sys.path.append("/nas/ucb/tutrinh/yield_request_control/")
-from yield_request_control.detector.dataset import global_contrast_normalization, standardization
+from yield_request_control.detector.dataset import global_contrast_normalization, standardization, preprocess_and_save_images, get_datasets
 from yield_request_control.detector.trainers import dynamic_permute
+from yield_request_control.detector.deep_svdd import DeepSVDD
 
 
 class PPO(BaseAgent):
@@ -29,6 +30,7 @@ class PPO(BaseAgent):
                  n_checkpoints,
                  save_timesteps=None,
                  save_observations=False,
+                 concurrent_svdd=False,
                  reduced_action_space=False,
                  store_percentiles=False,
                  all_sampled_probs=[],
@@ -118,6 +120,11 @@ class PPO(BaseAgent):
                 # self.entropy_thresholds_by_action = percentiles["probs_by_action"]
         self.detector_model = detector_model
         self.use_latent = use_latent
+        self.concurrent_svdd = concurrent_svdd
+        if self.concurrent_svdd:
+            self.detector_model = DeepSVDD(for_latent = self.use_latent)
+            self.detector_model.set_network("concurrent")
+            self.detector_model.save_model(os.path.join(self.logger.logdir, "network.tar"), os.path.join(self.logger.logdir("autoencoder.tar")))
         if self.detector_model is not None:
             if use_latent:
                 self.transforms = transforms.Compose([
@@ -128,9 +135,10 @@ class PPO(BaseAgent):
                     transforms.Lambda(lambda x: global_contrast_normalization(x, scale = "l1")),
                     transforms.Lambda(lambda x: (x - x.min()) / (x.max() - x.min()))
                 ])
-            with open(os.path.join(percentile_dir, "results.json"), "r") as f:
-                detector_results = json.load(f)
-            self.detector_thresholds = {int(k): v for k, v in detector_results["test_thresholds"].items()}  # risk is pseudo-percentiles from 50 to 150
+            if not self.concurrent_svdd:  # if detector is initialized but not concurrently training, then it must be testing
+                with open(os.path.join(percentile_dir, "results.json"), "r") as f:
+                    detector_results = json.load(f)
+                self.detector_thresholds = {int(k): v for k, v in detector_results["test_thresholds"].items()}  # risk is pseudo-percentiles from 50 to 150
         self.all_help_info = all_help_info
         self.is_expert = is_expert
 
@@ -340,6 +348,8 @@ class PPO(BaseAgent):
         if self.save_observations:
             this_run_obs = []
             obs_set_num = 0
+        if self.concurrent_svdd:
+            copied_weights = False
 
         if self.env_valid is not None:
             obs_v = self.env_valid.reset()
@@ -364,12 +374,18 @@ class PPO(BaseAgent):
             _, _, last_val, hidden_state, latent_rep, help_info, _ = self.predict(obs, hidden_state, done, ood_metric = None)
             if self.save_observations:
                 this_run_obs.append(obs)
-                with h5py.File(os.path.join(self.logger.logdir, "saved_obs.h5"), "w" if self.t < 1 else "a") as f:
-                    for obs_idx, saved_obs in enumerate(this_run_obs):
-                        f.create_dataset(f"run_{obs_set_num}_obs_{obs_idx}", data = saved_obs, compression = "gzip", compression_opts = 9)
-                np.savez_compressed(os.path.join(self.logger.logdir, f"saved_obs_run_{obs_set_num}.npz"), np.array(this_run_obs))
+                # with h5py.File(os.path.join(self.logger.logdir, "saved_obs.h5"), "w" if self.t < 1 else "a") as f:
+                #     for obs_idx, saved_obs in enumerate(this_run_obs):
+                #         f.create_dataset(f"run_{obs_set_num}_obs_{obs_idx}", data = saved_obs, compression = "gzip", compression_opts = 9)
+                if self.concurrent_svdd:
+                    obs_save_path = os.path.join(self.logger.logdir, f"saved_obs.npz")
+                else:
+                    obs_save_path = os.path.join(self.logger.logdir, f"saved_obs_run_{obs_set_num}.npz")
+                np.savez_compressed(obs_save_path, np.array(this_run_obs))
                 obs_set_num += 1
                 this_run_obs = []
+                if self.concurrent_svdd:
+                    preprocess_and_save_images(self.logger.logdir, self.logger.logdir, "np", save_unique = False)
             self.storage.store_last(obs, latent_rep, hidden_state, last_val, help_info, 0)
             self.storage.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
@@ -402,6 +418,7 @@ class PPO(BaseAgent):
             self.logger.feed(rew_batch, done_batch, rew_batch_v, done_batch_v)
             self.logger.dump()
             self.optimizer = adjust_lr(self.optimizer, self.learning_rate, self.t, num_timesteps)
+            
             # Save the model
             if self.use_save_intervals:
                 if self.t > ((checkpoint_cnt+1) * save_every):
@@ -420,6 +437,20 @@ class PPO(BaseAgent):
                         save_timestep_index += 1
                 except IndexError:  # no more timesteps needed to be saved
                     pass
+            
+            # Load SVDD model, (pre)train it, and save it back
+            if self.concurrent_svdd:
+                self.detector_model.load_model(os.path.join(self.logger.logdir, "network.tar"), os.path.join(self.logger.logdir, "autoencoder.tar"))
+                train_dataset, _ = get_datasets(self.logger.logdir, False)
+                if self.t <= 0.2 * num_timesteps:
+                    self.detector_model.pretrain(train_dataset, None, num_epochs = 1, batch_size = 128)
+                else:
+                    if not copied_weights:
+                        self.detector_model.init_network_weights()
+                        copied_weights = True
+                    self.detector_model.train(train_dataset, None, num_epochs = 1, batch_size = 128)
+                self.detector_model.save_model(os.path.join(self.logger.logdir, "network.tar"), os.path.join(self.logger.logdir, "autoencoder.tar"))
+
         self.env.close()
         if self.env_valid is not None:
             self.env_valid.close()
