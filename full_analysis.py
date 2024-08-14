@@ -82,7 +82,7 @@ colors = {
     "svdd_latent": "lightseagreen",
     "T1": "tab:brown",
     # "T2": "gray",
-    "T3": "tab:brown"
+    "T3": "gray"
 }
 linestyles = {
     "max prob": "dashed",
