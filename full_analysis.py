@@ -19,7 +19,7 @@ parser.add_argument("--train_env", type = str, required = True)
 parser.add_argument("--test_env", type = str, required = True)
 parser.add_argument("--query_cost", type = int, default = 1)
 parser.add_argument("--switching_cost", type = int, default = 0)
-parser.add_argument("--include", type = str, nargs = "+", default = ["max prob", "sampled prob", "max logit", "sampled logit", "entropy", "random", "svdd_raw", "svdd_latent", "S_obs", "T2", "S_weak_rep"])
+parser.add_argument("--include", type = str, nargs = "+", default = ["max prob", "sampled prob", "max logit", "sampled logit", "entropy", "random", "svdd_raw", "svdd_latent", "T1", "T2", "T3"])
 parser.add_argument("--exclude", type = str, nargs = "+", default = [])
 # Grand metric arguments
 parser.add_argument("--grand_metric", "-gm", action = "store_true", default = False)
@@ -80,18 +80,25 @@ colors = {
     "random": "gold",
     # "svdd_raw": "fuchsia",
     "svdd_latent": "lightseagreen",
-    "S_obs": "tab:brown",
+    "T1": "tab:brown",
     # "T2": "gray",
-    "S_weak_rep": "tab:brown"
+    "T3": "tab:brown"
 }
 linestyles = {
     "max prob": "dashed",
     "random": "dotted",
     "svdd_latent": "dashdot",
-    "S_obs": "solid",
-    "S_weak_rep": "solid"
+    "T1": "solid",
+    "T3": "solid"
 }
-helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}, "random": {}, "svdd_raw": {}, "svdd_latent": {}, "S_obs": {}, "T2": {}, "S_weak_rep": {}}
+labels = {
+    "max prob": "max_prob",
+    "random": "random",
+    "svdd_latent": "svdd_latent",
+    "T1": "S_obs",
+    "T3": "S_weak_rep"
+}
+helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}, "random": {}, "svdd_raw": {}, "svdd_latent": {}, "T1": {}, "T2": {}, "T3": {}}
 log_dir = f"logs/procgen/{args.test_env}"
 skyline_log_dir = f"/nas/ucb/tutrinh/yield_request_control/logs/{args.test_env}"
 for exp_dir in os.listdir(log_dir):
@@ -116,16 +123,16 @@ for exp_dir in os.listdir(skyline_log_dir):
     if f"-{args.test_env}-" in exp_dir:
         contents = os.listdir(os.path.join(skyline_log_dir, exp_dir))
         if any([".txt" in content for content in contents]):
-            if "S_obs" in exp_dir:
-                log_key = "S_obs"
+            if "T1" in exp_dir:
+                log_key = "T1"
             elif "T2" in exp_dir:
                 log_key = "T2"
-            elif "S_weak_rep" in exp_dir:
-                log_key = "S_weak_rep"
+            elif "T3" in exp_dir:
+                log_key = "T3"
             query_cost = float(re.search(r"query-cost-([\d.]+)-", exp_dir).group(1))
             helped_logs[log_key][query_cost] = os.path.join(skyline_log_dir, exp_dir)
 # print("WAH DA FUH")
-# print(helped_logs["S_obs"].keys())
+# print(helped_logs["T1"].keys())
 
 
 # Weak agent in train environment
@@ -454,9 +461,9 @@ if args.plotting:
             afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc[metric], True)
             rew_means, rew_stds, rew_sems = get_statistics_nested(rew_by_perc[metric], True)
             adj_rew_means, adj_rew_stds, adj_rew_sems = get_statistics_nested(adj_rew_by_perc[metric], True)
-            axes5.plot(afhp_means, rew_means, color = colors[metric], label = metric, linestyle = linestyles[metric])
+            axes5.plot(afhp_means, rew_means, color = colors[metric], label = labels[metric], linestyle = linestyles[metric])
             # Adding 0% ask for help and 100% ask for help
-            axes6.plot(afhp_means, rew_means, color = colors[metric], label = metric, linestyle = linestyles[metric])
+            axes6.plot(afhp_means, rew_means, color = colors[metric], label = labels[metric], linestyle = linestyles[metric])
             # axes6.plot(0, test_perf_mean, marker = "o", color = "black")
             # axes6.plot(1, expert_perf_mean, marker = "o", color = "black")
             axes6.axhline(y = test_perf_mean, color = "black", linestyle = (0, (1, 10)), label = "weak on hard")
