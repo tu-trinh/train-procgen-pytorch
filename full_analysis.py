@@ -79,7 +79,7 @@ colors = {
     # "entropy": "orange",
     "random": "royalblue",
     # "svdd_raw": "fuchsia",
-    "svdd_latent": "lightseagreen",
+    "svdd_latent": "forestgreen",
     "T1": "tab:brown",
     # "T2": "gray",
     "T3": "gray"
