@@ -467,7 +467,7 @@ if args.plotting:
             # axes6.plot(0, test_perf_mean, marker = "o", color = "black")
             # axes6.plot(1, expert_perf_mean, marker = "o", color = "black")
         axes6.axhline(y = test_perf_mean, color = "black", linestyle = (0, (1, 10)), label = "weak on hard")
-        axes6.axhline(y = expert_perf_mean, color = "black", linestyle = (0, (1, 10)), label = "expert on hard")
+        axes6.axhline(y = expert_perf_mean, color = "black", linestyle = (0, (3, 10, 1, 10)), label = "expert on hard")
         axes5.legend()
         axes6.legend()
         axes5.set_xlabel("Ask-For-Help Percentage")
