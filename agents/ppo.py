@@ -124,7 +124,7 @@ class PPO(BaseAgent):
         if self.concurrent_svdd:
             self.detector_model = DeepSVDD(for_latent = self.use_latent)
             self.detector_model.set_network("concurrent")
-            self.detector_model.save_model(os.path.join(self.logger.logdir, "network.tar"), os.path.join(self.logger.logdir("autoencoder.tar")))
+            self.detector_model.save_model(os.path.join(self.logger.logdir, "network.tar"), os.path.join(self.logger.logdir, "autoencoder.tar"))
         if self.detector_model is not None:
             if use_latent:
                 self.transforms = transforms.Compose([
