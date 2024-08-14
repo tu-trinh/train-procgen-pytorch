@@ -77,7 +77,7 @@ colors = {
     # "max logit": "red",
     # "sampled logit": "purple",
     # "entropy": "orange",
-    "random": "gold",
+    "random": "royalblue",
     # "svdd_raw": "fuchsia",
     "svdd_latent": "lightseagreen",
     "T1": "tab:brown",
