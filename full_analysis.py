@@ -72,31 +72,17 @@ def flatten_list(lst):
 
 quant_eval_file_name = "AAA_quant_eval_model_200015872.txt"
 colors = {
-    "max prob": "fuchsia",
-    # "sampled prob": "green",
-    # "max logit": "red",
-    # "sampled logit": "purple",
-    # "entropy": "orange",
-    "random": "royalblue",
-    # "svdd_raw": "fuchsia",
-    "svdd_latent": "forestgreen",
+    "max prob": "blue",
+    "sampled prob": "green",
+    "max logit": "red",
+    "sampled logit": "purple",
+    "entropy": "orange",
+    "random": "gold",
+    "svdd_raw": "fuchsia",
+    "svdd_latent": "lightseagreen",
     "T1": "tab:brown",
-    # "T2": "gray",
-    "T3": "gray"
-}
-linestyles = {
-    "max prob": "dashed",
-    "random": "dotted",
-    "svdd_latent": "dashdot",
-    "T1": "solid",
-    "T3": "solid"
-}
-labels = {
-    "max prob": "max_prob",
-    "random": "random",
-    "svdd_latent": "svdd_latent",
-    "T1": "S_obs",
-    "T3": "S_weak_rep"
+    "T2": "gray",
+    "T3": "black"
 }
 helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}, "random": {}, "svdd_raw": {}, "svdd_latent": {}, "T1": {}, "T2": {}, "T3": {}}
 log_dir = f"logs/procgen/{args.test_env}"
@@ -119,7 +105,6 @@ for exp_dir in os.listdir(log_dir):
         helped_logs[log_key][perc] = os.path.join(f"logs/procgen/{args.test_env}", exp_dir, sorted(render_logs)[-1])  # always get last/most updated one
 for exp_dir in os.listdir(skyline_log_dir):
     # TODO: CHANGE HERE #
-    # PPO-procgen-help-coinrun_aisc-type-T2-query-cost-2.0-d8b42b10
     if f"-{args.test_env}-" in exp_dir:
         contents = os.listdir(os.path.join(skyline_log_dir, exp_dir))
         if any([".txt" in content for content in contents]):
@@ -131,8 +116,6 @@ for exp_dir in os.listdir(skyline_log_dir):
                 log_key = "T3"
             query_cost = float(re.search(r"query-cost-([\d.]+)-", exp_dir).group(1))
             helped_logs[log_key][query_cost] = os.path.join(skyline_log_dir, exp_dir)
-# print("WAH DA FUH")
-# print(helped_logs["T1"].keys())
 
 
 # Weak agent in train environment
@@ -461,19 +444,14 @@ if args.plotting:
             afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc[metric], True)
             rew_means, rew_stds, rew_sems = get_statistics_nested(rew_by_perc[metric], True)
             adj_rew_means, adj_rew_stds, adj_rew_sems = get_statistics_nested(adj_rew_by_perc[metric], True)
-            axes5.plot(afhp_means, rew_means, color = colors[metric], label = labels[metric], linestyle = linestyles[metric])
+            sort_idx = np.argsort(afhp_means)
+            axes5.plot(afhp_means[sort_idx], rew_means[sort_idx], color = colors[metric], label = metric)
             # Adding 0% ask for help and 100% ask for help
-            axes6.plot(afhp_means, rew_means, color = colors[metric], label = labels[metric], linestyle = linestyles[metric])
-            # axes6.plot(0, test_perf_mean, marker = "o", color = "black")
-            # axes6.plot(1, expert_perf_mean, marker = "o", color = "black")
-        axes6.axhline(y = test_perf_mean, color = "black", linestyle = (0, (1, 10)), label = "weak on hard")
-        axes6.axhline(y = expert_perf_mean, color = "black", linestyle = (0, (3, 10, 1, 10)), label = "expert on hard")
+            axes6.plot(afhp_means[sort_idx], rew_means[sort_idx], color = colors[metric], label = metric)
+            axes6.plot(0, test_perf_mean, marker = "o", color = "black")
+            axes6.plot(1, expert_perf_mean, marker = "o", color = "black")
         axes5.legend()
         axes6.legend()
-        axes5.set_xlabel("Ask-For-Help Percentage")
-        axes5.set_ylabel("Performance")
-        axes6.set_xlabel("Ask-For-Help Percentage")
-        axes6.set_ylabel("Performance")
         fig5.suptitle("Performance vs. AFHP, All Metrics")
         fig6.suptitle("Performance vs. AFHP, All Metrics")
         fig5.tight_layout()
