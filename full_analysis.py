@@ -80,9 +80,9 @@ colors = {
     "random": "gold",
     "svdd_raw": "fuchsia",
     "svdd_latent": "lightseagreen",
-    "T1": "tab:brown",
-    "T2": "gray",
-    "T3": "black"
+    "T1": "firebrick",
+    "T2": "olive",
+    "T3": "hotpink"
 }
 helped_logs = {"max prob": {}, "sampled prob": {}, "max logit": {}, "sampled logit": {}, "entropy": {}, "random": {}, "svdd_raw": {}, "svdd_latent": {}, "T1": {}, "T2": {}, "T3": {}}
 log_dir = f"logs/procgen/{args.test_env}"
