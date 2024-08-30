@@ -170,7 +170,10 @@ if args.plotting:
     if PLOT_PERF_VS_PERC in args.plots:
         fig1, axes1 = plt.subplots(3, 4, figsize = (15, 10))
     if PLOT_PROP_VS_PERC in args.plots:
-        fig2, axes2 = plt.subplots(1, 1)
+        if args.grouped:
+            fig2, axes2 = plt.subplots(1, 1)
+        else:    
+            fig2, axes2 = plt.subplots(3, 4, figsize = (15, 10))
     if PLOT_PERF_VS_PROP in args.plots:
         fig3, axes3 = plt.subplots(3, 4, figsize = (15, 10))
         if args.grouped:
@@ -342,8 +345,8 @@ for metric in include_metrics:
             print("Done one plot of", PLOT_PERF_VS_PERC)
     
         # 2: Plotting ask-for-help percentage vs percentile
-        if PLOT_PROP_VS_PERC in args.plots:
-            ax = axes2  # [plot_i // 4][plot_i % 4]
+        if PLOT_PROP_VS_PERC in args.plots and not args.grouped:
+            ax = axes2[plot_i // 4][plot_i % 4]
             help_prop_means, help_prop_stds, help_prop_sems = get_statistics_nested(help_props_by_perc[metric], True)
             ax.plot(iterable, help_prop_means, color = colors[metric])
             ax.fill_between(iterable, help_prop_means - help_prop_sems, help_prop_means + help_prop_sems, color = colors[metric], alpha = 0.3)
@@ -437,6 +440,16 @@ if args.plotting:
         plt.ylabel("Ask-For-Help Percentage")
         plt.savefig("ask_for_help_breakeven.png")
         print("Done breakeven plot")
+    if PLOT_PROP_VS_PERC in args.plots and args.grouped:
+        for metric in include_metrics:
+            help_prop_means, help_prop_stds, help_prop_sems = get_statistics_nested(help_props_by_perc[metric], True)
+            axes2.plot(percentiles, help_prop_means, color = colors[metric], label = metric)
+            axes2.fill_between(percentiles, help_prop_means - help_prop_sems, help_prop_means + help_prop_sems, color = colors[metric], alpha = 0.3)
+        axes2.legend()
+        fig2.suptitle("Performance vs. AFHP, All Metrics")
+        fig2.tight_layout()
+        fig2.savefig(f"plots/{args.test_env}/{args.prefix}_afhp_by_percentile_all{args.suffix}.png")
+        print("Done one plot of grouped 2")
     if PLOT_PERF_VS_PROP in args.plots and args.grouped:
         # This one is bucketed by default
         # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
