@@ -170,7 +170,7 @@ if args.plotting:
     if PLOT_PERF_VS_PERC in args.plots:
         fig1, axes1 = plt.subplots(3, 4, figsize = (15, 10))
     if PLOT_PROP_VS_PERC in args.plots:
-        fig2, axes2 = plt.subplots(3, 4, figsize = (15, 10))
+        fig2, axes2 = plt.subplots(1, 1)
     if PLOT_PERF_VS_PROP in args.plots:
         fig3, axes3 = plt.subplots(3, 4, figsize = (15, 10))
         if args.grouped:
@@ -343,7 +343,7 @@ for metric in include_metrics:
     
         # 2: Plotting ask-for-help percentage vs percentile
         if PLOT_PROP_VS_PERC in args.plots:
-            ax = axes2[plot_i // 4][plot_i % 4]
+            ax = axes2  # [plot_i // 4][plot_i % 4]
             help_prop_means, help_prop_stds, help_prop_sems = get_statistics_nested(help_props_by_perc[metric], True)
             ax.plot(iterable, help_prop_means, color = colors[metric])
             ax.fill_between(iterable, help_prop_means - help_prop_sems, help_prop_means + help_prop_sems, color = colors[metric], alpha = 0.3)
