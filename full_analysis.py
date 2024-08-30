@@ -189,20 +189,18 @@ if args.plotting:
     help_props_by_perc = {m: [] for m in include_metrics}
     help_asks_by_timestep = {m: {round(k, 1): [] for k in run_portions} for m in include_metrics}
 
-if "T" in metric:
-    iterable = query_costs
-elif "svdd" not in metric:
-    iterable = percentiles
-else:
-    iterable = pseudo_percentiles
-
-
 for metric in include_metrics:
     print("Doing metric", metric)
     if args.grand_metric:
         rew_by_perc = []
         adj_rew_by_perc = []
         help_props_by_perc = []
+    if "T" in metric:
+        iterable = query_costs
+    elif "svdd" not in metric:
+        iterable = percentiles
+    else:
+        iterable = pseudo_percentiles
     for it in iterable:
         try:
             with open(os.path.join(helped_logs[metric][it], quant_eval_file_name), "r") as f:
@@ -445,8 +443,8 @@ if args.plotting:
     if PLOT_PROP_VS_PERC in args.plots and args.grouped:
         for metric in include_metrics:
             help_prop_means, help_prop_stds, help_prop_sems = get_statistics_nested(help_props_by_perc[metric], True)
-            axes2.plot(iterable, help_prop_means, color = colors[metric], label = metric)
-            axes2.fill_between(iterable, help_prop_means - help_prop_sems, help_prop_means + help_prop_sems, color = colors[metric], alpha = 0.3)
+            axes2.plot(percentiles if "svdd" not in metric else pseudo_percentiles, help_prop_means, color = colors[metric], label = metric)
+            axes2.fill_between(percentiles if "svdd" not in metric else pseudo_percentiles, help_prop_means - help_prop_sems, help_prop_means + help_prop_sems, color = colors[metric], alpha = 0.3)
         axes2.legend()
         fig2.suptitle("Performance vs. AFHP, All Metrics")
         fig2.tight_layout()
