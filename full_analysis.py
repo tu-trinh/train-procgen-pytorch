@@ -453,6 +453,11 @@ if args.plotting:
     if PLOT_PERF_VS_PROP in args.plots and args.grouped:
         # This one is bucketed by default
         # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
+        skyline_names = {
+            "T1": "S_obs",
+            "T2": "S_weak_feat",
+            "T3": "S_combo"
+        }
         smallest_afhp, biggest_afhp = float("inf"), float("-inf")
         for metric in include_metrics:
             afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc[metric], True)
@@ -461,7 +466,7 @@ if args.plotting:
             sort_idx = np.argsort(afhp_means)
             smallest_afhp = min(smallest_afhp, afhp_means[sort_idx][0])
             biggest_afhp = max(biggest_afhp, afhp_means[sort_idx][-1])
-            axes5.plot(afhp_means[sort_idx], rew_means[sort_idx], color = colors[metric], label = metric)
+            axes5.plot(afhp_means[sort_idx], rew_means[sort_idx], color = colors[metric], label = metric if "T" not in metric else skyline_names[metric])
             # Adding 0% ask for help and 100% ask for help
             axes6.plot(afhp_means[sort_idx], rew_means[sort_idx], color = colors[metric], label = metric)
             axes6.plot(0, test_perf_mean, marker = "o", color = "black")
