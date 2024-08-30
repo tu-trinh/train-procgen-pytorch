@@ -460,7 +460,7 @@ if args.plotting:
             adj_rew_means, adj_rew_stds, adj_rew_sems = get_statistics_nested(adj_rew_by_perc[metric], True)
             sort_idx = np.argsort(afhp_means)
             smallest_afhp = min(smallest_afhp, afhp_means[sort_idx][0])
-            biggest_afhp = min(biggest_afhp, afhp_means[sort_idx][-1])
+            biggest_afhp = max(biggest_afhp, afhp_means[sort_idx][-1])
             axes5.plot(afhp_means[sort_idx], rew_means[sort_idx], color = colors[metric], label = metric)
             # Adding 0% ask for help and 100% ask for help
             axes6.plot(afhp_means[sort_idx], rew_means[sort_idx], color = colors[metric], label = metric)
