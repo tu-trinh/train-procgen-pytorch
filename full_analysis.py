@@ -453,19 +453,22 @@ if args.plotting:
     if PLOT_PERF_VS_PROP in args.plots and args.grouped:
         # This one is bucketed by default
         # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
+        smallest_afhp, biggest_afhp = float("inf"), float("-inf")
         for metric in include_metrics:
             afhp_means, afhp_stds, afhp_sems = get_statistics_nested(help_props_by_perc[metric], True)
             rew_means, rew_stds, rew_sems = get_statistics_nested(rew_by_perc[metric], True)
             adj_rew_means, adj_rew_stds, adj_rew_sems = get_statistics_nested(adj_rew_by_perc[metric], True)
             sort_idx = np.argsort(afhp_means)
+            smallest_afhp = min(smallest_afhp, afhp_means[sort_idx][0])
+            biggest_afhp = min(biggest_afhp, afhp_means[sort_idx][-1])
             axes5.plot(afhp_means[sort_idx], rew_means[sort_idx], color = colors[metric], label = metric)
             # Adding 0% ask for help and 100% ask for help
             axes6.plot(afhp_means[sort_idx], rew_means[sort_idx], color = colors[metric], label = metric)
             axes6.plot(0, test_perf_mean, marker = "o", color = "black")
             axes6.plot(1, expert_perf_mean, marker = "o", color = "black")
-        axes5.plot(afhp_means[sort_idx], [train_perf_mean] * len(afhp_means[sort_idx]), color = "black", label = f"weak agent in training")
-        axes5.plot(afhp_means[sort_idx], [test_perf_mean] * len(afhp_means[sort_idx]), color = "gray", label = f"weak agent in test")
-        axes5.plot(afhp_means[sort_idx], [expert_perf_mean] * len(afhp_means[sort_idx]), color = "tab:brown", label = f"expert agent in test")
+        axes5.plot([smallest_afhp, biggest_afhp], [train_perf_mean] * 2, color = "black", label = f"weak agent in training")
+        axes5.plot([smallest_afhp, biggest_afhp], [test_perf_mean] * 2, color = "gray", label = f"weak agent in test")
+        axes5.plot([smallest_afhp, biggest_afhp], [expert_perf_mean] * 2, color = "tab:brown", label = f"expert agent in test")
         axes5.legend()
         axes6.legend()
         fig5.suptitle("Performance vs. AFHP, All Metrics")
