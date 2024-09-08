@@ -466,7 +466,7 @@ if args.plotting:
             sort_idx = np.argsort(afhp_means)
             smallest_afhp = min(smallest_afhp, afhp_means[sort_idx][0])
             biggest_afhp = max(biggest_afhp, afhp_means[sort_idx][-1])
-            axes5.plot(afhp_means[sort_idx], rew_means[sort_idx], color = colors[metric], label = metric if "T" not in metric else skyline_names[metric])
+            axes5.plot(afhp_means[sort_idx], rew_means[sort_idx], color = colors[metric], label = metric if "T" not in metric else skyline_names[metric], linestyle = "dashdot" if "svdd" in metric else "solid")
             # Adding 0% ask for help and 100% ask for help
             axes6.plot(afhp_means[sort_idx], rew_means[sort_idx], color = colors[metric], label = metric)
             axes6.plot(0, test_perf_mean, marker = "o", color = "black")
