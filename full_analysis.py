@@ -458,8 +458,8 @@ if args.plotting:
         # (x, y)_i = (average AFHP for percentile i, average performance for percentile i)
         skyline_names = {
             "T1": "S_obs",
-            "T2": "S_weak_feat",
-            "T3": "S_combo"
+            "T2": "S_combo",
+            "T3": "S_weak_feat"
         }
         smallest_afhp, biggest_afhp = float("inf"), float("-inf")
         for metric in include_metrics:
