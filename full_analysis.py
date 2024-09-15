@@ -161,7 +161,8 @@ expert_perf_mean /= norm_factor
 
 
 percentiles = range(5, 96, 5)
-pseudo_percentiles = [1, 5] + list(range(10, 151, 10))
+# pseudo_percentiles = [1, 5] + list(range(10, 151, 10))
+pseudo_percentiles = [1, 5] + list(range(10, 101, 10))
 query_costs = [0, 0.1, 0.5, 1, 5, 10, 20, 50]
 include_metrics = [m for m in helped_logs.keys() if m in args.include and m not in args.exclude]
 if args.grand_metric:
@@ -446,7 +447,9 @@ if args.plotting:
             axes2.plot(percentiles if "svdd" not in metric else pseudo_percentiles, help_prop_means, color = colors[metric], label = metric)
             axes2.fill_between(percentiles if "svdd" not in metric else pseudo_percentiles, help_prop_means - help_prop_sems, help_prop_means + help_prop_sems, color = colors[metric], alpha = 0.3)
         axes2.legend()
-        fig2.suptitle("Performance vs. AFHP, All Metrics")
+        axes2.set_xlabel("Percentile")
+        axes2.set_ylabel("Ask-For-Help Percentage (AFHP)")
+        fig2.suptitle("AFHP vs. Percentile")
         fig2.tight_layout()
         fig2.savefig(f"plots/{args.test_env}/{args.prefix}_afhp_by_percentile_all{args.suffix}.png")
         print("Done one plot of grouped 2")
@@ -476,7 +479,9 @@ if args.plotting:
         axes5.plot([smallest_afhp, biggest_afhp], [expert_perf_mean] * 2, color = "tab:brown", label = f"expert agent in test", linestyle = "dotted")
         axes5.legend()
         axes6.legend()
-        fig5.suptitle("Performance vs. AFHP, All Metrics")
+        axes5.set_xlabel("Ask-For-Help Percentage (AFHP)")
+        axes5.set_ylabel("Average Normalized Reward")
+        fig5.suptitle("Performance vs. AFHP")
         fig6.suptitle("Performance vs. AFHP, All Metrics")
         fig5.tight_layout()
         fig6.tight_layout()
