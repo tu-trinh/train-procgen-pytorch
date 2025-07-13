@@ -1,0 +1,225 @@
+INFO: activate-binutils_linux-64.sh made the following environmental changes:
++ADDR2LINE=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-addr2line
++AR=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ar
++AS=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-as
++CXXFILT=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-c++filt
++ELFEDIT=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-elfedit
++GPROF=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gprof
++HOST=x86_64-conda_cos6-linux-gnu
++LD_GOLD=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ld.gold
++LD=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ld
++NM=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-nm
++OBJCOPY=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-objcopy
++OBJDUMP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-objdump
++RANLIB=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ranlib
++READELF=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-readelf
++SIZE=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-size
++STRINGS=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-strings
++STRIP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-strip
+INFO: activate-gcc_linux-64.sh made the following environmental changes:
++CC=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-cc
++CFLAGS=-march=nocona -mtune=haswell -ftree-vectorize -fPIC -fstack-protector-strong -fno-plt -O2 -pipe
++CPPFLAGS=-D_FORTIFY_SOURCE=2 -O2
++CPP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-cpp
++DEBUG_CFLAGS=-march=nocona -mtune=haswell -ftree-vectorize -fPIC -fstack-protector-strong -fno-plt -O2 -pipe -Og -g -Wall -Wextra -fcheck=all -fbacktrace -fimplicit-none -fvar-tracking-assignments
++GCC_AR=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-ar
++GCC=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc
++GCC_NM=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-nm
++GCC_RANLIB=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-ranlib
++LDFLAGS=-Wl,-O2,--sort-common,--as-needed,-z,relro,-z,now
+wandb: Appending key for api.wandb.ai to your netrc file: /home/tutrinh/.netrc
+[LOADING HYPERPARAMETERS...]
+algo : ppo
+n_envs : 1
+n_steps : 256
+total_envs : 1000
+epoch : 1
+mini_batch_per_epoch : 8
+mini_batch_size : 8192
+gamma : 0.999
+lmbda : 0.95
+learning_rate : 0.0005
+grad_clip_norm : 0.5
+eps_clip : 0.2
+value_coef : 0.5
+entropy_coef : 0.01
+normalize_adv : True
+normalize_rew : False
+use_gae : True
+architecture : impala
+recurrent : False
+Using cuda
+GPU set to 4
+building procgen...done
+Traceback (most recent call last):
+  File "render.py", line 468, in <module>
+    model, policy = make_model_and_policy(args, env)
+  File "render.py", line 139, in make_model_and_policy
+    policy.to(device)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 989, in to
+    return self._apply(convert)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 641, in _apply
+    module._apply(fn)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 641, in _apply
+    module._apply(fn)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 641, in _apply
+    module._apply(fn)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 664, in _apply
+    param_applied = fn(param)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 987, in convert
+    return t.to(device, dtype if t.is_floating_point() or t.is_complex() else None, non_blocking)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/cuda/__init__.py", line 229, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: No CUDA GPUs are available
+[LOADING HYPERPARAMETERS...]
+algo : ppo
+n_envs : 1
+n_steps : 256
+total_envs : 1000
+epoch : 1
+mini_batch_per_epoch : 8
+mini_batch_size : 8192
+gamma : 0.999
+lmbda : 0.95
+learning_rate : 0.0005
+grad_clip_norm : 0.5
+eps_clip : 0.2
+value_coef : 0.5
+entropy_coef : 0.01
+normalize_adv : True
+normalize_rew : False
+use_gae : True
+architecture : impala
+recurrent : False
+Using cuda
+GPU set to 4
+building procgen...done
+Traceback (most recent call last):
+  File "render.py", line 468, in <module>
+    model, policy = make_model_and_policy(args, env)
+  File "render.py", line 139, in make_model_and_policy
+    policy.to(device)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 989, in to
+    return self._apply(convert)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 641, in _apply
+    module._apply(fn)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 641, in _apply
+    module._apply(fn)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 641, in _apply
+    module._apply(fn)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 664, in _apply
+    param_applied = fn(param)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 987, in convert
+    return t.to(device, dtype if t.is_floating_point() or t.is_complex() else None, non_blocking)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/cuda/__init__.py", line 229, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: No CUDA GPUs are available
+[LOADING HYPERPARAMETERS...]
+algo : ppo
+n_envs : 1
+n_steps : 256
+total_envs : 1000
+epoch : 1
+mini_batch_per_epoch : 8
+mini_batch_size : 8192
+gamma : 0.999
+lmbda : 0.95
+learning_rate : 0.0005
+grad_clip_norm : 0.5
+eps_clip : 0.2
+value_coef : 0.5
+entropy_coef : 0.01
+normalize_adv : True
+normalize_rew : False
+use_gae : True
+architecture : impala
+recurrent : False
+Using cuda
+GPU set to 4
+building procgen...done
+Traceback (most recent call last):
+  File "render.py", line 468, in <module>
+    model, policy = make_model_and_policy(args, env)
+  File "render.py", line 139, in make_model_and_policy
+    policy.to(device)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 989, in to
+    return self._apply(convert)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 641, in _apply
+    module._apply(fn)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 641, in _apply
+    module._apply(fn)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 641, in _apply
+    module._apply(fn)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 664, in _apply
+    param_applied = fn(param)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 987, in convert
+    return t.to(device, dtype if t.is_floating_point() or t.is_complex() else None, non_blocking)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/cuda/__init__.py", line 229, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: No CUDA GPUs are available
+[LOADING HYPERPARAMETERS...]
+algo : ppo
+n_envs : 1
+n_steps : 256
+total_envs : 1000
+epoch : 1
+mini_batch_per_epoch : 8
+mini_batch_size : 8192
+gamma : 0.999
+lmbda : 0.95
+learning_rate : 0.0005
+grad_clip_norm : 0.5
+eps_clip : 0.2
+value_coef : 0.5
+entropy_coef : 0.01
+normalize_adv : True
+normalize_rew : False
+use_gae : True
+architecture : impala
+recurrent : False
+Using cuda
+GPU set to 4
+building procgen...done
+Traceback (most recent call last):
+  File "render.py", line 468, in <module>
+    model, policy = make_model_and_policy(args, env)
+  File "render.py", line 139, in make_model_and_policy
+    policy.to(device)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 989, in to
+    return self._apply(convert)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 641, in _apply
+    module._apply(fn)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 641, in _apply
+    module._apply(fn)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 641, in _apply
+    module._apply(fn)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 664, in _apply
+    param_applied = fn(param)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/nn/modules/module.py", line 987, in convert
+    return t.to(device, dtype if t.is_floating_point() or t.is_complex() else None, non_blocking)
+  File "/nas/ucb/tutrinh/anaconda3/envs/ood/lib/python3.7/site-packages/torch/cuda/__init__.py", line 229, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: No CUDA GPUs are available
+[LOADING HYPERPARAMETERS...]
+algo : ppo
+n_envs : 1
+n_steps : 256
+total_envs : 1000
+epoch : 1
+mini_batch_per_epoch : 8
+mini_batch_size : 8192
+gamma : 0.999
+lmbda : 0.95
+learning_rate : 0.0005
+grad_clip_norm : 0.5
+eps_clip : 0.2
+value_coef : 0.5
+entropy_coef : 0.01
+normalize_adv : True
+normalize_rew : False
+use_gae : True
+architecture : impala
+recurrent : False
+Using cuda
+GPU set to 4
+building procgen...slurmstepd: error: *** JOB 404588 ON rlhf.ist.berkeley.edu CANCELLED AT 2024-07-24T22:33:32 ***

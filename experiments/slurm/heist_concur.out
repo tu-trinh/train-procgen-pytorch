@@ -1,0 +1,62 @@
+INFO: activate-binutils_linux-64.sh made the following environmental changes:
++ADDR2LINE=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-addr2line
++AR=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ar
++AS=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-as
++CXXFILT=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-c++filt
++ELFEDIT=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-elfedit
++GPROF=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gprof
++HOST=x86_64-conda_cos6-linux-gnu
++LD_GOLD=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ld.gold
++LD=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ld
++NM=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-nm
++OBJCOPY=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-objcopy
++OBJDUMP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-objdump
++RANLIB=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ranlib
++READELF=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-readelf
++SIZE=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-size
++STRINGS=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-strings
++STRIP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-strip
+INFO: activate-gcc_linux-64.sh made the following environmental changes:
++CC=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-cc
++CFLAGS=-march=nocona -mtune=haswell -ftree-vectorize -fPIC -fstack-protector-strong -fno-plt -O2 -pipe
++CPPFLAGS=-D_FORTIFY_SOURCE=2 -O2
++CPP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-cpp
++DEBUG_CFLAGS=-march=nocona -mtune=haswell -ftree-vectorize -fPIC -fstack-protector-strong -fno-plt -O2 -pipe -Og -g -Wall -Wextra -fcheck=all -fbacktrace -fimplicit-none -fvar-tracking-assignments
++GCC_AR=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-ar
++GCC=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc
++GCC_NM=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-nm
++GCC_RANLIB=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-ranlib
++LDFLAGS=-Wl,-O2,--sort-common,--as-needed,-z,relro,-z,now
+wandb: Appending key for api.wandb.ai to your netrc file: /home/tutrinh/.netrc
+SAVING AT TIMESTEPS: [390625, 781250, 1562500, 3125000, 6250000, 10000000, 12500000, 20000000, 25000000, 30000000, 40000000, 50000000, 60000000, 70000000, 80000000, 90000000, 100000000, 110000000, 120000000, 130000000, 140000000, 150000000, 160000000, 170000000, 180000000, 190000000, 200000000]
+[LOADING HYPERPARAMETERS...]
+algo : ppo
+n_envs : 256
+n_steps : 256
+epoch : 3
+mini_batch_per_epoch : 8
+mini_batch_size : 8192
+gamma : 0.999
+lmbda : 0.95
+learning_rate : 0.0005
+grad_clip_norm : 0.5
+eps_clip : 0.2
+value_coef : 0.5
+entropy_coef : 0.01
+normalize_adv : True
+normalize_rew : False
+use_gae : True
+architecture : impala
+recurrent : False
+INITIALIZAING ENVIRONMENTS...
+building procgen...wandb: Currently logged in as: tu-trinh. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.17.6 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /nas/ucb/tutrinh/train-procgen-pytorch/wandb/run-20240809_063144-hswxgs98
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run playful-puddle-43
+wandb: ⭐️ View project at https://wandb.ai/tu-trinh/chai-internship
+wandb: 🚀 View run at https://wandb.ai/tu-trinh/chai-internship/runs/hswxgs98
+/var/spool/slurm/slurmd/job422057/slurm_script: line 31: 2131524 Killed                  python3 train.py --env_name heist_aisc_many_chests --exp_name concurrent_svdd --num_levels 100000 --distribution_mode hard --param_name hard-500 --num_timesteps 200000000 --save_timesteps 390625 781250 1562500 3125000 6250000 10000000 12500000 20000000 25000000 30000000 40000000 50000000 60000000 70000000 80000000 90000000 100000000 110000000 120000000 130000000 140000000 150000000 160000000 170000000 180000000 190000000 200000000 --seed 8888 --use_wandb --save_observations --concurrent_svdd
+slurmstepd: error: Detected 1 oom_kill event in StepId=422057.batch. Some of the step tasks have been OOM Killed.

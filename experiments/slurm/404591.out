@@ -1,0 +1,58 @@
+INFO: deactivate-gcc_linux-64.sh made the following environmental changes:
+-CC=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-cc
+-CFLAGS=-march=nocona -mtune=haswell -ftree-vectorize -fPIC -fstack-protector-strong -fno-plt -O2 -pipe
+-CPPFLAGS=-D_FORTIFY_SOURCE=2 -O2
+-CPP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-cpp
+-DEBUG_CFLAGS=-march=nocona -mtune=haswell -ftree-vectorize -fPIC -fstack-protector-strong -fno-plt -O2 -pipe -Og -g -Wall -Wextra -fcheck=all -fbacktrace -fimplicit-none -fvar-tracking-assignments
+-GCC_AR=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-ar
+-GCC=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc
+-GCC_NM=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-nm
+-GCC_RANLIB=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-ranlib
+-LDFLAGS=-Wl,-O2,--sort-common,--as-needed,-z,relro,-z,now
+INFO: deactivate-binutils_linux-64.sh made the following environmental changes:
+-ADDR2LINE=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-addr2line
+-AR=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ar
+-AS=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-as
+-CXXFILT=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-c++filt
+-ELFEDIT=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-elfedit
+-GPROF=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gprof
+-LD_GOLD=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ld.gold
+-LD=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ld
+-NM=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-nm
+-OBJCOPY=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-objcopy
+-OBJDUMP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-objdump
+-RANLIB=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ranlib
+-READELF=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-readelf
+-SIZE=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-size
+-STRINGS=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-strings
+-STRIP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-strip
+INFO: activate-binutils_linux-64.sh made the following environmental changes:
++ADDR2LINE=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-addr2line
++AR=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ar
++AS=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-as
++CXXFILT=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-c++filt
++ELFEDIT=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-elfedit
++GPROF=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gprof
++LD_GOLD=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ld.gold
++LD=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ld
++NM=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-nm
++OBJCOPY=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-objcopy
++OBJDUMP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-objdump
++RANLIB=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ranlib
++READELF=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-readelf
++SIZE=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-size
++STRINGS=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-strings
++STRIP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-strip
+INFO: activate-gcc_linux-64.sh made the following environmental changes:
++CC=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-cc
++CFLAGS=-march=nocona -mtune=haswell -ftree-vectorize -fPIC -fstack-protector-strong -fno-plt -O2 -pipe
++CPPFLAGS=-D_FORTIFY_SOURCE=2 -O2
++CPP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-cpp
++DEBUG_CFLAGS=-march=nocona -mtune=haswell -ftree-vectorize -fPIC -fstack-protector-strong -fno-plt -O2 -pipe -Og -g -Wall -Wextra -fcheck=all -fbacktrace -fimplicit-none -fvar-tracking-assignments
++GCC_AR=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-ar
++GCC=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc
++GCC_NM=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-nm
++GCC_RANLIB=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-ranlib
++LDFLAGS=-Wl,-O2,--sort-common,--as-needed,-z,relro,-z,now
+wandb: Appending key for api.wandb.ai to your netrc file: /home/tutrinh/.netrc
+slurmstepd: error: *** JOB 404591 ON rlhf.ist.berkeley.edu CANCELLED AT 2024-07-24T22:41:26 ***

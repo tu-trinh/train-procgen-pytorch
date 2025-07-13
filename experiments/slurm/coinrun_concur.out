@@ -1,0 +1,3324 @@
+INFO: activate-binutils_linux-64.sh made the following environmental changes:
++ADDR2LINE=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-addr2line
++AR=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ar
++AS=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-as
++CXXFILT=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-c++filt
++ELFEDIT=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-elfedit
++GPROF=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gprof
++HOST=x86_64-conda_cos6-linux-gnu
++LD_GOLD=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ld.gold
++LD=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ld
++NM=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-nm
++OBJCOPY=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-objcopy
++OBJDUMP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-objdump
++RANLIB=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-ranlib
++READELF=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-readelf
++SIZE=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-size
++STRINGS=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-strings
++STRIP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-strip
+INFO: activate-gcc_linux-64.sh made the following environmental changes:
++CC=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-cc
++CFLAGS=-march=nocona -mtune=haswell -ftree-vectorize -fPIC -fstack-protector-strong -fno-plt -O2 -pipe
++CPPFLAGS=-D_FORTIFY_SOURCE=2 -O2
++CPP=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-cpp
++DEBUG_CFLAGS=-march=nocona -mtune=haswell -ftree-vectorize -fPIC -fstack-protector-strong -fno-plt -O2 -pipe -Og -g -Wall -Wextra -fcheck=all -fbacktrace -fimplicit-none -fvar-tracking-assignments
++GCC_AR=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-ar
++GCC=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc
++GCC_NM=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-nm
++GCC_RANLIB=/nas/ucb/tutrinh/anaconda3/envs/ood/bin/x86_64-conda_cos6-linux-gnu-gcc-ranlib
++LDFLAGS=-Wl,-O2,--sort-common,--as-needed,-z,relro,-z,now
+wandb: Appending key for api.wandb.ai to your netrc file: /home/tutrinh/.netrc
+SAVING AT TIMESTEPS: [390625, 781250, 1562500, 3125000, 6250000, 10000000, 12500000, 20000000, 25000000, 30000000, 40000000, 50000000, 60000000, 70000000, 80000000, 90000000, 100000000, 110000000, 120000000, 130000000, 140000000, 150000000, 160000000, 170000000, 180000000, 190000000, 200000000]
+[LOADING HYPERPARAMETERS...]
+algo : ppo
+n_envs : 256
+n_steps : 256
+epoch : 3
+mini_batch_per_epoch : 8
+mini_batch_size : 8192
+gamma : 0.999
+lmbda : 0.95
+learning_rate : 0.0005
+grad_clip_norm : 0.5
+eps_clip : 0.2
+value_coef : 0.5
+entropy_coef : 0.01
+normalize_adv : True
+normalize_rew : False
+use_gae : True
+architecture : impala
+recurrent : False
+INITIALIZAING ENVIRONMENTS...
+building procgen...wandb: Currently logged in as: tu-trinh. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.17.6 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /nas/ucb/tutrinh/train-procgen-pytorch/wandb/run-20240809_063253-xrs4x6c2
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run silver-thunder-45
+wandb: ⭐️ View project at https://wandb.ai/tu-trinh/chai-internship
+wandb: 🚀 View run at https://wandb.ai/tu-trinh/chai-internship/runs/xrs4x6c2
+done
+INITIALIZING LOGGER...
+Logging to /nas/ucb/tutrinh/train-procgen-pytorch/logs/train/coinrun/concurrent_svdd/2024-08-09__06-32-52__seed_8888
+INTIALIZING MODEL...
+Using normal action space
+INITIALIZING STORAGE...
+INTIALIZING AGENT...
+START TRAINING...
+timesteps                   65536.000000
+wall_time                     205.851405
+num_episodes                   67.000000
+max_episode_rewards            10.000000
+mean_episode_rewards            3.250000
+min_episode_rewards             0.000000
+max_episode_len               239.000000
+mean_episode_len              138.000000
+min_episode_len                 0.000000
+mean_timeouts                   0.000000
+val_max_episode_rewards        10.000000
+val_mean_episode_rewards        7.692307
+val_min_episode_rewards         0.000000
+val_max_episode_len           133.000000
+val_mean_episode_len           61.461538
+val_min_episode_len             0.000000
+val_mean_timeouts               0.000000
+Name: 0, dtype: float64
+Loaded 65792 images
+timesteps                   131072.000000
+wall_time                      456.433527
+num_episodes                   167.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             4.250000
+min_episode_rewards              0.000000
+max_episode_len                508.000000
+mean_episode_len               331.550000
+min_episode_len                  0.000000
+mean_timeouts                    0.000000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         5.750000
+val_min_episode_rewards          0.000000
+val_max_episode_len            372.000000
+val_mean_episode_len           126.550000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.000000
+Name: 1, dtype: float64
+Loaded 65792 images
+timesteps                   196608.000000
+wall_time                      702.229136
+num_episodes                   318.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             4.000000
+min_episode_rewards              0.000000
+max_episode_len                731.000000
+mean_episode_len               429.975000
+min_episode_len                  0.000000
+mean_timeouts                    0.000000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         5.500000
+val_min_episode_rewards          0.000000
+val_max_episode_len            577.000000
+val_mean_episode_len           147.350000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.000000
+Name: 2, dtype: float64
+Loaded 65792 images
+timesteps                   262144.000000
+wall_time                      944.888336
+num_episodes                   594.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             3.000000
+min_episode_rewards              0.000000
+max_episode_len               1000.000000
+mean_episode_len               454.125000
+min_episode_len                  0.000000
+mean_timeouts                    0.000000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         2.500000
+val_min_episode_rewards          0.000000
+val_max_episode_len           1000.000000
+val_mean_episode_len           649.450000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.000000
+Name: 3, dtype: float64
+Loaded 65792 images
+timesteps                   327680.000000
+wall_time                     1189.605205
+num_episodes                   971.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             5.000000
+min_episode_rewards              0.000000
+max_episode_len                790.000000
+mean_episode_len               240.050000
+min_episode_len                  0.000000
+mean_timeouts                    0.000000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         5.250000
+val_min_episode_rewards          0.000000
+val_max_episode_len           1000.000000
+val_mean_episode_len           174.000000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.000000
+Name: 4, dtype: float64
+Loaded 65792 images
+timesteps                   393216.000000
+wall_time                     1438.596005
+num_episodes                  1465.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             5.000000
+min_episode_rewards              0.000000
+max_episode_len                579.000000
+mean_episode_len               145.625000
+min_episode_len                  0.000000
+mean_timeouts                    0.025000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         7.000000
+val_min_episode_rewards          0.000000
+val_max_episode_len           1000.000000
+val_mean_episode_len           163.875000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.025000
+Name: 5, dtype: float64
+Saving model at timestep 393217
+Loaded 65792 images
+timesteps                   458752.000000
+wall_time                     1686.085023
+num_episodes                  1975.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             4.000000
+min_episode_rewards              0.000000
+max_episode_len                443.000000
+mean_episode_len               156.750000
+min_episode_len                  0.000000
+mean_timeouts                    0.000000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         5.000000
+val_min_episode_rewards          0.000000
+val_max_episode_len           1000.000000
+val_mean_episode_len           194.975000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.000000
+Name: 6, dtype: float64
+Loaded 65792 images
+timesteps                   524288.000000
+wall_time                     1930.688031
+num_episodes                  2584.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             4.750000
+min_episode_rewards              0.000000
+max_episode_len                428.000000
+mean_episode_len               110.450000
+min_episode_len                  0.000000
+mean_timeouts                    0.025000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         3.250000
+val_min_episode_rewards          0.000000
+val_max_episode_len           1000.000000
+val_mean_episode_len           558.525000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.000000
+Name: 7, dtype: float64
+Loaded 65792 images
+timesteps                   589824.00000
+wall_time                     2174.10595
+num_episodes                  3279.00000
+max_episode_rewards             10.00000
+mean_episode_rewards             5.75000
+min_episode_rewards              0.00000
+max_episode_len                475.00000
+mean_episode_len               103.77500
+min_episode_len                  0.00000
+mean_timeouts                    0.00000
+val_max_episode_rewards         10.00000
+val_mean_episode_rewards         4.50000
+val_min_episode_rewards          0.00000
+val_max_episode_len           1000.00000
+val_mean_episode_len           256.45000
+val_min_episode_len              0.00000
+val_mean_timeouts                0.02500
+Name: 8, dtype: float64
+Loaded 65792 images
+timesteps                   655360.000000
+wall_time                     2421.094908
+num_episodes                  3998.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             5.500000
+min_episode_rewards              0.000000
+max_episode_len                288.000000
+mean_episode_len                92.800000
+min_episode_len                  0.000000
+mean_timeouts                    0.000000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         6.000000
+val_min_episode_rewards          0.000000
+val_max_episode_len           1000.000000
+val_mean_episode_len           248.650000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.000000
+Name: 9, dtype: float64
+Loaded 65792 images
+timesteps                   720896.000000
+wall_time                     2673.455394
+num_episodes                  4744.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             5.250000
+min_episode_rewards              0.000000
+max_episode_len                197.000000
+mean_episode_len                94.150000
+min_episode_len                  0.000000
+mean_timeouts                    0.000000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         6.500000
+val_min_episode_rewards          0.000000
+val_max_episode_len           1000.000000
+val_mean_episode_len           271.950000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.000000
+Name: 10, dtype: float64
+Loaded 65792 images
+timesteps                   786432.000000
+wall_time                     2922.484886
+num_episodes                  5600.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             5.500000
+min_episode_rewards              0.000000
+max_episode_len                283.000000
+mean_episode_len                74.650000
+min_episode_len                  0.000000
+mean_timeouts                    0.000000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         3.750000
+val_min_episode_rewards          0.000000
+val_max_episode_len           1000.000000
+val_mean_episode_len           349.475000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.000000
+Name: 11, dtype: float64
+Saving model at timestep 786433
+Loaded 65792 images
+timesteps                   851968.000000
+wall_time                     3166.030424
+num_episodes                  6462.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             5.250000
+min_episode_rewards              0.000000
+max_episode_len                156.000000
+mean_episode_len                64.625000
+min_episode_len                  0.000000
+mean_timeouts                    0.025000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         4.250000
+val_min_episode_rewards          0.000000
+val_max_episode_len           1000.000000
+val_mean_episode_len           292.550000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.000000
+Name: 12, dtype: float64
+Loaded 65792 images
+timesteps                   917504.000000
+wall_time                     3408.209194
+num_episodes                  7313.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             5.250000
+min_episode_rewards              0.000000
+max_episode_len                315.000000
+mean_episode_len                76.150000
+min_episode_len                  0.000000
+mean_timeouts                    0.050000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         3.750000
+val_min_episode_rewards          0.000000
+val_max_episode_len           1000.000000
+val_mean_episode_len           296.600000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.000000
+Name: 13, dtype: float64
+Loaded 65792 images
+timesteps                   983040.000000
+wall_time                     3658.559954
+num_episodes                  8204.000000
+max_episode_rewards             10.000000
+mean_episode_rewards             6.250000
+min_episode_rewards              0.000000
+max_episode_len                171.000000
+mean_episode_len                69.950000
+min_episode_len                  0.000000
+mean_timeouts                    0.000000
+val_max_episode_rewards         10.000000
+val_mean_episode_rewards         5.750000
+val_min_episode_rewards          0.000000
+val_max_episode_len           1000.000000
+val_mean_episode_len           243.075000
+val_min_episode_len              0.000000
+val_mean_timeouts                0.000000
+Name: 14, dtype: float64
+Loaded 65792 images
+timesteps                   1.048576e+06
+wall_time                   3.908663e+03
+num_episodes                9.169000e+03
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.390000e+02
+mean_episode_len            7.187500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.252750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 15, dtype: float64
+Loaded 65792 images
+timesteps                   1.114112e+06
+wall_time                   4.151126e+03
+num_episodes                1.011800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.150000e+02
+mean_episode_len            7.380000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.086750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 16, dtype: float64
+Loaded 65792 images
+timesteps                   1.179648e+06
+wall_time                   4.392472e+03
+num_episodes                1.111300e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.970000e+02
+mean_episode_len            7.427500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.758000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 17, dtype: float64
+Loaded 65792 images
+timesteps                   1.245184e+06
+wall_time                   4.639473e+03
+num_episodes                1.212200e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        3.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.740000e+02
+mean_episode_len            6.697500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.972250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 18, dtype: float64
+Loaded 65792 images
+timesteps                   1.310720e+06
+wall_time                   4.889474e+03
+num_episodes                1.313800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.540000e+02
+mean_episode_len            5.880000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.630750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 19, dtype: float64
+Loaded 65792 images
+timesteps                   1.376256e+06
+wall_time                   5.140204e+03
+num_episodes                1.416100e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.070000e+02
+mean_episode_len            6.827500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.463750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 20, dtype: float64
+Loaded 65792 images
+timesteps                   1.441792e+06
+wall_time                   5.383898e+03
+num_episodes                1.520700e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.930000e+02
+mean_episode_len            6.685000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               2.500000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.989500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 21, dtype: float64
+Loaded 65792 images
+timesteps                   1.507328e+06
+wall_time                   5.632511e+03
+num_episodes                1.626900e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.370000e+02
+mean_episode_len            6.215000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.526250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 22, dtype: float64
+Loaded 65792 images
+timesteps                   1.572864e+06
+wall_time                   5.883773e+03
+num_episodes                1.730600e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.100000e+02
+mean_episode_len            7.510000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.688500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 23, dtype: float64
+Saving model at timestep 1572865
+Loaded 65792 images
+timesteps                   1.638400e+06
+wall_time                   6.130632e+03
+num_episodes                1.834900e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.260000e+02
+mean_episode_len            6.332500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.680750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 24, dtype: float64
+Loaded 65792 images
+timesteps                   1.703936e+06
+wall_time                   6.374034e+03
+num_episodes                1.943700e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.640000e+02
+mean_episode_len            5.745000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.628250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 25, dtype: float64
+Loaded 65792 images
+timesteps                   1.769472e+06
+wall_time                   6.615997e+03
+num_episodes                2.051600e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.860000e+02
+mean_episode_len            5.637500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.570250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 26, dtype: float64
+Loaded 65792 images
+timesteps                   1.835008e+06
+wall_time                   6.861560e+03
+num_episodes                2.158100e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.450000e+02
+mean_episode_len            6.137500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.977000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 27, dtype: float64
+Loaded 65792 images
+timesteps                   1.900544e+06
+wall_time                   7.115072e+03
+num_episodes                2.266600e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.160000e+02
+mean_episode_len            6.050000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.765250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 28, dtype: float64
+Loaded 65792 images
+timesteps                   1.966080e+06
+wall_time                   7.366039e+03
+num_episodes                2.371600e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.650000e+02
+mean_episode_len            6.655000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               5.000000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.682250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 29, dtype: float64
+Loaded 65792 images
+timesteps                   2.031616e+06
+wall_time                   7.613899e+03
+num_episodes                2.476000e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.390000e+02
+mean_episode_len            6.342500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.155750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 30, dtype: float64
+Loaded 65792 images
+timesteps                   2.097152e+06
+wall_time                   7.860502e+03
+num_episodes                2.584600e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.810000e+02
+mean_episode_len            5.740000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.485250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 31, dtype: float64
+Loaded 65792 images
+timesteps                   2.162688e+06
+wall_time                   8.110313e+03
+num_episodes                2.689900e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.220000e+02
+mean_episode_len            6.640000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.832750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 32, dtype: float64
+Loaded 65792 images
+timesteps                   2.228224e+06
+wall_time                   8.361335e+03
+num_episodes                2.795300e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.980000e+02
+mean_episode_len            7.042500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.880500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 33, dtype: float64
+Loaded 65792 images
+timesteps                   2.293760e+06
+wall_time                   8.608073e+03
+num_episodes                2.899100e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.030000e+02
+mean_episode_len            8.040000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.086250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 34, dtype: float64
+Loaded 65792 images
+timesteps                   2.359296e+06
+wall_time                   8.851998e+03
+num_episodes                3.002400e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.170000e+02
+mean_episode_len            6.492500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.747250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 35, dtype: float64
+Loaded 65792 images
+timesteps                   2.424832e+06
+wall_time                   9.102488e+03
+num_episodes                3.106100e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.630000e+02
+mean_episode_len            6.725000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.786500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 36, dtype: float64
+Loaded 65792 images
+timesteps                   2.490368e+06
+wall_time                   9.355769e+03
+num_episodes                3.220000e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.950000e+02
+mean_episode_len            5.817500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.033500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 37, dtype: float64
+Loaded 65792 images
+timesteps                   2.555904e+06
+wall_time                   9.606684e+03
+num_episodes                3.331800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.970000e+02
+mean_episode_len            6.085000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.039500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 38, dtype: float64
+Loaded 65792 images
+timesteps                   2.621440e+06
+wall_time                   9.853237e+03
+num_episodes                3.446400e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.580000e+02
+mean_episode_len            5.670000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.983000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 39, dtype: float64
+Loaded 65792 images
+timesteps                   2.686976e+06
+wall_time                   1.010234e+04
+num_episodes                3.561100e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.620000e+02
+mean_episode_len            5.702500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.551000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 40, dtype: float64
+Loaded 65792 images
+timesteps                   2.752512e+06
+wall_time                   1.035351e+04
+num_episodes                3.670000e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.460000e+02
+mean_episode_len            5.912500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.916250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 41, dtype: float64
+Loaded 65792 images
+timesteps                   2.818048e+06
+wall_time                   1.059965e+04
+num_episodes                3.778200e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.880000e+02
+mean_episode_len            6.110000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.666750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 42, dtype: float64
+Loaded 65792 images
+timesteps                   2.883584e+06
+wall_time                   1.084652e+04
+num_episodes                3.887700e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.690000e+02
+mean_episode_len            6.075000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.765500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           5.000000e-02
+Name: 43, dtype: float64
+Loaded 65792 images
+timesteps                   2.949120e+06
+wall_time                   1.108718e+04
+num_episodes                4.000200e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.850000e+02
+mean_episode_len            5.985000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.885750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 44, dtype: float64
+Loaded 65792 images
+timesteps                   3.014656e+06
+wall_time                   1.133239e+04
+num_episodes                4.112400e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.170000e+02
+mean_episode_len            5.820000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.477500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 45, dtype: float64
+Loaded 65792 images
+timesteps                   3.080192e+06
+wall_time                   1.158326e+04
+num_episodes                4.227700e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.380000e+02
+mean_episode_len            6.135000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.377000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 46, dtype: float64
+Loaded 65792 images
+timesteps                   3.145728e+06
+wall_time                   1.183854e+04
+num_episodes                4.343400e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.010000e+02
+mean_episode_len            5.727500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.132000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 47, dtype: float64
+Saving model at timestep 3145729
+Loaded 65792 images
+timesteps                   3.211264e+06
+wall_time                   1.208383e+04
+num_episodes                4.455300e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.390000e+02
+mean_episode_len            5.490000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               2.500000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.010500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 48, dtype: float64
+Loaded 65792 images
+timesteps                   3.276800e+06
+wall_time                   1.233176e+04
+num_episodes                4.568900e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.850000e+02
+mean_episode_len            5.370000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.244500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 49, dtype: float64
+Loaded 65792 images
+timesteps                   3.342336e+06
+wall_time                   1.257973e+04
+num_episodes                4.686200e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.610000e+02
+mean_episode_len            6.352500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.029750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 50, dtype: float64
+Loaded 65792 images
+timesteps                   3.407872e+06
+wall_time                   1.282961e+04
+num_episodes                4.799800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.450000e+02
+mean_episode_len            7.115000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.911750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 51, dtype: float64
+Loaded 65792 images
+timesteps                   3.473408e+06
+wall_time                   1.307990e+04
+num_episodes                4.912800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.970000e+02
+mean_episode_len            5.992500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.633500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 52, dtype: float64
+Loaded 65792 images
+timesteps                   3.538944e+06
+wall_time                   1.332396e+04
+num_episodes                5.028900e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.220000e+02
+mean_episode_len            5.580000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.765000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 53, dtype: float64
+Loaded 65792 images
+timesteps                   3.604480e+06
+wall_time                   1.356652e+04
+num_episodes                5.142500e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.570000e+02
+mean_episode_len            4.885000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.719750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 54, dtype: float64
+Loaded 65792 images
+timesteps                   3.670016e+06
+wall_time                   1.381558e+04
+num_episodes                5.253300e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.220000e+02
+mean_episode_len            5.512500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.809500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 55, dtype: float64
+Loaded 65792 images
+timesteps                   3.735552e+06
+wall_time                   1.407187e+04
+num_episodes                5.372600e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.400000e+02
+mean_episode_len            5.192500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.787000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 56, dtype: float64
+Loaded 65792 images
+timesteps                   3.801088e+06
+wall_time                   1.432754e+04
+num_episodes                5.486000e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.630000e+02
+mean_episode_len            6.340000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.117750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 57, dtype: float64
+Loaded 65792 images
+timesteps                   3.866624e+06
+wall_time                   1.457871e+04
+num_episodes                5.595300e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.430000e+02
+mean_episode_len            6.182500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.805500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 58, dtype: float64
+Loaded 65792 images
+timesteps                   3.932160e+06
+wall_time                   1.482612e+04
+num_episodes                5.707300e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.340000e+02
+mean_episode_len            6.142500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.311500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 59, dtype: float64
+Loaded 65792 images
+timesteps                   3.997696e+06
+wall_time                   1.507823e+04
+num_episodes                5.812000e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.800000e+02
+mean_episode_len            7.485000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.731500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 60, dtype: float64
+Loaded 65792 images
+timesteps                   4.063232e+06
+wall_time                   1.532730e+04
+num_episodes                5.911400e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.720000e+02
+mean_episode_len            6.192500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.405750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 61, dtype: float64
+Loaded 65792 images
+timesteps                   4.128768e+06
+wall_time                   1.557504e+04
+num_episodes                6.010500e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.120000e+02
+mean_episode_len            6.382500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.616250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 62, dtype: float64
+Loaded 65792 images
+timesteps                   4.194304e+06
+wall_time                   1.581537e+04
+num_episodes                6.108400e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.490000e+02
+mean_episode_len            7.445000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.344250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 63, dtype: float64
+Loaded 65792 images
+timesteps                   4.259840e+06
+wall_time                   1.606174e+04
+num_episodes                6.203500e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.050000e+02
+mean_episode_len            7.242500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.478000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 64, dtype: float64
+Loaded 65792 images
+timesteps                   4.325376e+06
+wall_time                   1.631314e+04
+num_episodes                6.303000e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.630000e+02
+mean_episode_len            6.615000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.691500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 65, dtype: float64
+Loaded 65792 images
+timesteps                   4.390912e+06
+wall_time                   1.656636e+04
+num_episodes                6.394300e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.440000e+02
+mean_episode_len            7.247500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.888250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 66, dtype: float64
+Loaded 65792 images
+timesteps                   4.456448e+06
+wall_time                   1.681394e+04
+num_episodes                6.485500e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.840000e+02
+mean_episode_len            7.472500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.584750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 67, dtype: float64
+Loaded 65792 images
+timesteps                   4.521984e+06
+wall_time                   1.705835e+04
+num_episodes                6.582400e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.150000e+02
+mean_episode_len            6.900000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.616500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 68, dtype: float64
+Loaded 65792 images
+timesteps                   4.587520e+06
+wall_time                   1.731066e+04
+num_episodes                6.676800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.990000e+02
+mean_episode_len            6.927500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.494750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 69, dtype: float64
+Loaded 65792 images
+timesteps                   4.653056e+06
+wall_time                   1.755935e+04
+num_episodes                6.769300e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.900000e+02
+mean_episode_len            6.887500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.624500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 70, dtype: float64
+Loaded 65792 images
+timesteps                   4.718592e+06
+wall_time                   1.780449e+04
+num_episodes                6.860500e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.360000e+02
+mean_episode_len            5.970000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.478250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 71, dtype: float64
+Loaded 65792 images
+timesteps                   4.784128e+06
+wall_time                   1.804724e+04
+num_episodes                6.945800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.050000e+02
+mean_episode_len            9.592500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.654750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 72, dtype: float64
+Loaded 65792 images
+timesteps                   4.849664e+06
+wall_time                   1.829237e+04
+num_episodes                7.025000e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.150000e+02
+mean_episode_len            7.057500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.133250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 73, dtype: float64
+Loaded 65792 images
+timesteps                   4.915200e+06
+wall_time                   1.854494e+04
+num_episodes                7.101100e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.730000e+02
+mean_episode_len            8.970000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.759500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 74, dtype: float64
+Loaded 65792 images
+timesteps                   4.980736e+06
+wall_time                   1.880278e+04
+num_episodes                7.181800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             5.190000e+02
+mean_episode_len            8.987500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    7.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.546500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 75, dtype: float64
+Loaded 65792 images
+timesteps                   5.046272e+06
+wall_time                   1.905663e+04
+num_episodes                7.258200e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.700000e+02
+mean_episode_len            7.580000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.499500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 76, dtype: float64
+Loaded 65792 images
+timesteps                   5.111808e+06
+wall_time                   1.931302e+04
+num_episodes                7.340000e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.960000e+02
+mean_episode_len            8.755000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.973250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 77, dtype: float64
+Loaded 65792 images
+timesteps                   5.177344e+06
+wall_time                   1.956691e+04
+num_episodes                7.420000e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.180000e+02
+mean_episode_len            7.695000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.183250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 78, dtype: float64
+Loaded 65792 images
+timesteps                   5.242880e+06
+wall_time                   1.982667e+04
+num_episodes                7.497600e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.820000e+02
+mean_episode_len            8.280000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.128000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 79, dtype: float64
+Loaded 65792 images
+timesteps                   5.308416e+06
+wall_time                   2.008490e+04
+num_episodes                7.573600e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             6.960000e+02
+mean_episode_len            8.337500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.101500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 80, dtype: float64
+Loaded 65792 images
+timesteps                   5.373952e+06
+wall_time                   2.034464e+04
+num_episodes                7.647100e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             5.550000e+02
+mean_episode_len            1.042250e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    7.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.274000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 81, dtype: float64
+Loaded 65792 images
+timesteps                   5.439488e+06
+wall_time                   2.060059e+04
+num_episodes                7.725700e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             7.150000e+02
+mean_episode_len            1.067250e+02
+min_episode_len             0.000000e+00
+mean_timeouts               2.500000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.269750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 82, dtype: float64
+Loaded 65792 images
+timesteps                   5.505024e+06
+wall_time                   2.085514e+04
+num_episodes                7.811600e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             8.690000e+02
+mean_episode_len            9.962500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.329500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 83, dtype: float64
+Loaded 65792 images
+timesteps                   5.570560e+06
+wall_time                   2.111042e+04
+num_episodes                7.891800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.950000e+02
+mean_episode_len            7.585000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.680750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 84, dtype: float64
+Loaded 65792 images
+timesteps                   5.636096e+06
+wall_time                   2.136750e+04
+num_episodes                7.972900e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.000000e+03
+mean_episode_len            1.093500e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.046250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 85, dtype: float64
+Loaded 65792 images
+timesteps                   5.701632e+06
+wall_time                   2.162893e+04
+num_episodes                8.056200e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             7.070000e+02
+mean_episode_len            1.166500e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.344750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 86, dtype: float64
+Loaded 65792 images
+timesteps                   5.767168e+06
+wall_time                   2.189659e+04
+num_episodes                8.138100e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.150000e+02
+mean_episode_len            9.360000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.335000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 87, dtype: float64
+Loaded 65792 images
+timesteps                   5.832704e+06
+wall_time                   2.216916e+04
+num_episodes                8.220800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.280000e+02
+mean_episode_len            6.600000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.542250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 88, dtype: float64
+Loaded 65792 images
+timesteps                   5.898240e+06
+wall_time                   2.243871e+04
+num_episodes                8.302100e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.830000e+02
+mean_episode_len            7.800000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.791000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 89, dtype: float64
+Loaded 65792 images
+timesteps                   5.963776e+06
+wall_time                   2.270267e+04
+num_episodes                8.385300e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.940000e+02
+mean_episode_len            7.570000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.704500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 90, dtype: float64
+Loaded 65792 images
+timesteps                   6.029312e+06
+wall_time                   2.297006e+04
+num_episodes                8.471800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.060000e+02
+mean_episode_len            7.780000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.466500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 91, dtype: float64
+Loaded 65792 images
+timesteps                   6.094848e+06
+wall_time                   2.323044e+04
+num_episodes                8.555100e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.950000e+02
+mean_episode_len            7.182500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.570250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 92, dtype: float64
+Loaded 65792 images
+timesteps                   6.160384e+06
+wall_time                   2.349594e+04
+num_episodes                8.642600e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             6.380000e+02
+mean_episode_len            9.267500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.314500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 93, dtype: float64
+Loaded 65792 images
+timesteps                   6.225920e+06
+wall_time                   2.376373e+04
+num_episodes                8.730700e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.780000e+02
+mean_episode_len            6.720000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.103750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 94, dtype: float64
+Loaded 65792 images
+timesteps                   6.291456e+06
+wall_time                   2.403359e+04
+num_episodes                8.815400e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.900000e+02
+mean_episode_len            8.157500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.311500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 95, dtype: float64
+Saving model at timestep 6291457
+Loaded 65792 images
+timesteps                   6.356992e+06
+wall_time                   2.429875e+04
+num_episodes                8.895100e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.500000e+02
+mean_episode_len            5.755000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.077750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 96, dtype: float64
+Loaded 65792 images
+timesteps                   6.422528e+06
+wall_time                   2.456948e+04
+num_episodes                8.978800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.510000e+02
+mean_episode_len            7.652500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               2.500000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.843500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 97, dtype: float64
+Loaded 65792 images
+timesteps                   6.488064e+06
+wall_time                   2.483891e+04
+num_episodes                9.062800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.530000e+02
+mean_episode_len            7.777500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.338000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 98, dtype: float64
+Loaded 65792 images
+timesteps                   6.553600e+06
+wall_time                   2.510399e+04
+num_episodes                9.148900e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             5.820000e+02
+mean_episode_len            8.807500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               2.500000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.597750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 99, dtype: float64
+Loaded 65792 images
+timesteps                   6.619136e+06
+wall_time                   2.537005e+04
+num_episodes                9.235200e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        4.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             6.950000e+02
+mean_episode_len            7.437500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.941000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 100, dtype: float64
+Loaded 65792 images
+timesteps                   6.684672e+06
+wall_time                   2.563437e+04
+num_episodes                9.317900e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             6.100000e+02
+mean_episode_len            7.885000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.704750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 101, dtype: float64
+Loaded 65792 images
+timesteps                   6.750208e+06
+wall_time                   2.589548e+04
+num_episodes                9.400600e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.080000e+02
+mean_episode_len            8.140000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.849750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 102, dtype: float64
+Loaded 65792 images
+timesteps                   6.815744e+06
+wall_time                   2.616275e+04
+num_episodes                9.488700e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.800000e+02
+mean_episode_len            9.262500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.198500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 103, dtype: float64
+Loaded 65792 images
+timesteps                   6.881280e+06
+wall_time                   2.643247e+04
+num_episodes                9.575200e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.390000e+02
+mean_episode_len            7.862500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.632500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 104, dtype: float64
+Loaded 65792 images
+timesteps                   6.946816e+06
+wall_time                   2.670343e+04
+num_episodes                9.661500e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             5.550000e+02
+mean_episode_len            1.067500e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.579000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 105, dtype: float64
+Loaded 65792 images
+timesteps                   7.012352e+06
+wall_time                   2.697738e+04
+num_episodes                9.745600e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.390000e+02
+mean_episode_len            1.071250e+02
+min_episode_len             0.000000e+00
+mean_timeouts               2.500000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.579250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 106, dtype: float64
+Loaded 65792 images
+timesteps                   7.077888e+06
+wall_time                   2.725054e+04
+num_episodes                9.832300e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.170000e+02
+mean_episode_len            6.987500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.283250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 107, dtype: float64
+Loaded 65792 images
+timesteps                   7.143424e+06
+wall_time                   2.752690e+04
+num_episodes                9.909200e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.000000e+03
+mean_episode_len            8.452500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.462000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 108, dtype: float64
+Loaded 65792 images
+timesteps                   7.208960e+06
+wall_time                   2.779902e+04
+num_episodes                9.990800e+04
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.660000e+02
+mean_episode_len            7.177500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.509000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 109, dtype: float64
+Loaded 65792 images
+timesteps                   7.274496e+06
+wall_time                   2.807111e+04
+num_episodes                1.007090e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.390000e+02
+mean_episode_len            8.082500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               2.500000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.042000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 110, dtype: float64
+Loaded 65792 images
+timesteps                   7.340032e+06
+wall_time                   2.834186e+04
+num_episodes                1.015500e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.560000e+02
+mean_episode_len            8.750000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        1.846500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 111, dtype: float64
+Loaded 65792 images
+timesteps                   7.405568e+06
+wall_time                   2.861608e+04
+num_episodes                1.023810e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        8.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.280000e+02
+mean_episode_len            7.800000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               2.500000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.610250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 112, dtype: float64
+Loaded 65792 images
+timesteps                   7.471104e+06
+wall_time                   2.889557e+04
+num_episodes                1.031450e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.480000e+02
+mean_episode_len            6.680000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.226750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 113, dtype: float64
+Loaded 65792 images
+timesteps                   7.536640e+06
+wall_time                   2.917063e+04
+num_episodes                1.039530e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.180000e+02
+mean_episode_len            8.202500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.936750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 114, dtype: float64
+Loaded 65792 images
+timesteps                   7.602176e+06
+wall_time                   2.944742e+04
+num_episodes                1.047280e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.800000e+02
+mean_episode_len            5.800000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.993750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 115, dtype: float64
+Loaded 65792 images
+timesteps                   7.667712e+06
+wall_time                   2.972186e+04
+num_episodes                1.054400e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.700000e+02
+mean_episode_len            7.332500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.631750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 116, dtype: float64
+Loaded 65792 images
+timesteps                   7.733248e+06
+wall_time                   2.999912e+04
+num_episodes                1.061780e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.850000e+02
+mean_episode_len            8.715000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.803250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 117, dtype: float64
+Loaded 65792 images
+timesteps                   7.798784e+06
+wall_time                   3.027673e+04
+num_episodes                1.069160e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.110000e+02
+mean_episode_len            7.432500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.414500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 118, dtype: float64
+Loaded 65792 images
+timesteps                   7.864320e+06
+wall_time                   3.055468e+04
+num_episodes                1.076530e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.830000e+02
+mean_episode_len            9.457500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               2.500000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.378500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 119, dtype: float64
+Loaded 65792 images
+timesteps                   7.929856e+06
+wall_time                   3.083227e+04
+num_episodes                1.083640e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             5.800000e+02
+mean_episode_len            1.120250e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.164000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 120, dtype: float64
+Loaded 65792 images
+timesteps                   7.995392e+06
+wall_time                   3.110919e+04
+num_episodes                1.091460e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.740000e+02
+mean_episode_len            8.300000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.066000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 121, dtype: float64
+Loaded 65792 images
+timesteps                   8.060928e+06
+wall_time                   3.138934e+04
+num_episodes                1.098940e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.980000e+02
+mean_episode_len            7.437500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.604500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 122, dtype: float64
+Loaded 65792 images
+timesteps                   8.126464e+06
+wall_time                   3.167653e+04
+num_episodes                1.105650e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.880000e+02
+mean_episode_len            7.385000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.159250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 123, dtype: float64
+Loaded 65792 images
+timesteps                   8.192000e+06
+wall_time                   3.195792e+04
+num_episodes                1.112810e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.420000e+02
+mean_episode_len            9.252500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.578000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 124, dtype: float64
+Loaded 65792 images
+timesteps                   8.257536e+06
+wall_time                   3.224396e+04
+num_episodes                1.120480e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.370000e+02
+mean_episode_len            9.182500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        5.299250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 125, dtype: float64
+Loaded 65792 images
+timesteps                   8.323072e+06
+wall_time                   3.252880e+04
+num_episodes                1.128270e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.620000e+02
+mean_episode_len            8.197500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.083500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 126, dtype: float64
+Loaded 65792 images
+timesteps                   8.388608e+06
+wall_time                   3.281483e+04
+num_episodes                1.136980e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.440000e+02
+mean_episode_len            6.232500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.580000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 127, dtype: float64
+Loaded 65792 images
+timesteps                   8.454144e+06
+wall_time                   3.309908e+04
+num_episodes                1.145820e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.460000e+02
+mean_episode_len            7.587500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.350500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           5.000000e-02
+Name: 128, dtype: float64
+Loaded 65792 images
+timesteps                   8.519680e+06
+wall_time                   3.338681e+04
+num_episodes                1.154020e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.060000e+02
+mean_episode_len            7.665000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.341500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 129, dtype: float64
+Loaded 65792 images
+timesteps                   8.585216e+06
+wall_time                   3.367687e+04
+num_episodes                1.162370e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.950000e+02
+mean_episode_len            8.187500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.682250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 130, dtype: float64
+Loaded 65792 images
+timesteps                   8.650752e+06
+wall_time                   3.397587e+04
+num_episodes                1.170040e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             5.200000e+02
+mean_episode_len            9.477500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.918250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 131, dtype: float64
+Loaded 65792 images
+timesteps                   8.716288e+06
+wall_time                   3.426969e+04
+num_episodes                1.177850e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.960000e+02
+mean_episode_len            1.036750e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.777500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 132, dtype: float64
+Loaded 65792 images
+timesteps                   8.781824e+06
+wall_time                   3.456416e+04
+num_episodes                1.185660e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.940000e+02
+mean_episode_len            7.305000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.582250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 133, dtype: float64
+Loaded 65792 images
+timesteps                   8.847360e+06
+wall_time                   3.485989e+04
+num_episodes                1.193890e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             6.950000e+02
+mean_episode_len            9.420000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.196250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 134, dtype: float64
+Loaded 65792 images
+timesteps                   8.912896e+06
+wall_time                   3.514914e+04
+num_episodes                1.201530e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             7.110000e+02
+mean_episode_len            1.029000e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    6.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.728250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 135, dtype: float64
+Loaded 65792 images
+timesteps                   8.978432e+06
+wall_time                   3.543430e+04
+num_episodes                1.208230e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.680000e+02
+mean_episode_len            7.547500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.286250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 136, dtype: float64
+Loaded 65792 images
+timesteps                   9.043968e+06
+wall_time                   3.572476e+04
+num_episodes                1.214960e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        8.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.240000e+02
+mean_episode_len            8.592500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.164000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 137, dtype: float64
+Loaded 65792 images
+timesteps                   9.109504e+06
+wall_time                   3.600907e+04
+num_episodes                1.221770e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             9.700000e+02
+mean_episode_len            1.321000e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.275750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 138, dtype: float64
+Loaded 65792 images
+timesteps                   9.175040e+06
+wall_time                   3.630094e+04
+num_episodes                1.228160e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             7.310000e+02
+mean_episode_len            1.406250e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.689000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 139, dtype: float64
+Loaded 65792 images
+timesteps                   9.240576e+06
+wall_time                   3.658749e+04
+num_episodes                1.234670e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.000000e+03
+mean_episode_len            1.554250e+02
+min_episode_len             0.000000e+00
+mean_timeouts               5.000000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.998000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 140, dtype: float64
+Loaded 65792 images
+timesteps                   9.306112e+06
+wall_time                   3.687459e+04
+num_episodes                1.241080e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.000000e+03
+mean_episode_len            1.308500e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.482750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 141, dtype: float64
+Loaded 65792 images
+timesteps                   9.371648e+06
+wall_time                   3.716219e+04
+num_episodes                1.247370e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             6.710000e+02
+mean_episode_len            8.247500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.878500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 142, dtype: float64
+Loaded 65792 images
+timesteps                   9.437184e+06
+wall_time                   3.745030e+04
+num_episodes                1.254380e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.340000e+02
+mean_episode_len            8.152500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.218750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 143, dtype: float64
+Loaded 65792 images
+timesteps                   9.502720e+06
+wall_time                   3.773733e+04
+num_episodes                1.261340e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.480000e+02
+mean_episode_len            8.432500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.975750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 144, dtype: float64
+Loaded 65792 images
+timesteps                   9.568256e+06
+wall_time                   3.802652e+04
+num_episodes                1.268550e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        8.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.850000e+02
+mean_episode_len            7.077500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.751250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 145, dtype: float64
+Loaded 65792 images
+timesteps                   9.633792e+06
+wall_time                   3.831788e+04
+num_episodes                1.275920e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             7.050000e+02
+mean_episode_len            1.200750e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.142250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 146, dtype: float64
+Loaded 65792 images
+timesteps                   9.699328e+06
+wall_time                   3.860544e+04
+num_episodes                1.283340e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.100000e+02
+mean_episode_len            1.042000e+02
+min_episode_len             0.000000e+00
+mean_timeouts               5.000000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.820250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 147, dtype: float64
+Loaded 65792 images
+timesteps                   9.764864e+06
+wall_time                   3.890060e+04
+num_episodes                1.290680e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        5.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             8.620000e+02
+mean_episode_len            1.010000e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        5.137000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 148, dtype: float64
+Loaded 65792 images
+timesteps                   9.830400e+06
+wall_time                   3.919010e+04
+num_episodes                1.298280e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.900000e+02
+mean_episode_len            9.570000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.535000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 149, dtype: float64
+Loaded 65792 images
+timesteps                   9.895936e+06
+wall_time                   3.948740e+04
+num_episodes                1.305830e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             1.000000e+03
+mean_episode_len            1.169250e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    2.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        5.324000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 150, dtype: float64
+Loaded 65792 images
+timesteps                   9.961472e+06
+wall_time                   3.978090e+04
+num_episodes                1.313590e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.540000e+02
+mean_episode_len            9.935000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.433000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 151, dtype: float64
+Loaded 65792 images
+timesteps                   1.002701e+07
+wall_time                   4.008134e+04
+num_episodes                1.321980e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             7.830000e+02
+mean_episode_len            1.074500e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.795500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 152, dtype: float64
+Saving model at timestep 10027009
+Loaded 65792 images
+timesteps                   1.009254e+07
+wall_time                   4.037373e+04
+num_episodes                1.330190e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.140000e+02
+mean_episode_len            7.350000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               2.500000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.864750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 153, dtype: float64
+Loaded 65792 images
+timesteps                   1.015808e+07
+wall_time                   4.066267e+04
+num_episodes                1.339080e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.400000e+02
+mean_episode_len            7.115000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.434000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 154, dtype: float64
+Loaded 65792 images
+timesteps                   1.022362e+07
+wall_time                   4.094905e+04
+num_episodes                1.348740e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.110000e+02
+mean_episode_len            5.437500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.753000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 155, dtype: float64
+Loaded 65792 images
+timesteps                   1.028915e+07
+wall_time                   4.123867e+04
+num_episodes                1.358050e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.330000e+02
+mean_episode_len            7.035000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.306250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 156, dtype: float64
+Loaded 65792 images
+timesteps                   1.035469e+07
+wall_time                   4.153314e+04
+num_episodes                1.367280e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.330000e+02
+mean_episode_len            7.765000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.540750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 157, dtype: float64
+Loaded 65792 images
+timesteps                   1.042022e+07
+wall_time                   4.183702e+04
+num_episodes                1.376080e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.740000e+02
+mean_episode_len            7.905000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    2.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.231000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 158, dtype: float64
+Loaded 65792 images
+timesteps                   1.048576e+07
+wall_time                   4.212892e+04
+num_episodes                1.384920e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.000000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.030000e+02
+mean_episode_len            6.642500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.542000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           2.500000e-02
+Name: 159, dtype: float64
+Loaded 65792 images
+timesteps                   1.055130e+07
+wall_time                   4.243571e+04
+num_episodes                1.393360e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.190000e+02
+mean_episode_len            7.820000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.389250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 160, dtype: float64
+Loaded 65792 images
+timesteps                   1.061683e+07
+wall_time                   4.274283e+04
+num_episodes                1.401850e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.470000e+02
+mean_episode_len            7.782500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        2.538500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 161, dtype: float64
+Loaded 65792 images
+timesteps                   1.068237e+07
+wall_time                   4.303123e+04
+num_episodes                1.410790e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        8.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.430000e+02
+mean_episode_len            7.417500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.416500e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 162, dtype: float64
+Loaded 65792 images
+timesteps                   1.074790e+07
+wall_time                   4.331885e+04
+num_episodes                1.419240e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.210000e+02
+mean_episode_len            8.805000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.250000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.147750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 163, dtype: float64
+Loaded 65792 images
+timesteps                   1.081344e+07
+wall_time                   4.360396e+04
+num_episodes                1.427580e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.050000e+02
+mean_episode_len            6.955000e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.403000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 164, dtype: float64
+Loaded 65792 images
+timesteps                   1.087898e+07
+wall_time                   4.389901e+04
+num_episodes                1.435470e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        8.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.060000e+02
+mean_episode_len            7.842500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.672250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 165, dtype: float64
+Loaded 65792 images
+timesteps                   1.094451e+07
+wall_time                   4.420137e+04
+num_episodes                1.442880e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             2.850000e+02
+mean_episode_len            9.437500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.219000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 166, dtype: float64
+Loaded 65792 images
+timesteps                   1.101005e+07
+wall_time                   4.450496e+04
+num_episodes                1.449170e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.500000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             8.670000e+02
+mean_episode_len            1.050500e+02
+min_episode_len             0.000000e+00
+mean_timeouts               2.500000e-02
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    4.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.162000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 167, dtype: float64
+Loaded 65792 images
+timesteps                   1.107558e+07
+wall_time                   4.480779e+04
+num_episodes                1.454760e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.750000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             4.050000e+02
+mean_episode_len            9.697500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.750000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.005250e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 168, dtype: float64
+Loaded 65792 images
+timesteps                   1.114112e+07
+wall_time                   4.511179e+04
+num_episodes                1.461460e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        7.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             7.490000e+02
+mean_episode_len            1.171750e+02
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    3.500000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        4.193750e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 169, dtype: float64
+Loaded 65792 images
+timesteps                   1.120666e+07
+wall_time                   4.541655e+04
+num_episodes                1.468010e+05
+max_episode_rewards         1.000000e+01
+mean_episode_rewards        6.250000e+00
+min_episode_rewards         0.000000e+00
+max_episode_len             3.580000e+02
+mean_episode_len            8.797500e+01
+min_episode_len             0.000000e+00
+mean_timeouts               0.000000e+00
+val_max_episode_rewards     1.000000e+01
+val_mean_episode_rewards    5.000000e+00
+val_min_episode_rewards     0.000000e+00
+val_max_episode_len         1.000000e+03
+val_mean_episode_len        3.267000e+02
+val_min_episode_len         0.000000e+00
+val_mean_timeouts           0.000000e+00
+Name: 170, dtype: float64
+Loaded 65792 images/var/spool/slurm/slurmd/job422060/slurm_script: line 31: 2132760 Killed                  python3 train.py --env_name coinrun --exp_name concurrent_svdd --num_levels 100000 --distribution_mode hard --param_name hard-500 --num_timesteps 200000000 --save_timesteps 390625 781250 1562500 3125000 6250000 10000000 12500000 20000000 25000000 30000000 40000000 50000000 60000000 70000000 80000000 90000000 100000000 110000000 120000000 130000000 140000000 150000000 160000000 170000000 180000000 190000000 200000000 --seed 8888 --use_wandb --save_observations --concurrent_svdd
+slurmstepd: error: Detected 1 oom_kill event in StepId=422060.batch. Some of the step tasks have been OOM Killed.
